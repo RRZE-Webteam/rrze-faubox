@@ -1,0 +1,29 @@
+{
+  "name": "rrze-faubox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/wordpress__blocks": "^12.5.18",
+    "@wordpress/block-editor": "^15.6.0",
+    "@wordpress/blocks": "^15.6.0",
+    "@wordpress/scripts": "^30.26.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RRZE-Webteam/rrze-faubox.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RRZE-Webteam/rrze-faubox/issues"
+  },
+  "homepage": "https://github.com/RRZE-Webteam/rrze-faubox#readme"
+}

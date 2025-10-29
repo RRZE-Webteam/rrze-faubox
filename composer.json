@@ -1,0 +1,12 @@
+{
+  "name": "ln/rrze-faubox",
+  "description": "A Plugin for FAUbox data integration",
+  "type": "wordpress-plugin",
+  "license": "GPL",
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "LN\\FAUbox\\": "includes/"
+    }
+  }
+}

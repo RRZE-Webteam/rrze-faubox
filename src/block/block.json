@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "rrze/faubox",
+  "version": "0.0.1",
+  "title": "FAUbox",
+  "category": "rrze",
+  "icon": "cloud",
+  "description": "Integriert Dateien aus der FAUbox.",
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "folder": {
+      "type": "string",
+      "default": "",
+
+    }
+  },
+  "textdomain": "rrze-faubox",
+  "editorScript": "file:./index.ts",
+  "editorStyle": "file:./editor.css",
+  "style": "file:./style.css",
+  "renderCallback": "RRZE\\FAUbox\\Blocks\\FAUbox\\Render::output"
+}

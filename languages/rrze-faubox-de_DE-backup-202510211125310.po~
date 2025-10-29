@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: RRZE FAUbox\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-21 11:10+0000\n"
+"PO-Revision-Date: 2025-10-21 11:21+0000\n"
+"Last-Translator: \n"
+"Language-Team: Deutsch\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.0; wp-6.8.3; php-8.3.23\n"
+"X-Domain: rrze-faubox"
+
+#. Description of the plugin
+msgid "A Plugin for FAUbox data integration"
+msgstr "Ein Plugin zur Integration von FAUbox Dateien"
+
+#: includes/Renderer.php:105
+msgid "changed"
+msgstr "geändert"
+
+#: includes/Admin/Settings.php:62
+msgid "FAUbox API-Token"
+msgstr "FAUbox API-Token"
+
+#: includes/Admin/Settings.php:50
+msgid "FAUbox Settings"
+msgstr "FAUbox Einstellungen"
+
+#: includes/Shortcode.php:58
+msgid "FAUbox: Token or folder ID not configured."
+msgstr "FAUbox: Token oder Ordner ID wurden nicht konfiguriert."
+
+#: includes/Admin/Settings.php:75
+msgid "File-ID (Base64)"
+msgstr "Ordner ID (Base64)"
+
+#. URI of the plugin
+msgid "https://github.com/RRZE-Webteam/rrze-faubox"
+msgstr "https://github.com/RRZE-Webteam/rrze-faubox"
+
+#. Author URI of the plugin
+msgid "https://www.wp.rrze.fau.de/"
+msgstr "https://www.wp.rrze.fau.de/"
+
+#: includes/Renderer.php:96
+msgid "name"
+msgstr "Dateiname"
+
+#. Name of the plugin
+msgid "RRZE FAUbox"
+msgstr "RRZE FAUbox"
+
+#. Author of the plugin
+msgid "RRZE Webteam"
+msgstr "RRZE Webteam"
+
+#: includes/Renderer.php:99
+msgid "size"
+msgstr "Größe"
+
+#: includes/Renderer.php:102
+msgid "type"
+msgstr "Typ"
