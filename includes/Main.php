@@ -4,6 +4,10 @@ namespace RRZE\FAUbox;
 
 defined('ABSPATH') || exit;
 
+use RRZE\FAUbox\Blocks\BlockRegistration;
+use RRZE\FAUbox\Admin\Rest;
+
+
 /**
  * Main class
  *
@@ -16,47 +20,44 @@ final class Main
 {
     public function __construct()
     {
-        if (is_admin()) {
-            Admin\Settings::register(); // Settings-Seite im Backend
-        }
+        $this->initHooks();
+    }
 
-        add_action('init', [Shortcode::class, 'register']); // Registriert den Shortcode
-        add_action('init', [self::class, 'registerBlock']);
-
-        add_filter('block_categories_all', [self::class, 'rrzeBlockCategory'], 10, 2);
+    private function initHooks(): void
+    {
+        $this->initAdmin();
+        $this->initShortcodes();
+        $this->initBlocks();
+        $this->restAPI();
 
     }
 
-
-    public static function registerBlock(): void
+    private function initAdmin(): void
     {
-        register_block_type(__DIR__ . '/../build/block');
+        if (is_admin()) {
+            Admin\Settings::register();
+        }
+    }
+
+    private function initShortcodes(): void
+    {
+        add_action('init', [Shortcode::class, 'register']);
+    }
+
+    private function initBlocks(): void
+    {
+        BlockRegistration::register();
     }
 
     /**
-     * Adds custom block category if not already present.
+     * Registers custom REST API routes for the FAUbox plugin.
      *
-     * @param array $categories
-     * @param $post
-     * @return array
+     * Currently provides a dummy folder list for use in the block editor.
+     * Replace or extend with real API routes later.
      */
-    public static function rrzeBlockCategory(array $categories, $post): array
+    private function restAPI(): void
     {
-        // Check if there is already a RRZE category present
-        foreach ($categories as $category) {
-            if (isset($category['slug']) && $category['slug'] === 'rrze') {
-                return $categories;
-            }
-        }
-
-        $custom_category = [
-            'slug'  => 'rrze',
-            'title' => __('RRZE', 'rrze-faubox'),
-        ];
-
-        $categories[] = $custom_category;
-
-        return $categories;
+        Rest::register();
     }
 
 

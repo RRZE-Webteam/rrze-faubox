@@ -11,14 +11,59 @@
     "html": false
   },
   "attributes": {
-    "folder": {
+    "isInitialSetup": {
+      "type": "boolean",
+      "default": true
+    },
+    "view": {
+      "type": "string",
+      "enum": [
+        "list",
+        "table",
+        "gallery"
+      ],
+      "default": "list"
+    },
+    "show": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "name",
+          "type",
+          "size",
+          "modified"
+        ]
+      },
+      "default": [
+        "name"
+      ]
+    },
+    "order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "default": "asc"
+    },
+    "index": {
       "type": "string",
       "default": ""
+    },
+    "show_title": {
+      "type": "boolean",
+      "default": true
     }
   },
   "textdomain": "rrze-faubox",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./editor.css",
   "style": "file:./style.css",
-  "renderCallback": "RRZE\\FAUbox\\Blocks\\FAUbox\\Render::output"
+  "renderCallback": "RRZE\\FAUbox\\Blocks\\FAUbox\\BlockRender::output",
+  "example": {
+    "attributes": {
+      "isInitialSetup": false
+    }
+  }
 }

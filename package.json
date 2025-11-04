@@ -7,7 +7,9 @@
     "@types/wordpress__blocks": "^12.5.18",
     "@wordpress/block-editor": "^15.6.0",
     "@wordpress/blocks": "^15.6.0",
-    "@wordpress/scripts": "^30.26.0"
+    "@wordpress/scripts": "^30.26.0",
+    "@types/wordpress__block-editor": "^11.5.16",
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
