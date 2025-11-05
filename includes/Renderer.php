@@ -33,16 +33,12 @@ class Renderer
     /**
      * Renders a heading with the given folder name.
      *
-     * This method outputs a consistent HTML heading (h2)
-     * for use above the file list, regardless of the chosen view type.
-     * It ensures the folder name is safely escaped for HTML output.
-     *
      * @param string $folderName The name or identifier of the folder.
      * @return string The rendered HTML heading element.
      */
     public static function renderTitle(string $folderName): string
     {
-        return sprintf('<h4 class="faubox-title">%s</h4>', esc_html($folderName));
+        return sprintf('<h3 class="wp-block-heading faubox-title">%s</h3>', esc_html($folderName));
     }
 
 
@@ -58,13 +54,38 @@ class Renderer
             return '<p>No files found.</p>';
         }
 
-        $html = '<ul class="faubox-filelist">';
+        $html = '<ul class="wp-block-faubox-list">';
 
         foreach ($data as $file) {
+            $name = esc_html($file['name']);
+            $details = [];
+
+            // size anzeigen, wenn in show enthalten
+            if (isset($atts['show']) && is_array($atts['show']) && in_array('size', $atts['show'], true)) {
+                $details[] = esc_html($file['size'] ?? '-');
+            }
+
+            // type anzeigen, wenn in show enthalten
+            if (isset($atts['show']) && is_array($atts['show']) && in_array('type', $atts['show'], true)) {
+                $extension = pathinfo($file['url'], PATHINFO_EXTENSION);
+                $details[] = esc_html(strtoupper($extension));
+            }
+
+            // modified anzeigen, wenn in show enthalten
+            if (isset($atts['show']) && is_array($atts['show']) && in_array('modified', $atts['show'], true)) {
+                $modified = $file['modified'] ?? '';
+                $formatted = $modified ? date('d.m.Y', strtotime($modified)) : '-';
+                $details[] = esc_html($formatted);
+            }
+
+            // Klammer nur anzeigen, wenn mind. ein Zusatzfeld aktiv ist
+            $suffix = $details ? ' (' . implode(', ', $details) . ')' : '';
+
             $html .= sprintf(
-                '<li><a href="%s" target="_blank" rel="noopener">%s</a></li>',
+                '<li><a href="%s" target="_blank" rel="noopener">%s</a>%s</li>',
                 esc_url($file['url']),
-                esc_html($file['name'])
+                $name,
+                $suffix
             );
         }
 
@@ -87,7 +108,7 @@ class Renderer
 
         $columns = $atts['show'] ?? ['name']; // fallback: nur Name
 
-        $html = '<table class="faubox-filetable">';
+        $html = '<figure class="wp-block-table"><table class="faubox-filetable">';
         $html .= '<thead><tr>';
 
         foreach ($columns as $col) {
@@ -146,7 +167,7 @@ class Renderer
             $html .= '</tr>';
         }
 
-        $html .= '</tbody></table>';
+        $html .= '</tbody></table></figure>';
 
         return $html;
     }
@@ -163,24 +184,30 @@ class Renderer
             return '<p>No images found.</p>';
         }
 
-        $html = '<div class="faubox-gallery">';
+        $html = '<ul class="wp-block-gallery faubox-gallery columns-3 is-cropped">';
 
         foreach ($data as $file) {
-            // Basic check: file extension as image
+            // Check: is file an image (by extension)
             $isImage = preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file['url']);
             if (! $isImage) {
                 continue;
             }
 
             $html .= sprintf(
-                '<div class="gallery-item"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="%s"></a></div>',
+                '<li class="blocks-gallery-item">
+                <figure>
+                    <a href="%s" target="_blank" rel="noopener">
+                        <img src="%s" alt="%s" />
+                    </a>
+                </figure>
+            </li>',
                 esc_url($file['url']),
                 esc_url($file['url']),
                 esc_attr($file['name'])
             );
         }
 
-        $html .= '</div>';
+        $html .= '</ul>';
 
         return $html;
     }

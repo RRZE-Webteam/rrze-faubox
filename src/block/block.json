@@ -39,7 +39,7 @@
         "name"
       ]
     },
-    "order": {
+    "sort": {
       "type": "string",
       "enum": [
         "asc",
@@ -53,12 +53,21 @@
     },
     "show_title": {
       "type": "boolean",
-      "default": true
+      "default": false
+    },
+    "orderby": {
+      "type": "string",
+      "enum": ["name", "size", "type", "modified"],
+      "default": "name"
+    },
+    "filter": {
+      "type": "string",
+      "default": ""
     }
   },
   "textdomain": "rrze-faubox",
   "editorScript": "file:./index.ts",
-  "editorStyle": "file:./editor.css",
+  "editorStyle": "file:./index.css",
   "style": "file:./style.css",
   "renderCallback": "RRZE\\FAUbox\\Blocks\\FAUbox\\BlockRender::output",
   "example": {

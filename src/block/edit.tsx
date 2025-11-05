@@ -1,4 +1,4 @@
-import { __ } from '@wordpress/i18n';
+import {__} from '@wordpress/i18n';
 
 import {
     useBlockProps,
@@ -15,16 +15,14 @@ import {
     __experimentalToggleGroupControlOption as ToggleGroupControlOption,
     CheckboxControl,
     Button,
-    ToolbarGroup,
-    ToolbarItem,
-    ToolbarDropdownMenu,
+    TextControl,
     PanelBody,
     SelectControl,
 } from "@wordpress/components";
 
 import {cloud} from "@wordpress/icons";
 
-import { useEffect, useState } from '@wordpress/element';
+import {useEffect, useState} from '@wordpress/element';
 
 import ServerSideRender from '@wordpress/server-side-render';
 import "./editor.scss";
@@ -34,24 +32,26 @@ interface EditProps {
     attributes: {
         view: 'list' | 'table' | 'gallery';
         show: ('name' | 'type' | 'size' | 'modified')[];
-        order: 'asc' | 'desc';
+        sort: 'asc' | 'desc';
         index: string;
         show_title: boolean;
         isInitialSetup: boolean;
+        orderby: string;
+        filter: string;
     }
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
 
 export default function Edit({attributes, setAttributes}: EditProps) {
-    const {view, show, order, index, show_title, isInitialSetup} = attributes;
+    const {view, show, sort, index, show_title, isInitialSetup, orderby, filter} = attributes;
     const blockProps = useBlockProps();
 
-    const toggleShow = (key: 'name' | 'size' | 'type' | 'modified') => {
+    const toggleShow = (key: 'size' | 'type' | 'modified') => {
         const newShow = show.includes(key)
             ? show.filter((item) => item !== key)
             : [...show, key];
 
-        setAttributes({ show: newShow });
+        setAttributes({show: newShow});
     };
 
     const [folderOptions, setFolderOptions] = useState<{ label: string; value: string }[]>([]);
@@ -64,9 +64,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
             })
             .catch(() => {
                 setFolderOptions([
-                    { value: '/', label: 'FAUbox Hauptordner' },
-                    { value: '/ss24', label: 'SS24' },
-                    { value: '/ws23', label: 'WS23' },
+                    {value: '/', label: 'FAUbox Hauptordner'},
+                    {value: '/ss24', label: 'SS24'},
+                    {value: '/ws23', label: 'WS23'},
                 ]);
             });
     }, []);
@@ -79,86 +79,162 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     return (
         <div {...blockProps}>
             {isInitialSetup ? (
-            <Placeholder
-                label={__("Faubox Block", "rrze-faubox")}
-                instructions={__("Configure your Faubox block.", "rrze-faubox")}
-                isColumnLayout={true}
-                icon={cloud}
-            >
-                <div>
-                    <hr/>
-                    <Spacer paddingBottom={"1rem"}/>
-                    <Heading level={3}>{__("Faubox Einstellungen", "rrze-faubox")}</Heading>
-                    <p>{__("Bitte richten Sie Ihren FAUbox Zugang über das WordPress Dashboard > Einstellungen > FAUbox ein.", "rrze-faubox")}</p>
-                    <Spacer paddingBottom={"1rem"}/>
+                // 🟩 Placeholder-Bereich (Setup)
+                <Placeholder
+                    label={__("Faubox Block", "rrze-faubox")}
+                    instructions={__("Configure your Faubox block.", "rrze-faubox")}
+                    isColumnLayout={true}
+                    icon={cloud}
+                >
+                    {/* === Deine Setup-Einstellungen === */}
+                    <div>
+                        <hr/>
+                        <Spacer paddingBottom={"1rem"}/>
+                        <Heading level={3}>{__("Faubox Einstellungen", "rrze-faubox")}</Heading>
+                        <p>{__("Bitte richten Sie vorab Ihren FAUbox Zugang über das WordPress Dashboard > Einstellungen > FAUbox ein.", "rrze-faubox")}</p>
+                        <Spacer paddingBottom={"1rem"}/>
 
-                    <Grid columns={7}>
-                        <div style={{gridColumn: "span 3"}}>
+                        <Grid columns={7}>
+                            {/* Linke Spalte */}
+                            <div style={{gridColumn: "span 3"}}>
+                                <SelectControl
+                                    label="Ordnerauswahl"
+                                    __next40pxDefaultSize
+                                    value={index}
+                                    options={folderOptions}
+                                    onChange={(val: string) => setAttributes({index: val})}
+                                />
+
+                                <SelectControl
+                                    label="View"
+                                    value={view}
+                                    __next40pxDefaultSize
+                                    options={[
+                                        {disabled: true, label: 'Select an Option', value: ''},
+                                        {label: 'List', value: 'list'},
+                                        {label: 'Table', value: 'table'},
+                                        {label: 'Gallery', value: 'gallery'},
+                                    ]}
+                                    onChange={(val: 'list' | 'table' | 'gallery') =>
+                                        setAttributes({view: val as 'list' | 'table' | 'gallery'})
+                                    }
+                                />
+
+                                <SelectControl
+                                    label="Sortierung"
+                                    __next40pxDefaultSize
+                                    value={sort}
+                                    options={[
+                                        {label: 'Aufsteigend', value: 'asc'},
+                                        {label: 'Absteigend', value: 'desc'},
+                                    ]}
+                                    onChange={(val: 'asc' | 'desc') =>
+                                        setAttributes({sort: val as 'asc' | 'desc'})
+                                    }
+                                />
+                                <SelectControl
+                                    label="Reihenfolge"
+                                    __next40pxDefaultSize
+                                    value={orderby}
+                                    options={[
+                                        {label: 'Name', value: 'name'},
+                                        {label: 'Size', value: 'size'},
+                                        {label: 'Type', value: 'type'},
+                                        {label: 'Changed', value: 'modified'}
+                                    ]}
+                                    onChange={(val: 'name' | 'size' | 'type' | 'modified') =>
+                                        setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified' })
+                                    }
+                                />
+
+                                <TextControl
+                                    label="Filtern nach Dateiformat"
+                                    help={__("Nur Dateien mit diesen Endungen werden angezeigt", "rrze-faubox")}
+                                    placeholder="pdf, jpeg, usw."
+                                    __next40pxDefaultSize
+                                    value={filter}
+                                    onChange={(val: string) => setAttributes({filter: val})}
+                                />
+                            </div>
+                            <Spacer paddingTop=".5rem" />
+                            {/* Rechte Spalte */}
+                            <div style={{gridColumn: "span 3"}}>
+                                <Heading level={4}>{__("Show", "rrze-faubox")}</Heading>
+                                <Spacer/>
+                                <CheckboxControl
+                                    label={__("File Size", "rrze-faubox")}
+                                    checked={show.includes('size')}
+                                    onChange={() => toggleShow('size')}
+                                />
+                                <CheckboxControl
+                                    label={__("File Type", "rrze-faubox")}
+                                    checked={show.includes('type')}
+                                    onChange={() => toggleShow('type')}
+                                />
+                                <CheckboxControl
+                                    label={__("File Changed Date", "rrze-faubox")}
+                                    checked={show.includes('modified')}
+                                    onChange={() => toggleShow('modified')}
+                                />
+                                <CheckboxControl
+                                    label={__("Ordnertitel anzeigen", "rrze-faubox")}
+                                    checked={show_title}
+                                    onChange={(value) => setAttributes({show_title: value})}
+                                />
+                            </div>
+                        </Grid>
+
+                        <Spacer paddingBottom={"0.5rem"}/>
+                        <Button
+                            variant="primary"
+                            onClick={() => setAttributes({isInitialSetup: false})}
+                        >
+                            {__("Finish initial setup", "rrze-faubox")}
+                        </Button>
+                        <Spacer paddingBottom={"0.5rem"}/>
+                    </div>
+
+
+                    <div>
+                        <hr/>
+                        <Spacer paddingTop={"1rem"}/>
+                        <Heading level={3}>{__("Data Preview", "rrze-faubox")}</Heading>
+                        <Spacer paddingBottom={"0.2rem"}/>
+                        <ServerSideRender
+                            block="rrze/faubox"
+                            attributes={attributes}
+                        />
+                        <Spacer/>
+                    </div>
+                </Placeholder>
+            ) : (
+                // 🟦 Hier beginnt der zweite Zustand (nach Setup)
+                <>
+                    <InspectorControls>
+                        <PanelBody title={__("Datenauswahl", "rrze-faubox")} initialOpen={false}>
                             <SelectControl
-                                label="Unterordner"
+                                label="Ordnerauswahl"
                                 value={index}
                                 options={folderOptions}
-                                onChange={(val: string) => setAttributes({ index: val })}
+                                onChange={(val: string) => setAttributes({index: val})}
                             />
+                        </PanelBody>
 
+                        <PanelBody title={__("Darstellungsoptionen", "rrze-faubox")} initialOpen={false}>
                             <SelectControl
                                 label="View"
                                 value={view}
-                                __next40pxDefaultSize
                                 options={[
-                                    {
-                                        disabled: true,
-                                        label: 'Select an Option',
-                                        value: ''
-                                    },
-                                    {
-                                        label: 'List',
-                                        value: 'list'
-                                    },
-                                    {
-                                        label: 'Table',
-                                        value: 'table'
-                                    },
-                                    {
-                                        label: 'Gallery',
-                                        value: 'gallery'
-                                    },
-
+                                    {disabled: true, label: 'Select an Option', value: ''},
+                                    {label: 'List', value: 'list'},
+                                    {label: 'Table', value: 'table'},
+                                    {label: 'Gallery', value: 'gallery'},
                                 ]}
-                                onChange={(val: 'list' | 'table' | 'gallery') => setAttributes({view: val as 'list' | 'table' | 'gallery'})}
+                                onChange={(val: 'list' | 'table' | 'gallery') =>
+                                    setAttributes({view: val as 'list' | 'table' | 'gallery'})
+                                }
                             />
-
-
-                            <SelectControl
-                                label="Order"
-                                __next40pxDefaultSize
-                                value={order}
-                                options={[
-                                    {
-                                        label: 'Aufsteigend',
-                                        value: 'asc'
-                                    },
-                                    {
-                                        label: 'Absteigend',
-                                        value: 'desc'
-                                    },
-
-                                ]}
-                                onChange={(val: 'asc' | 'desc') => setAttributes({order: val as 'asc' | 'desc'})}
-                            />
-
-
-                        </div>
-                        <Spacer paddingTop=".5rem" />
-
-                        <div style={{gridColumn: "span 3"}}>
-                            <Heading level={4}>{__("Show", "rrze-faubox")}</Heading>
-                            <Spacer/>
-                            <CheckboxControl
-                                label={__("Name", "rrze-faubox")}
-                                checked={show.includes('name')}
-                                onChange={() => toggleShow('name')}
-                            />
+                            <Spacer paddingTop={"1rem"}/>
                             <CheckboxControl
                                 label={__("File Size", "rrze-faubox")}
                                 checked={show.includes('size')}
@@ -177,46 +253,55 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             <CheckboxControl
                                 label={__("Ordnertitel anzeigen", "rrze-faubox")}
                                 checked={show_title}
-                                onChange={(value) => setAttributes({ show_title: value })}
+                                onChange={(value) => setAttributes({show_title: value})}
                             />
+                        </PanelBody>
 
-                        </div>
-                    </Grid>
+                        <PanelBody title={__("Sortierung & Reihenfolge", "rrze-faubox")} initialOpen={false}>
+                            <SelectControl
+                                label="Sortierung"
+                                help={__("Blabla?", "rrze-downloads")}
+                                value={sort}
+                                options={[
+                                    {label: 'Aufsteigend', value: 'asc'},
+                                    {label: 'Absteigend', value: 'desc'},
+                                ]}
+                                onChange={(val: 'asc' | 'desc') =>
+                                    setAttributes({sort: val as 'asc' | 'desc'})
+                                }
+                            />
+                            <SelectControl
+                                label="Reihenfolge"
+                                help={__("Blabla?", "rrze-downloads")}
+                                value={orderby}
+                                options={[
+                                    {label: 'Name', value: 'name'},
+                                    {label: 'Size', value: 'size'},
+                                    {label: 'Type', value: 'type'},
+                                    {label: 'Changed', value: 'modified'}
+                                ]}
+                                onChange={(val: 'name' | 'size' | 'type' | 'modified') =>
+                                    setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified' })
+                                }
+                            />
+                            <TextControl
+                                label="Filtern nach Dateiformat"
+                                help={__("Nur Dateien mit diesen Endungen werden angezeigt", "rrze-faubox")}
+                                placeholder="pdf, jpeg, usw."
+                                __next40pxDefaultSize
+                                value={filter}
+                                onChange={(val: string) => setAttributes({filter: val})}
+                            />
+                        </PanelBody>
+                    </InspectorControls>
 
-                    <Spacer paddingBottom={"0.5rem"}/>
-
-                    <Button
-                    variant="primary"
-                    onClick={() => setAttributes({ isInitialSetup: false })}
-
-                    >
-                    {__("Finish initial setup", "rrze-faubox")}
-                </Button>
-                    <Spacer paddingBottom={"0.5rem"}/>
-                </div>
-
-                <div>
-
-                    <hr/>
-                    <Spacer paddingTop={"1rem"}/>
-                    <Heading level={3}>{__("Data Preview", "rrze-faubox")}</Heading>
+                    {/* Ausgabe nach Setup */}
                     <ServerSideRender
                         block="rrze/faubox"
                         attributes={attributes}
                     />
-                    <Spacer/>
-                </div>
-
-            </Placeholder>
-                ) : (
-                // 🟦 BEGINN: isInitialSetup === false → fertige Vorschau anzeigen
-                <ServerSideRender
-                    block="rrze/faubox"
-                    attributes={attributes}
-                />
-                // 🟥 ENDE: isInitialSetup === false
+                </>
             )}
         </div>
-    )
-        ;
+    );
 }

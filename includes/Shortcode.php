@@ -41,9 +41,11 @@ class Shortcode
             'index' => '', //subfile of FAUbox file
             'view' => 'list',
             'show' => 'name', //Default
-            'show_title' => 'true',
+            'show_title' => 'false',
             'filetype' => '',
-            'order' => '',
+            'sort' => 'asc',
+            'orderby' => 'name',
+            'filter' => '',
         ],
             $atts,
             'faubox'
@@ -68,13 +70,43 @@ class Shortcode
         $view = sanitize_text_field($atts['view']);
         $showInput = sanitize_text_field($atts['show']);
         $filetype = sanitize_text_field($atts['filetype']);
-        $showTitle = !in_array(strtolower((string)$atts['show_title']), ['0', 'false', 'no', 'off'], true);
-        $order = strtolower(sanitize_text_field($atts['order']));
-        if (!in_array($order, ['asc', 'desc'], true)) {
-            $order = 'asc'; // fallback default
+        $showTitle = filter_var($atts['show_title'], FILTER_VALIDATE_BOOLEAN);
+        $sort = strtolower(sanitize_text_field($atts['sort']));
+        if (!in_array($sort, ['asc', 'desc'], true)) {
+            $sort = 'asc'; // fallback default
+        }
+        $orderby = sanitize_text_field($atts['orderby']);
+        $allowedOrderBy = ['name', 'size', 'type', 'modified'];
+        if (!in_array($orderby, $allowedOrderBy, true)) {
+            $orderby = 'name';
         }
 
-        //Erlaubte Spalten
+        //Get files from API
+        $files = API::fetchFiles($folderId, $token, $subdir);
+        $files = is_array($files) ? $files : []; // 🟩 Schutz vor null → leeres Array
+
+        if (empty($files)) {
+            return '<p><strong>' . esc_html__('No files found.', 'rrze-faubox') . '</strong></p>';
+        }
+
+        //Filter by custom file extensions (e.g. pdf, docx)
+        $filterRaw = sanitize_text_field($atts['filter']);
+        if (!empty($filterRaw)) {
+            $allowedExtensions = array_map('strtolower', array_map('trim', explode(',', $filterRaw)));
+
+            $files = array_filter($files, static function ($item) use ($allowedExtensions): bool {
+                $filename = $item['name'] ?? '';
+                $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+                return in_array($extension, $allowedExtensions, true);
+            });
+
+            if (empty($files)) {
+                return '<p><strong>' . esc_html__('No matching files found.', 'rrze-faubox') . '</strong></p>';
+            }
+        }
+
+
         // Accept array (from block) OR comma-separated string (from shortcode)
         $showFields = is_array($atts['show']) //
             ? array_map('strtolower', array_map('trim', $atts['show']))
@@ -84,14 +116,6 @@ class Shortcode
         if (empty($showFields)) {
             $showFields = ['name'];
         }
-
-        // Get data from API (currently dummy)
-        $files = API::fetchFiles($folderId, $token, $subdir);
-
-        if (empty($files)) {
-            return '<p><strong>' . esc_html__('No files found.', 'rrze-faubox') . '</strong></p>';
-        }
-
 
         // Transform API data to match Renderer expectations
         $transformedFiles = array_map(function ($file) use ($folderId, $subdir) {
@@ -109,17 +133,23 @@ class Shortcode
                 'size' => size_format($file['fileSize']),
                 'type' => $file['mimeType'],
                 'modified' => $file['lastModified'],
+                'name_raw' => strtolower($file['fileName']),
+                'size_raw' => (int) ($file['fileSize'] ?? 0),
+                'type_raw' => strtolower($file['mimeType'] ?? ''),
+                'modified_ts' => strtotime($file['lastModified'] ?? ''),
             ];
         }, $files);
 
         $files = $transformedFiles;
 
-        // Optional: Ordner-Titel (Subdir oder Root-Ordner anzeigen)
-        $folderTitle = $subdir ?: 'FAUbox'; // später von API ersetzen
-        $titleHtml = $showTitle ? Renderer::renderTitle($folderTitle) : '';
+        // Render folder title (optional)
+        $folderTitle = trim($subdir);
+        $titleHtml = ($showTitle && !empty($folderTitle))
+            ? Renderer::renderTitle($folderTitle)
+            : '';
 
 
-        // Filter files by extension if requested
+        // Optional filter by exact filetype (one value only)
         if (!empty($filetype)) {
             $expectedExtension = strtolower($filetype);
             $filtered = [];
@@ -133,23 +163,48 @@ class Shortcode
                 }
             }
 
-            $files = $filtered; // replace original list with the filtered one
+            $files = $filtered; //
 
-            // If filtering removed all files, show the empty state (user friendly)
             if (empty($files)) {
                 return '<p><strong>' . esc_html__('No files found.', 'rrze-faubox') . '</strong></p>';
             }
         }
 
-        // Sort files alphabetically by fileName
-        usort($files, static function ($a, $b) use ($order): int {
-            return $order === 'asc'
-                ? strcmp($a['name'], $b['name'])
-                : strcmp($b['name'], $a['name']);
+        // Sort files
+        usort($files, static function ($a, $b) use ($sort, $orderby): int {
+            switch ($orderby) {
+                case 'size':
+                    $valueA = $a['size_raw'] ?? 0;
+                    $valueB = $b['size_raw'] ?? 0;
+                    break;
+                case 'modified':
+                    $valueA = $a['modified_ts'] ?? 0;
+                    $valueB = $b['modified_ts'] ?? 0;
+                    break;
+                case 'type':
+                    $valueA = $a['type_raw'] ?? '';
+                    $valueB = $b['type_raw'] ?? '';
+                    break;
+                case 'name':
+                default:
+                    $valueA = $a['name_raw'] ?? '';
+                    $valueB = $b['name_raw'] ?? '';
+                    break;
+            }
+
+            if ($valueA === $valueB) {
+                return 0;
+            }
+
+            if ($sort === 'desc') {
+                return ($valueA < $valueB) ? 1 : -1;
+            }
+
+            return ($valueA < $valueB) ? -1 : 1;
         });
 
 
-        // HTML-Ausgabe rendern
+        // Render HTML
         $listHtml = Renderer::render($files, [
             'view' => $view,
             'show' => $showFields,

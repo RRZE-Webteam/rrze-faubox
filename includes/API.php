@@ -48,6 +48,9 @@ class API
 
     public static function fetchFiles(string $folderId, string $token, string $subdir = null): ?array
     {
+        $baseUrl = plugins_url('', dirname(__DIR__) . '/rrze-faubox.php');
+
+
         // Dummy data: structure with optional subdir filtering
         $dummyData = [
             '/' => [ // Root folder
@@ -64,7 +67,7 @@ class API
                     'lastModified' => '2025-10-12T09:30:00Z',
                 ],
             ],
-            '/ss25' => [
+            '/ws25' => [
                 [
                     'fileName' => 'Zeugnisse_SS25.docx',
                     'fileSize' => 34567,
@@ -73,9 +76,21 @@ class API
                 ],
                 [
                     'fileName' => 'Aufgaben_SS25.pdf',
-                    'fileSize' => 78012,
+                    'fileSize' => 7012,
                     'mimeType' => 'application/pdf',
                     'lastModified' => '2025-10-11T14:20:00Z',
+                ],
+                [
+                    'fileName' => 'Bachelor.txt',
+                    'fileSize' => 1234,
+                    'mimeType' => 'text/plain',
+                    'lastModified' => '2025-08-12T09:30:00Z',
+                ],
+                [
+                    'fileName' => 'Master.pdf',
+                    'fileSize' => 68012,
+                    'mimeType' => 'application/pdf',
+                    'lastModified' => '2025-04-01T14:20:00Z',
                 ],
             ],
             '/ss24' => [
@@ -100,6 +115,20 @@ class API
                     'lastModified' => '2024-12-20T10:00:00Z',
                 ],
             ],
+            '/ss23' => [
+                [
+                    'fileName' =>  $baseUrl . '/testdata/pictures/Bild1.jpeg',
+                    'fileSize' => 456789,
+                    'mimeType' => 'image/jpeg',
+                    'lastModified' => '2024-12-20T10:00:00Z',
+                ],
+                [
+                    'fileName' =>  $baseUrl . '/testdata/pictures/Bild2.jpeg',
+                    'fileSize' => 456789,
+                    'mimeType' => 'image/jpeg',
+                    'lastModified' => '2024-12-20T10:00:00Z',
+                ],
+            ],
         ];
 
         // Normalisieren
@@ -117,10 +146,11 @@ class API
     public static function getDummyFolders(): array
     {
         return [
-            '/' => 'Root',
+//
             '/ws25' => 'Wintersemester 2025',
             '/ss24' => 'Sommersemester 2024',
-            '/ws23' => 'Wintersemester 2023'
+            '/ws23' => 'Wintersemester 2023',
+            '/ss23' => 'Bilder Sommerfest 2023',
         ];
     }
 }
