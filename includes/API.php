@@ -117,13 +117,13 @@ class API
             ],
             '/ss23' => [
                 [
-                    'fileName' =>  $baseUrl . '/testdata/pictures/Bild1.jpeg',
+                    'fileName' =>  '/testdata/pictures/Bild1.jpeg',
                     'fileSize' => 456789,
                     'mimeType' => 'image/jpeg',
                     'lastModified' => '2024-12-20T10:00:00Z',
                 ],
                 [
-                    'fileName' =>  $baseUrl . '/testdata/pictures/Bild2.jpeg',
+                    'fileName' =>  '/testdata/pictures/Bild2.jpeg',
                     'fileSize' => 456789,
                     'mimeType' => 'image/jpeg',
                     'lastModified' => '2024-12-20T10:00:00Z',

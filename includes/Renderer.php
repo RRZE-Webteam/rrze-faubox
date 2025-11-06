@@ -54,7 +54,7 @@ class Renderer
             return '<p>No files found.</p>';
         }
 
-        $html = '<ul class="wp-block-faubox-list">';
+        $html = '<ul class="wp-block-list wp-block-faubox-list">';
 
         foreach ($data as $file) {
             $name = esc_html($file['name']);

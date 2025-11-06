@@ -37,13 +37,13 @@ interface EditProps {
         show_title: boolean;
         isInitialSetup: boolean;
         orderby: string;
-        filter: string;
+        filetype: string[];
     }
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
 
 export default function Edit({attributes, setAttributes}: EditProps) {
-    const {view, show, sort, index, show_title, isInitialSetup, orderby, filter} = attributes;
+    const {view, show, sort, index, show_title, isInitialSetup, orderby, filetype} = attributes;
     const blockProps = useBlockProps();
 
     const toggleShow = (key: 'size' | 'type' | 'modified') => {
@@ -64,7 +64,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
             })
             .catch(() => {
                 setFolderOptions([
-                    {value: '/', label: 'FAUbox Hauptordner'},
+                    {value: '/ss25', label: 'SS25'},
                     {value: '/ss24', label: 'SS24'},
                     {value: '/ws23', label: 'WS23'},
                 ]);
@@ -72,9 +72,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     }, []);
 
 
-    /*const isInitialSetup = attributes.isInitialSetup;
-     *
-     */
+    const filetypeOptions = ['pdf', 'docx', 'txt', 'jpg', 'zip', 'ppt', 'svg', 'png'];
 
     return (
         <div {...blockProps}>
@@ -101,8 +99,11 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     label="Ordnerauswahl"
                                     __next40pxDefaultSize
                                     value={index}
-                                    options={folderOptions}
-                                    onChange={(val: string) => setAttributes({index: val})}
+                                    options={[
+                                        { value: "", label: __("Unterordner auswählen", "rrze-faubox"), disabled: true },
+                                        ...folderOptions //
+                                    ]}
+                                    onChange={(val: string) => setAttributes({ index: val })}
                                 />
 
                                 <SelectControl
@@ -147,20 +148,12 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     }
                                 />
 
-                                <TextControl
-                                    label="Filtern nach Dateiformat"
-                                    help={__("Nur Dateien mit diesen Endungen werden angezeigt", "rrze-faubox")}
-                                    placeholder="pdf, jpeg, usw."
-                                    __next40pxDefaultSize
-                                    value={filter}
-                                    onChange={(val: string) => setAttributes({filter: val})}
-                                />
                             </div>
                             <Spacer paddingTop=".5rem" />
                             {/* Rechte Spalte */}
                             <div style={{gridColumn: "span 3"}}>
                                 <Heading level={4}>{__("Show", "rrze-faubox")}</Heading>
-                                <Spacer/>
+                                <Spacer paddingTop={"0.5rem"}/>
                                 <CheckboxControl
                                     label={__("File Size", "rrze-faubox")}
                                     checked={show.includes('size')}
@@ -181,6 +174,22 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     checked={show_title}
                                     onChange={(value) => setAttributes({show_title: value})}
                                 />
+
+                                <Heading level={4}>{__("Anzuzeigende Dateien", "rrze-faubox")}</Heading>
+                                <Spacer paddingTop={"0.5rem"}/>
+                                {filetypeOptions.map((type) => (
+                                    <CheckboxControl
+                                        key={type}
+                                        label={type.toUpperCase()}
+                                        checked={filetype.includes(type)}
+                                        onChange={(isChecked) => {
+                                            const updated = isChecked
+                                                ? [...filetype, type]
+                                                : filetype.filter((item) => item !== type);
+                                            setAttributes({ filetype: updated });
+                                        }}
+                                    />
+                                ))}
                             </div>
                         </Grid>
 
@@ -221,6 +230,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                         </PanelBody>
 
                         <PanelBody title={__("Darstellungsoptionen", "rrze-faubox")} initialOpen={false}>
+                            <Spacer paddingTop={"0.5rem"}/>
                             <SelectControl
                                 label="View"
                                 value={view}
@@ -234,7 +244,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     setAttributes({view: val as 'list' | 'table' | 'gallery'})
                                 }
                             />
-                            <Spacer paddingTop={"1rem"}/>
+                            <Spacer paddingTop={"0.5rem"}/>
                             <CheckboxControl
                                 label={__("File Size", "rrze-faubox")}
                                 checked={show.includes('size')}
@@ -258,6 +268,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                         </PanelBody>
 
                         <PanelBody title={__("Sortierung & Reihenfolge", "rrze-faubox")} initialOpen={false}>
+                            <Spacer paddingTop={"0.5rem"}/>
                             <SelectControl
                                 label="Sortierung"
                                 help={__("Blabla?", "rrze-downloads")}
@@ -284,14 +295,19 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified' })
                                 }
                             />
-                            <TextControl
-                                label="Filtern nach Dateiformat"
-                                help={__("Nur Dateien mit diesen Endungen werden angezeigt", "rrze-faubox")}
-                                placeholder="pdf, jpeg, usw."
-                                __next40pxDefaultSize
-                                value={filter}
-                                onChange={(val: string) => setAttributes({filter: val})}
-                            />
+                            {filetypeOptions.map((type) => (
+                                <CheckboxControl
+                                    key={type}
+                                    label={type.toUpperCase()}
+                                    checked={filetype.includes(type)}
+                                    onChange={(isChecked) => {
+                                        const updated = isChecked
+                                            ? [...filetype, type]
+                                            : filetype.filter((item) => item !== type);
+                                        setAttributes({ filetype: updated });
+                                    }}
+                                />
+                            ))}
                         </PanelBody>
                     </InspectorControls>
 

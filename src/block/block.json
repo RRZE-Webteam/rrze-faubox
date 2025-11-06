@@ -60,9 +60,9 @@
       "enum": ["name", "size", "type", "modified"],
       "default": "name"
     },
-    "filter": {
-      "type": "string",
-      "default": ""
+    "filetype": {
+      "type": "array",
+      "default": []
     }
   },
   "textdomain": "rrze-faubox",

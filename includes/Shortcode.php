@@ -45,7 +45,7 @@ class Shortcode
             'filetype' => '',
             'sort' => 'asc',
             'orderby' => 'name',
-            'filter' => '',
+
         ],
             $atts,
             'faubox'
@@ -90,20 +90,14 @@ class Shortcode
         }
 
         //Filter by custom file extensions (e.g. pdf, docx)
-        $filterRaw = sanitize_text_field($atts['filter']);
-        if (!empty($filterRaw)) {
-            $allowedExtensions = array_map('strtolower', array_map('trim', explode(',', $filterRaw)));
+        if (is_array($filetype) && !empty($filetype)) {
+            $allowedExtensions = array_map('strtolower', array_map('trim', $filetype));
 
             $files = array_filter($files, static function ($item) use ($allowedExtensions): bool {
                 $filename = $item['name'] ?? '';
                 $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
                 return in_array($extension, $allowedExtensions, true);
             });
-
-            if (empty($files)) {
-                return '<p><strong>' . esc_html__('No matching files found.', 'rrze-faubox') . '</strong></p>';
-            }
         }
 
 
@@ -134,7 +128,7 @@ class Shortcode
                 'type' => $file['mimeType'],
                 'modified' => $file['lastModified'],
                 'name_raw' => strtolower($file['fileName']),
-                'size_raw' => (int) ($file['fileSize'] ?? 0),
+                'size_raw' => (int)($file['fileSize'] ?? 0),
                 'type_raw' => strtolower($file['mimeType'] ?? ''),
                 'modified_ts' => strtotime($file['lastModified'] ?? ''),
             ];
@@ -143,32 +137,12 @@ class Shortcode
         $files = $transformedFiles;
 
         // Render folder title (optional)
-        $folderTitle = trim($subdir);
+        $folderTitle = basename(trim($subdir));
         $titleHtml = ($showTitle && !empty($folderTitle))
             ? Renderer::renderTitle($folderTitle)
             : '';
 
 
-        // Optional filter by exact filetype (one value only)
-        if (!empty($filetype)) {
-            $expectedExtension = strtolower($filetype);
-            $filtered = [];
-
-            foreach ($files as $item) {
-                $filename = $item['name'] ?? '';
-                $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-                if (strtolower($extension) === $expectedExtension) {
-                    $filtered[] = $item;
-                }
-            }
-
-            $files = $filtered; //
-
-            if (empty($files)) {
-                return '<p><strong>' . esc_html__('No files found.', 'rrze-faubox') . '</strong></p>';
-            }
-        }
 
         // Sort files
         usort($files, static function ($a, $b) use ($sort, $orderby): int {
