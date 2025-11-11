@@ -172,11 +172,13 @@ class Renderer
         return $html;
     }
 
+
     /**
-     * Render as image gallery (very simple version).
+     * Render image gallery in theme-compatible structure with navigation.
      *
-     * @param array $data
-     * @return string
+     * @param array $data List of image file arrays.
+     * @param array $atts Optional attributes like 'columns'.
+     * @return string HTML output for gallery view.
      */
     private static function renderGallery(array $data, array $atts = []): string
     {
@@ -184,31 +186,108 @@ class Renderer
             return '<p>No images found.</p>';
         }
 
-        $html = '<ul class="wp-block-gallery faubox-gallery columns-3 is-cropped">';
+        $columns = isset($atts['columns']) ? (int) $atts['columns'] : 3;
+        if ($columns < 1) {
+            $columns = 3;
+        }
+
+        $galleryClasses = [
+            'wp-block-gallery',
+            'faubox-gallery',
+            'has-nested-images',
+            'is-cropped',
+            'is-layout-flex',
+            sprintf('columns-%d', $columns),
+            sprintf('has-%d-columns', $columns),
+        ];
+
+        $isPreview = ! empty($atts['is_preview']);
+
+        if ($isPreview) {
+            foreach ($data as $file) {
+                $url = (string) ($file['url'] ?? $file['fileName'] ?? '');
+                $name = (string) ($file['name'] ?? 'Image');
+
+                if (! $url) {
+                    continue;
+                }
+
+                // 🟢 Add wrapper only in preview to scope editor CSS
+                return sprintf(
+                    '<div class="wp-block-rrze-faubox"><div class="faubox-gallery-preview">
+                <img src="%s" alt="%s" style="max-width: 100%%; height: auto;" />
+            </div></div>',
+                    esc_url($url),
+                    esc_attr($name)
+                );
+            }
+
+            return '<p>No preview image found.</p>';
+        }
+
+        // 🟢 Open outer container (required by theme)
+        $html = '<div class="wp-block-gallery-container">';
+
+        // 🟢 Open gallery <figure>
+        $html .= sprintf(
+            '<figure class="%s">',
+            esc_attr(implode(' ', $galleryClasses))
+        );
+
+        $index = 1;
+        $total = count($data);
+        $itemsRendered = 0;
 
         foreach ($data as $file) {
-            // Check: is file an image (by extension)
-            $isImage = preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file['url']);
-            if (! $isImage) {
+            $url = (string) ($file['url'] ?? $file['fileName'] ?? '');
+            if ($url === '') {
                 continue;
             }
 
+            $name = (string) ($file['name']
+                ?? basename(parse_url($url, PHP_URL_PATH) ?: '')
+                ?? 'Image');
+
+            $type = (string) ($file['type'] ?? $file['mimeType'] ?? '');
+            $isImageByMime = $type !== '' && str_starts_with($type, 'image/');
+            $isImageByExt = (bool) preg_match('/\.(jpe?g|png|gif|webp|avif)$/i', $url);
+
+            if (! ($isImageByMime || $isImageByExt)) {
+                continue;
+            }
+
+            // 🟢 Each image as themed <figure> with overlay + navigation helpers
             $html .= sprintf(
-                '<li class="blocks-gallery-item">
-                <figure>
-                    <a href="%s" target="_blank" rel="noopener">
-                        <img src="%s" alt="%s" />
-                    </a>
-                </figure>
-            </li>',
-                esc_url($file['url']),
-                esc_url($file['url']),
-                esc_attr($file['name'])
+                '<figure class="wp-block-image size-full is-style-large has-overlay">
+                <div class="image-wrapper">
+                    <img src="%s" alt="%s" />
+                    <span class="gallery-index-display">%d/%d</span>
+                    <button class="image-fullscreen-btn" onclick="openImageFullscreen(\'%s\')">⛶</button>
+                </div>
+            </figure>',
+                esc_url($url),
+                esc_attr($name),
+                $index,
+                $total,
+                esc_url($url)
             );
+
+            $index++;
+            $itemsRendered++;
         }
 
-        $html .= '</ul>';
+        $html .= '</figure>';
+
+
+        $html .= '</div>'; // Close gallery-container
+
+        if ($itemsRendered === 0) {
+            return '<p>No images found.</p>';
+        }
 
         return $html;
     }
+
+
+
 }

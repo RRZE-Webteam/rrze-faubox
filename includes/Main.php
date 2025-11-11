@@ -8,6 +8,7 @@ use RRZE\FAUbox\Blocks\BlockRegistration;
 use RRZE\FAUbox\Admin\Rest;
 
 
+
 /**
  * Main class
  *
@@ -29,6 +30,8 @@ final class Main
         $this->initShortcodes();
         $this->initBlocks();
         $this->restAPI();
+
+
 
     }
 
@@ -59,8 +62,6 @@ final class Main
     {
         Rest::register();
     }
-
-
 
 
 }

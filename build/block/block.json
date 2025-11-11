@@ -68,12 +68,16 @@
     "filetype": {
       "type": "array",
       "default": []
+    },
+    "changeTitle": {
+      "type": "string",
+      "default": ""
     }
   },
   "textdomain": "rrze-faubox",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
-  "style": "file:./style.css",
+  "style": "file:./index.css",
   "renderCallback": "RRZE\\FAUbox\\Blocks\\FAUbox\\BlockRender::output",
   "example": {
     "attributes": {

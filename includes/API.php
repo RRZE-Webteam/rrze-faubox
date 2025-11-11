@@ -48,7 +48,17 @@ class API
 
     public static function fetchFiles(string $folderId, string $token, string $subdir = null): ?array
     {
-        $baseUrl = plugins_url('', dirname(__DIR__) . '/rrze-faubox.php');
+        // Normalisiere den Pfad
+        $path = $subdir ? '/' . trim($subdir, '/') : '/';
+
+        // Cache-Key bauen (einfacher Aufbau ohne extra Klasse)
+        $key = 'rrze_faubox:v1:path=' . $path;
+
+        // 3. Cache prüfen
+        $cached = get_transient($key);
+        if (is_array($cached)) {
+            return $cached;
+        }
 
 
         // Dummy data: structure with optional subdir filtering
@@ -117,25 +127,34 @@ class API
             ],
             '/ss23' => [
                 [
-                    'fileName' =>  '/testdata/pictures/Bild1.jpeg',
+                    'fileName' =>  'https://www.wp.rrze.fau.de/files/2025/09/AdobeStock_1612537156-1.jpg',
                     'fileSize' => 456789,
-                    'mimeType' => 'image/jpeg',
+                    'mimeType' => 'image/jpg',
                     'lastModified' => '2024-12-20T10:00:00Z',
                 ],
                 [
-                    'fileName' =>  '/testdata/pictures/Bild2.jpeg',
+                    'fileName' =>  'https://www.wp.rrze.fau.de/files/2024/08/Werkzeuge-Umwandeln.png',
                     'fileSize' => 456789,
-                    'mimeType' => 'image/jpeg',
+                    'mimeType' => 'image/png',
                     'lastModified' => '2024-12-20T10:00:00Z',
                 ],
+                [
+                    'fileName' =>  'https://www.wp.rrze.fau.de/files/2025/05/Listenansicht-Spaltenblock.png',
+                    'fileSize' => 456789,
+                    'mimeType' => 'image/png',
+                    'lastModified' => '2024-12-20T10:00:00Z',
+                ],
+
             ],
         ];
 
-        // Normalisieren
-        $path = $subdir ? '/' . trim($subdir, '/') : '/';
+        // Daten für aktuellen Pfad holen
+        $result = $dummyData[$path] ?? [];
 
-        // Rückgabe: Daten für diesen Pfad oder leer
-        return $dummyData[$path] ?? [];
+        //Cachen – 15 Minuten
+        set_transient($key, $result, 900);
+
+        return $result;
     }
 
 /**
@@ -153,4 +172,48 @@ class API
             '/ss23' => 'Bilder Sommerfest 2023',
         ];
     }
+
+    public static function getFiles(array $args): array
+    {
+
+
+        // Normalisieren
+        $index = '/' . ltrim(trim((string) ($args['index'] ?? '')), '/');
+        $filetype = strtolower(trim((string) ($args['filetype'] ?? '')));
+        $orderby = strtolower(trim((string) ($args['orderby'] ?? 'name')));
+        $sort = strtolower(trim((string) ($args['sort'] ?? 'asc')));
+
+        // Cache-Key erzeugen
+        $key = CacheKey::forFiles([
+            'index' => $index,
+            'filetype' => $filetype,
+            'orderby' => $orderby,
+            'sort' => $sort,
+        ]);
+
+        // Cache lesen
+        $cached = Cache::get($key);
+        if ($cached !== null) {
+            error_log('[FAUbox] ✅ Cache HIT: ' . $key);
+            return $cached;
+        }
+
+        error_log('[FAUbox] 🔁 Cache MISS – store: ' . $key);
+
+
+        // API-Daten laden
+        $folderId = get_option('rrze_faubox_folder', 'dummy-folder');
+        $token = get_option('rrze_faubox_token', 'dummy-token');
+
+        $files = self::fetchFiles($folderId, $token, $index);
+
+        if (is_array($files)) {
+            Cache::set($key, $files, 900); // 15 Minuten
+            return $files;
+        }
+
+        return [];
+    }
+
+
 }

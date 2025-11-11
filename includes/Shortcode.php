@@ -45,6 +45,7 @@ class Shortcode
             'filetype' => '',
             'sort' => 'asc',
             'orderby' => 'name',
+            'changeTitle' => '',
 
         ],
             $atts,
@@ -69,7 +70,6 @@ class Shortcode
         // Sanitize inputs
         $view = sanitize_text_field($atts['view']);
         $showInput = sanitize_text_field($atts['show']);
-        $filetype = sanitize_text_field($atts['filetype']);
         $showTitle = filter_var($atts['show_title'], FILTER_VALIDATE_BOOLEAN);
         $sort = strtolower(sanitize_text_field($atts['sort']));
         if (!in_array($sort, ['asc', 'desc'], true)) {
@@ -80,9 +80,16 @@ class Shortcode
         if (!in_array($orderby, $allowedOrderBy, true)) {
             $orderby = 'name';
         }
+        $changeTitle = sanitize_text_field($atts['changeTitle'] ?? '');
+
 
         //Get files from API
-        $files = API::fetchFiles($folderId, $token, $subdir);
+        $files = API::getFiles([
+            'index' => $subdir,
+            'filetype' => $atts['filetype'] ?? '',
+            'orderby' => $orderby,
+            'sort' => $sort,
+        ]);
         $files = is_array($files) ? $files : []; // 🟩 Schutz vor null → leeres Array
 
         if (empty($files)) {
@@ -90,11 +97,18 @@ class Shortcode
         }
 
         //Filter by custom file extensions (e.g. pdf, docx)
+        $filetype = $atts['filetype'] ?? [];
+
+        if (!is_array($filetype)) {
+            $filetype = array_map('trim', explode(',', (string) $filetype));
+        }
+
+        $filetype = array_filter(array_map('strtolower', $filetype));
         if (is_array($filetype) && !empty($filetype)) {
             $allowedExtensions = array_map('strtolower', array_map('trim', $filetype));
 
             $files = array_filter($files, static function ($item) use ($allowedExtensions): bool {
-                $filename = $item['name'] ?? '';
+                $filename = $item['fileName'] ?? ($item['name'] ?? '');
                 $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
                 return in_array($extension, $allowedExtensions, true);
             });
@@ -113,31 +127,50 @@ class Shortcode
 
         // Transform API data to match Renderer expectations
         $transformedFiles = array_map(function ($file) use ($folderId, $subdir) {
-            // Dummy URL - später durch echte Download-URL ersetzen
-            $downloadUrl = sprintf(
-                'https://faubox.fau.de/dl/%s/%s/%s',
-                $folderId,
-                trim($subdir, '/'),
-                urlencode($file['fileName'])
-            );
+            $rawFileName = (string) ($file['fileName'] ?? '');
+            $displayName = (string) ($file['name'] ?? $rawFileName);
+
+            // 1) Vorhandene URL aus Dummy-Daten übernehmen
+            if (!empty($file['url']) && filter_var($file['url'], FILTER_VALIDATE_URL)) {
+                $downloadUrl = $file['url'];
+            } elseif (filter_var($rawFileName, FILTER_VALIDATE_URL)) {
+                // 2) Oder fileName selbst ist schon eine vollqualifizierte URL
+                $downloadUrl = $rawFileName;
+            } else {
+                // 3) Nur falls wirklich nötig: Dummy-Link generieren (kann für Live-API später reaktiviert werden)
+                /*
+                $downloadUrl = sprintf(
+                    'https://faubox.fau.de/dl/%s/%s/%s',
+                    rawurlencode($folderId),
+                    trim($subdir, '/'),
+                    rawurlencode($rawFileName)
+                );
+                */
+                $downloadUrl = '';
+            }
+
+
 
             return [
-                'name' => $file['fileName'],
+                'name' => $displayName !== '' ? $displayName : $rawFileName,
                 'url' => $downloadUrl,
-                'size' => size_format($file['fileSize']),
-                'type' => $file['mimeType'],
-                'modified' => $file['lastModified'],
-                'name_raw' => strtolower($file['fileName']),
-                'size_raw' => (int)($file['fileSize'] ?? 0),
-                'type_raw' => strtolower($file['mimeType'] ?? ''),
-                'modified_ts' => strtotime($file['lastModified'] ?? ''),
+                'size' => size_format((float) ($file['fileSize'] ?? 0)),
+                'type' => (string) ($file['mimeType'] ?? ''),
+                'modified' => $file['lastModified'] ?? '',
+                'name_raw' => strtolower($displayName !== '' ? $displayName : $rawFileName),
+                'size_raw' => (int) ($file['fileSize'] ?? 0),
+                'type_raw' => strtolower((string) ($file['mimeType'] ?? '')),
+                'modified_ts' => strtotime((string) ($file['lastModified'] ?? '')),
+
             ];
         }, $files);
 
         $files = $transformedFiles;
 
         // Render folder title (optional)
-        $folderTitle = basename(trim($subdir));
+        $folderTitle = !empty($changeTitle)
+            ? $changeTitle
+            : basename(trim($subdir));
         $titleHtml = ($showTitle && !empty($folderTitle))
             ? Renderer::renderTitle($folderTitle)
             : '';
@@ -177,7 +210,7 @@ class Shortcode
             return ($valueA < $valueB) ? -1 : 1;
         });
 
-
+        error_log(print_r($files[0], true));
         // Render HTML
         $listHtml = Renderer::render($files, [
             'view' => $view,

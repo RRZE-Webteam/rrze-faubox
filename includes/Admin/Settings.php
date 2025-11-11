@@ -72,7 +72,7 @@ class Settings
                         <th scope="row">
                             <label for="rrze_faubox_folder">
                                 <?php
-                                echo esc_html__('File-ID (Base64)', 'rrze-faubox')
+                                echo esc_html__('File-ID', 'rrze-faubox')
                                 ?>
                             </label>
                         </th>
