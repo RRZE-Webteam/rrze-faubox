@@ -8,6 +8,16 @@ defined('ABSPATH') || exit;
 
 class Renderer
 {
+
+    /**
+     * Gallery instance counter to generate unique container classes.
+     *
+     * @var int
+     */
+    private static int $galleryInstance = 0;
+
+
+
     /**
      * Render file list as HTML output based on view type.
      *
@@ -51,7 +61,7 @@ class Renderer
     private static function renderList(array $data, array $atts = []): string
     {
         if (empty($data)) {
-            return '<p>No files found.</p>';
+            return '<p>' . __('No files found.', 'rrze-faubox') . ' </p>';
         }
 
         $html = '<ul class="wp-block-list wp-block-faubox-list">';
@@ -103,7 +113,7 @@ class Renderer
     private static function renderTable(array $data, array $atts = []): string
     {
         if (empty($data)) {
-            return '<p>No files found.</p>';
+            return '<p>' . __('No files found.', 'rrze-faubox') . '</p>';
         }
 
         $columns = $atts['show'] ?? ['name']; // fallback: nur Name
@@ -173,6 +183,7 @@ class Renderer
     }
 
 
+
     /**
      * Render image gallery in theme-compatible structure with navigation.
      *
@@ -182,10 +193,50 @@ class Renderer
      */
     private static function renderGallery(array $data, array $atts = []): string
     {
+        wp_enqueue_script('faue-gallery-slider');
+        wp_enqueue_script('image-fullscreen');
+
         if (empty($data)) {
-            return '<p>No images found.</p>';
+            return '<p>' . __('No images found.', 'rrze-faubox') . '</p>';
         }
 
+        // Return summary message in Gutenberg block editor only (not in frontend)
+        if (
+            defined('REST_REQUEST')
+            && REST_REQUEST
+            && isset($_SERVER['REQUEST_URI'])
+            && strpos($_SERVER['REQUEST_URI'], 'block-renderer') !== false
+        ) {
+            $totalImages = 0;
+
+            foreach ($data as $file) {
+                $url = (string) ($file['url'] ?? $file['fileName'] ?? '');
+                $type = (string) ($file['type'] ?? $file['mimeType'] ?? '');
+
+                $isImageByMime = $type !== '' && str_starts_with($type, 'image/');
+                $isImageByExt = (bool) preg_match('/\.(jpe?g|png|gif|webp|avif)$/i', $url);
+
+                if ($url === '' || !($isImageByMime || $isImageByExt)) {
+                    continue;
+                }
+
+                $totalImages++;
+            }
+
+            if ($totalImages === 0) {
+                return '<p><strong>' . __('FAUbox gallery: no images available yet.', 'rrze-faubox') . '</strong></p>';
+            }
+
+            $message = sprintf(
+            /* translators: %d: number of images found in FAUbox */
+                esc_html__('You create a FAUbox gallery with %d images.', 'rrze-faubox'),
+                $totalImages
+            );
+
+            return '<p><strong>' . $message . '</strong></p>';
+        }
+
+        // Count columns (only used in frontend layout)
         $columns = isset($atts['columns']) ? (int) $atts['columns'] : 3;
         if ($columns < 1) {
             $columns = 3;
@@ -197,38 +248,22 @@ class Renderer
             'has-nested-images',
             'is-cropped',
             'is-layout-flex',
+            'wp-block-gallery-is-layout-flex',
             sprintf('columns-%d', $columns),
             sprintf('has-%d-columns', $columns),
         ];
 
-        $isPreview = ! empty($atts['is_preview']);
+        // Increase gallery instance counter
+        self::$galleryInstance++;
+        $containerClass = 'wp-block-gallery-' . self::$galleryInstance . ' wp-block-core-gallery';
 
-        if ($isPreview) {
-            foreach ($data as $file) {
-                $url = (string) ($file['url'] ?? $file['fileName'] ?? '');
-                $name = (string) ($file['name'] ?? 'Image');
+        // Open outer container (recognized by theme)
+        $html = sprintf(
+            '<div class="wp-block-gallery-container %s">',
+            esc_attr($containerClass)
+        );
 
-                if (! $url) {
-                    continue;
-                }
-
-                // 🟢 Add wrapper only in preview to scope editor CSS
-                return sprintf(
-                    '<div class="wp-block-rrze-faubox"><div class="faubox-gallery-preview">
-                <img src="%s" alt="%s" style="max-width: 100%%; height: auto;" />
-            </div></div>',
-                    esc_url($url),
-                    esc_attr($name)
-                );
-            }
-
-            return '<p>No preview image found.</p>';
-        }
-
-        // 🟢 Open outer container (required by theme)
-        $html = '<div class="wp-block-gallery-container">';
-
-        // 🟢 Open gallery <figure>
+        // Open gallery <figure>
         $html .= sprintf(
             '<figure class="%s">',
             esc_attr(implode(' ', $galleryClasses))
@@ -244,25 +279,24 @@ class Renderer
                 continue;
             }
 
-            $name = (string) ($file['name']
+            $name = $file['name']
                 ?? basename(parse_url($url, PHP_URL_PATH) ?: '')
-                ?? 'Image');
+                ?? 'Image';
 
             $type = (string) ($file['type'] ?? $file['mimeType'] ?? '');
             $isImageByMime = $type !== '' && str_starts_with($type, 'image/');
             $isImageByExt = (bool) preg_match('/\.(jpe?g|png|gif|webp|avif)$/i', $url);
 
-            if (! ($isImageByMime || $isImageByExt)) {
+            if (!($isImageByMime || $isImageByExt)) {
                 continue;
             }
 
-            // 🟢 Each image as themed <figure> with overlay + navigation helpers
             $html .= sprintf(
                 '<figure class="wp-block-image size-full is-style-large has-overlay">
                 <div class="image-wrapper">
-                    <img src="%s" alt="%s" />
-                    <span class="gallery-index-display">%d/%d</span>
-                    <button class="image-fullscreen-btn" onclick="openImageFullscreen(\'%s\')">⛶</button>
+                <img src="%s" alt="%s" />
+                <span class="gallery-index-display">%d/%d</span>
+                <button class="image-fullscreen-btn" onclick="openImageFullscreen(\'%s\')">⛶</button>
                 </div>
             </figure>',
                 esc_url($url),
@@ -277,16 +311,15 @@ class Renderer
         }
 
         $html .= '</figure>';
-
-
         $html .= '</div>'; // Close gallery-container
 
         if ($itemsRendered === 0) {
-            return '<p>No images found.</p>';
+            return '<p>' . __('No images found.', 'rrze-faubox') . '</p>';
         }
 
         return $html;
     }
+
 
 
 

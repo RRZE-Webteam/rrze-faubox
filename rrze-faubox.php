@@ -3,7 +3,7 @@
 /**
  * Plugin Name:        RRZE FAUbox
  * Plugin URI:         https://github.com/RRZE-Webteam/rrze-faubox
- * Version:            1.2.0
+ * Version:            1.0.0
  * Description:        A Plugin for FAUbox data integration
  * Author:             RRZE Webteam
  * Author URI:         https://www.wp.rrze.fau.de/
@@ -39,10 +39,37 @@ spl_autoload_register(function ($class) {
     }
 });
 
-//load textdomain
+//load textdomain (PHP files)
 add_action('init', function () {
     load_plugin_textdomain('rrze-faubox', false, dirname(plugin_basename(__FILE__)) . '/languages');
 });
+
+
+//Register block editor script + JS translations early (runs on init).
+add_action('init', function (): void {
+    // Register the compiled editor bundle. Adjust path/version if needed.
+    wp_register_script(
+        'rrze-faubox-editor',
+        plugins_url('build/block/index.js', __FILE__),
+        ['wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor'],
+        '1.0.0',
+        true
+    );
+
+    // Bind JS translations found in /languages to the registered handle.
+    wp_set_script_translations(
+        'rrze-faubox-editor',
+        'rrze-faubox',
+        plugin_dir_path(__FILE__) . 'languages'
+    );
+});
+
+//Enqueue the editor script only inside the block editor.
+add_action('enqueue_block_editor_assets', function (): void {
+    wp_enqueue_script('rrze-faubox-editor');
+});
+
+
 
 // Starte das Plugin über die zentrale Main-Klasse
 new Main();

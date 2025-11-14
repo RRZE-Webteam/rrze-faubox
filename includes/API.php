@@ -144,6 +144,19 @@ class API
                     'mimeType' => 'image/png',
                     'lastModified' => '2024-12-20T10:00:00Z',
                 ],
+                [
+                    'fileName' =>  'https://faubox.rrze.uni-erlangen.de/getlink/fiHJEHaNYgLURqGAuTa8T1/Mittel%20%28FAU_Anna_Tiessen_131%29.jpeg',
+                    'fileSize' => 456789,
+                    'mimeType' => 'image/jpeg',
+                    'lastModified' => '2025-08-20T10:00:00Z',
+                ],
+                [
+                    'fileName' =>  'https://faubox.rrze.uni-erlangen.de/getlink/fiJWF8WYRGH8F5zYMq4on5/Mittel%20%28FAU_Anna_Tiessen_17%29.jpeg',
+                    'fileSize' => 456789,
+                    'mimeType' => 'image/jpeg',
+                    'lastModified' => '2023-05-10T10:00:00Z',
+                ],
+
 
             ],
         ];
@@ -152,7 +165,7 @@ class API
         $result = $dummyData[$path] ?? [];
 
         //Cachen – 15 Minuten
-        set_transient($key, $result, 900);
+        set_transient($key, $result, 10);
 
         return $result;
     }

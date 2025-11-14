@@ -32,7 +32,6 @@ final class Main
         $this->restAPI();
 
 
-
     }
 
     private function initAdmin(): void
@@ -62,6 +61,7 @@ final class Main
     {
         Rest::register();
     }
+
 
 
 }

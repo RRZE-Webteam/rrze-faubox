@@ -77,34 +77,34 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         <div {...blockProps}>
             {isInitialSetup ? (
                 <Placeholder
-                    label={__("Faubox Block", "rrze-faubox")}
-                    instructions={__("Configure your Faubox block.", "rrze-faubox")}
+                    label={__('Faubox Block', 'rrze-faubox')}
+                    instructions={__('Configure your Faubox block.', 'rrze-faubox')}
                     isColumnLayout={true}
                     icon={cloud}
                 >
                     <div>
                         <hr/>
                         <Spacer paddingBottom={"1rem"}/>
-                        <Heading level={3}>{__("Faubox Settings", "rrze-faubox")}</Heading>
-                        <p>{__("Please set up your FAUbox access in advance via the WordPress Dashboard > Settings > FAUbox.", "rrze-faubox")}</p>
+                        <Heading level={3}>{__('Faubox File Settings', 'rrze-faubox')}</Heading>
+                        <p>{__('Please set up your FAUbox access in advance via the WordPress Dashboard > Settings > FAUbox.', 'rrze-faubox')}</p>
                         <Spacer paddingBottom={"1rem"}/>
 
                         <Grid columns={7}>
                             {/* lef side */}
                             <div style={{gridColumn: "span 3"}}>
                                 <SelectControl
-                                    label="Folder Selection"
+                                    label={__('Folder Selection', 'rrze-faubox')}
                                     __next40pxDefaultSize
                                     value={index}
                                     options={[
-                                        {value: "", label: __("Select Subfolder", "rrze-faubox"), disabled: true},
+                                        {value: "", label: __('Select Subfolder', 'rrze-faubox'), disabled: true},
                                         ...folderOptions //
                                     ]}
                                     onChange={(val: string) => setAttributes({index: val})}
                                 />
 
                                 <SelectControl
-                                    label={__("View", "rrze-faubox")}
+                                    label={__('View', 'rrze-faubox')}
                                     value={view}
                                     __next40pxDefaultSize
                                     options={[
@@ -119,7 +119,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 />
 
                                 <SelectControl
-                                    label={__("Sorting", "rrze-faubox")}
+                                    label={__('Sorting', 'rrze-faubox')}
                                     __next40pxDefaultSize
                                     value={sort}
                                     options={[
@@ -131,11 +131,11 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     }
                                 />
                                 <SelectControl
-                                    label={__("Order", "rrze-faubox")}
+                                    label={__('Order', 'rrze-faubox')}
                                     __next40pxDefaultSize
                                     value={orderby}
                                     options={[
-                                        {label: __('Name', 'rrze-faubox'), value: 'name'},
+                                        {label: __('File Name', 'rrze-faubox'), value: 'name'},
                                         {label: __('File Size', 'rrze-faubox'), value: 'size'},
                                         {label: __('File Type', 'rrze-faubox'), value: 'type'},
                                         {label: __('File Changed Date', 'rrze-faubox'), value: 'modified'}
@@ -151,32 +151,32 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             {/* right side */}
 
                             <div style={{gridColumn: "span 3"}}>
-                                <Heading level={4}>{__("Show", "rrze-faubox")}</Heading>
+                                <Heading level={4}>{__('Displayed file information', 'rrze-faubox')}</Heading>
                                 <Spacer paddingTop={"0.5rem"}/>
                                 <CheckboxControl
-                                    label={__("File Size", "rrze-faubox")}
+                                    label={__('File Size', 'rrze-faubox')}
                                     checked={show.includes('size')}
                                     onChange={() => toggleShow('size')}
                                 />
                                 <CheckboxControl
-                                    label={__("File Type", "rrze-faubox")}
+                                    label={__('File Type', 'rrze-faubox')}
                                     checked={show.includes('type')}
                                     onChange={() => toggleShow('type')}
                                 />
                                 <CheckboxControl
-                                    label={__("File Changed Date", "rrze-faubox")}
+                                    label={__('File Changed Date', 'rrze-faubox')}
                                     checked={show.includes('modified')}
                                     onChange={() => toggleShow('modified')}
                                 />
                                 <CheckboxControl
-                                    label={__("Show File Title", "rrze-faubox")}
+                                    label={__('File Title', 'rrze-faubox')}
                                     checked={show_title}
                                     onChange={(value) => setAttributes({show_title: value})}
                                 />
                                 <Spacer paddingBottom={".5rem"}/>
                                 <hr/>
                                 <Spacer paddingBottom={".5rem"}/>
-                                <Heading level={4}>{__("Data to be displayed", "rrze-faubox")}</Heading>
+                                <Heading level={4}>{__('Data to be displayed', "rrze-faubox")}</Heading>
                                 <Spacer paddingTop={"0.5rem"}/>
                                 {filetypeOptions.map((type) => (
                                     <CheckboxControl
@@ -199,7 +199,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             variant="primary"
                             onClick={() => setAttributes({isInitialSetup: false})}
                         >
-                            {__("Finish initial setup", "rrze-faubox")}
+                            {__('Finish initial setup', 'rrze-faubox')}
                         </Button>
                         <Spacer paddingBottom={"0.5rem"}/>
                     </div>
@@ -207,11 +207,11 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                     <div>
                         <hr/>
                         <Spacer paddingTop={"1rem"}/>
-                        <Heading level={3}>{__("Data Preview", "rrze-faubox")}</Heading>
+                        <Heading level={3}>{__('Data Preview', 'rrze-faubox')}</Heading>
                         <Spacer paddingBottom={"0.2rem"}/>
                         <ServerSideRender
                             block="rrze/faubox"
-                            attributes={{ ...attributes, is_preview: true }}
+                            attributes={attributes}
                         />
                         <Spacer/>
                     </div>
@@ -219,27 +219,27 @@ export default function Edit({attributes, setAttributes}: EditProps) {
             ) : (
                 <>
                     <InspectorControls>
-                        <PanelBody title={__("Data Choice", "rrze-faubox")} initialOpen={false}>
+                        <PanelBody title={__('Data Choice', 'rrze-faubox')} initialOpen={false}>
                             <Spacer paddingTop={"0.5rem"}/>
                             <SelectControl
-                                label="Folder Selection"
-                                help={__("Select Subfolder", "rrze-downloads")}
+                                label={__('Folder Selection', 'rrze-faubox')}
+                                help={__('Select Subfolder', 'rrze-faubox')}
                                 value={index}
                                 options={folderOptions}
                                 onChange={(val: string) => setAttributes({index: val})}
                             />
                         </PanelBody>
 
-                        <PanelBody title={__("Darstellungsoptionen", "rrze-faubox")} initialOpen={false}>
+                        <PanelBody title={__('Display Options', 'rrze-faubox')} initialOpen={false}>
                             <Spacer paddingTop={"0.5rem"}/>
                             <SelectControl
-                                label={__("View", "rrze-faubox")}
+                                label={__('View', 'rrze-faubox')}
                                 value={view}
                                 options={[
-                                    {disabled: true, label: 'Select an Option', value: ''},
-                                    {label: 'List', value: 'list'},
-                                    {label: 'Table', value: 'table'},
-                                    {label: 'Gallery', value: 'gallery'},
+                                    { disabled: true, label: __('Select an Option', 'rrze-faubox'), value: '' },
+                                    { label: __('List', 'rrze-faubox'), value: 'list' },
+                                    { label: __('Table', 'rrze-faubox'), value: 'table' },
+                                    { label: __('Gallery', 'rrze-faubox'), value: 'gallery' },
                                 ]}
                                 onChange={(val: 'list' | 'table' | 'gallery') =>
                                     setAttributes({view: val as 'list' | 'table' | 'gallery'})
@@ -247,29 +247,29 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             />
 
                             <Divider margin="3" />
-                            <Heading color="#03316a">Angezeigte Dateiinformationen</Heading>
+                            <Heading color="#03316a">{__('Displayed file information', 'rrze-faubox')}</Heading>
                             <CheckboxControl
-                                label={__("File Size", "rrze-faubox")}
+                                label={__('File Size', 'rrze-faubox')}
                                 checked={show.includes('size')}
                                 onChange={() => toggleShow('size')}
                             />
                             <CheckboxControl
-                                label={__("File Type", "rrze-faubox")}
+                                label={__("File Type", 'rrze-faubox')}
                                 checked={show.includes('type')}
                                 onChange={() => toggleShow('type')}
                             />
                             <CheckboxControl
-                                label={__("File Changed Date", "rrze-faubox")}
+                                label={__("File Changed Date", 'rrze-faubox')}
                                 checked={show.includes('modified')}
                                 onChange={() => toggleShow('modified')}
                             />
                             <CheckboxControl
-                                label={__("Show File Title", "rrze-faubox")}
+                                label={__('Show File Title', 'rrze-faubox')}
                                 checked={show_title}
                                 onChange={(value) => setAttributes({show_title: value})}
                             />
                             <Divider margin="2" />
-                            <Heading color="#03316a">Erlaubte Dateiformate</Heading>
+                            <Heading color="#03316a">{__('Permitted file formats', 'rrze-faubox')}</Heading>
                             {filetypeOptions.map((type) => (
                                 <CheckboxControl
                                     key={type}
@@ -285,31 +285,31 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             ))}
                             <Divider margin="2" />
                             <TextControl
-                                label={__("Ordnername überschreiben", "rrze-faubox")}
-                                help={__("Wenn leer, wird automatisch der FAUbox-Ordnername verwendet.", "rrze-faubox")}
-                                value={attributes.changeTitle}
+                                label={__('Overwrite folder name', 'rrze-faubox')}
+                                help={__('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox')}
+                                value={changeTitle}
                                 onChange={(val) => setAttributes({ changeTitle: val })}
                             />
                         </PanelBody>
 
-                        <PanelBody title={__("Sortierung & Reihenfolge", "rrze-faubox")} initialOpen={false}>
+                        <PanelBody title={__('Sorting & Order', 'rrze-faubox')} initialOpen={false}>
                             <Spacer paddingTop={"0.5rem"}/>
                             <SelectControl
-                                label="Sortierung"
+                                label={__('Sorting', 'rrze-faubox')}
                                 value={sort}
                                 options={[
-                                    {label: 'Aufsteigend', value: 'asc'},
-                                    {label: 'Absteigend', value: 'desc'},
+                                    {label: __('Ascending', 'rrze-faubox'), value: 'asc'},
+                                    {label: __('Descending', 'rrze-faubox'), value: 'desc'},
                                 ]}
                                 onChange={(val: 'asc' | 'desc') =>
                                     setAttributes({sort: val as 'asc' | 'desc'})
                                 }
                             />
                             <SelectControl
-                                label="Reihenfolge"
+                                label={__('Order', 'rrze-faubox')}
                                 value={orderby}
                                 options={[
-                                    {label: __('Name', 'rrze-faubox'), value: 'name'},
+                                    {label: __('File Name', 'rrze-faubox'), value: 'name'},
                                     {label: __('File Size', 'rrze-faubox'), value: 'size'},
                                     {label: __('File Type', 'rrze-faubox'), value: 'type'},
                                     {label: __('File Changed Date', 'rrze-faubox'), value: 'modified'}

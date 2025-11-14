@@ -4,17 +4,23 @@
   "description": "",
   "main": "index.js",
   "devDependencies": {
+    "@types/wordpress__block-editor": "^11.5.16",
     "@types/wordpress__blocks": "^12.5.18",
     "@wordpress/block-editor": "^15.6.0",
+    "@wordpress/block-library": "^9.34.0",
     "@wordpress/blocks": "^15.6.0",
     "@wordpress/scripts": "^30.26.0",
-    "@types/wordpress__block-editor": "^11.5.16",
+    "sass": "^1.94.0",
     "typescript": "^5.8.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "wp-scripts build",
-    "start": "wp-scripts start"
+    "build": "wp-scripts build && npm run build-style",
+    "start": "wp-scripts start",
+    "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed",
+    "create-pot-for-blockeditor-l10n": "wp i18n make-pot . languages/rrze-faubox.pot --domain=rrze-faubox --exclude=node_modules,build,vendor --no-load",
+    "create-json-for-l10n": "wp i18n make-json languages --no-purge --handle=rrze-faubox-editor --skip-plugins --skip-themes",
+    "i18n:all": "npm run create-pot-for-blockeditor-l10n && npm run create-json-for-l10n && npm run build"
   },
   "repository": {
     "type": "git",

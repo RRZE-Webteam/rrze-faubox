@@ -6,7 +6,7 @@
   "title": "FAUbox",
   "category": "rrze",
   "icon": "cloud",
-  "description": "Integriert Dateien aus der FAUbox.",
+  "description": "Integrates data files from FAUbox.",
   "supports": {
     "html": false
   },
@@ -72,8 +72,7 @@
   "textdomain": "rrze-faubox",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
-  "style": "file:./index.css",
-  "renderCallback": "RRZE\\FAUbox\\Blocks\\FAUbox\\BlockRender::output",
+  "style": "file:./style.css",
   "example": {
     "attributes": {
       "isInitialSetup": false
