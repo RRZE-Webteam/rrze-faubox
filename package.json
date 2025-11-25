@@ -18,9 +18,10 @@
     "build": "wp-scripts build && npm run build-style",
     "start": "wp-scripts start",
     "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed",
-    "create-pot-for-blockeditor-l10n": "wp i18n make-pot . languages/rrze-faubox.pot --domain=rrze-faubox --exclude=node_modules,build,vendor --no-load",
-    "create-json-for-l10n": "wp i18n make-json languages --no-purge --handle=rrze-faubox-editor --skip-plugins --skip-themes",
-    "i18n:all": "npm run create-pot-for-blockeditor-l10n && npm run create-json-for-l10n && npm run build"
+    "i18n:php": "wp i18n make-pot . languages/rrze-faubox-php.pot --exclude=node_modules,build,vendor --domain=rrze-faubox",
+    "i18n:block": "wp-scripts i18n src --output-file=languages/rrze-faubox-block.pot",
+    "i18n:merge": "wp i18n make-pot . languages/rrze-faubox.pot --exclude=node_modules,build,vendor --domain=rrze-faubox --merge=languages/rrze-faubox-block.pot",
+    "i18n:all": "npm run i18n:php && npm run i18n:block && npm run i18n:merge"
   },
   "repository": {
     "type": "git",

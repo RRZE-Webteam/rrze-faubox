@@ -1,0 +1,238 @@
+# Copyright (C) 2025 RRZE Webteam
+# This file is distributed under the GNU General Public License Version 3.
+msgid ""
+msgstr ""
+"Project-Id-Version: RRZE FAUbox 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
+"POT-Creation-Date: 2025-11-18T12:36:53+00:00\n"
+"PO-Revision-Date: 2025-11-21 10:23+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de_DE@formal\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+"X-Domain: rrze-faubox\n"
+
+#. Plugin Name of the plugin
+#: rrze-faubox.php
+msgid "RRZE FAUbox"
+msgstr "RRZE FAUbox"
+
+#. Plugin URI of the plugin
+#: rrze-faubox.php
+msgid "https://github.com/RRZE-Webteam/rrze-faubox"
+msgstr "https://github.com/RRZE-Webteam/rrze-faubox"
+
+#. Description of the plugin
+#: rrze-faubox.php
+msgid "A Plugin for FAUbox data integration"
+msgstr "Ein Plugin zur Integration von FAUbox Daten"
+
+#. Author of the plugin
+#: rrze-faubox.php
+msgid "RRZE Webteam"
+msgstr "RRZE Webteam"
+
+#. Author URI of the plugin
+#: rrze-faubox.php
+msgid "https://www.wp.rrze.fau.de/"
+msgstr "https://www.wp.rrze.fau.de/"
+
+#: includes/Admin/Settings.php:25 includes/Admin/Settings.php:50
+#: build/block/index.js:1
+msgid "FAUbox Settings"
+msgstr "FAUbox Einstellungen"
+
+#: includes/Admin/Settings.php:51
+msgid "To access the FAUbox folder, please register with your token and ID."
+msgstr ""
+"Für Zugriff auf den FAUbox Ordner, registrieren Sie sich bitte mit Ihrem "
+"Token und Ihrer ID."
+
+#: includes/Admin/Settings.php:62
+msgid "FAUbox API-Token"
+msgstr "FAUbox API-Token"
+
+#: includes/Admin/Settings.php:75
+msgid "File-ID"
+msgstr "Ordner-ID"
+
+#: includes/Blocks/BlockRegistration.php:66
+msgid "RRZE"
+msgstr "RRZE"
+
+#: includes/Renderer.php:64 includes/Renderer.php:116 includes/Shortcode.php:96
+msgid "No files found."
+msgstr "Keine Dateien gefunden."
+
+#: includes/Renderer.php:127
+msgid "name"
+msgstr "Dateiname"
+
+#: includes/Renderer.php:130
+msgid "size"
+msgstr "Dateigröße"
+
+#: includes/Renderer.php:133
+msgid "type"
+msgstr "Dateityp"
+
+#: includes/Renderer.php:136
+msgid "changed"
+msgstr "Geändert am"
+
+#: includes/Renderer.php:200 includes/Renderer.php:319
+msgid "No images found."
+msgstr "Keine Bilder gefunden."
+
+#: includes/Renderer.php:227
+msgid "FAUbox gallery: no images available yet."
+msgstr "FAUbox Galerie: keine Bilder vorhanden."
+
+#. translators: %d: number of images found in FAUbox
+#: includes/Renderer.php:232
+#, php-format
+msgid "You create a FAUbox gallery with %d images."
+msgstr "Sie erstellen eine FAUbox Galerie mit %d Bildern."
+
+#: build/block/index.js:1
+#, fuzzy
+#| msgid "Faubox Block"
+msgid "FAUbox Block"
+msgstr "FAUbox Block"
+
+#: build/block/index.js:1
+#, fuzzy
+#| msgid "Configure your Faubox block."
+msgid "Configure your FAUbox block."
+msgstr "Konfigurieren Sie Ihren FAUbox-Block."
+
+#: build/block/index.js:1
+msgid ""
+"Please set up your FAUbox access in advance via the WordPress Dashboard > "
+"Settings > FAUbox."
+msgstr ""
+"Bitte richten Sie vorab Ihren FAUbox Zugang über das WordPress Dashboard > "
+"Einstellungen > FAUbox ein."
+
+#: build/block/index.js:1
+msgid "Folder Selection"
+msgstr "Ordnerauswahl"
+
+#: build/block/index.js:1
+msgid "Select Subfolder"
+msgstr "Unterordner auswählen"
+
+#: build/block/index.js:1
+msgid "View"
+msgstr "Ansicht"
+
+#: build/block/index.js:1
+msgid "Select an Option"
+msgstr "Wählen Sie eine Option"
+
+#: build/block/index.js:1
+msgid "List"
+msgstr "Liste"
+
+#: build/block/index.js:1
+msgid "Table"
+msgstr "Tabelle"
+
+#: build/block/index.js:1
+msgid "Gallery"
+msgstr "Galerie"
+
+#: build/block/index.js:1
+msgid "Sorting"
+msgstr "Sortierung"
+
+#: build/block/index.js:1
+msgid "Ascending"
+msgstr "Aufsteigend"
+
+#: build/block/index.js:1
+msgid "Descending"
+msgstr "Absteigend"
+
+#: build/block/index.js:1
+msgid "Order"
+msgstr "Reihenfolge"
+
+#: build/block/index.js:1
+msgid "File Name"
+msgstr "Dateiname"
+
+#: build/block/index.js:1
+msgid "File Size"
+msgstr "Dateigröße"
+
+#: build/block/index.js:1
+msgid "File Type"
+msgstr "Dateityp"
+
+#: build/block/index.js:1
+msgid "File Changed Date"
+msgstr "Geändert am"
+
+#: build/block/index.js:1
+msgid "Displayed file information"
+msgstr "Angezeigte Dateiinformationen"
+
+#: build/block/index.js:1
+msgid "Folder Title"
+msgstr "Ordnername"
+
+#: build/block/index.js:1
+msgid "Data to be displayed"
+msgstr "Erlaubte Dateiformate"
+
+#: build/block/index.js:1
+msgid "Finish initial setup"
+msgstr "Einrichtung beenden"
+
+#: build/block/index.js:1
+msgid "Data Preview"
+msgstr "Vorschau"
+
+#: build/block/index.js:1
+msgid "Data Choice"
+msgstr "Datenauswahl"
+
+#: build/block/index.js:1
+msgid "Display Options"
+msgstr "Anzeigeoptionen"
+
+#: build/block/index.js:1
+msgid "Permitted file formats"
+msgstr "Erlaubte Dateiformate"
+
+#: build/block/index.js:1
+msgid "Overwrite folder name"
+msgstr "Ordnername überschreiben"
+
+#: build/block/index.js:1
+msgid "If left blank, the FAUbox folder name will be used automatically."
+msgstr "Wenn leer, wird automatisch der FAUbox-Ordnername verwendet."
+
+#: build/block/index.js:1
+msgid "Sorting & Order"
+msgstr "Sortierung &  Reihenfolge"
+
+#: build/block/block.json src/block/block.json
+msgctxt "block title"
+msgid "FAUbox"
+msgstr "FAUbox"
+
+#: build/block/block.json src/block/block.json
+msgctxt "block description"
+msgid "Integrates data files from FAUbox."
+msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "Faubox File Settings"
+#~ msgstr "FAUbox Ordner Einstellungen"
+
+#~ msgid "Show File Title"
+#~ msgstr "Ordnertitel anzeigen"

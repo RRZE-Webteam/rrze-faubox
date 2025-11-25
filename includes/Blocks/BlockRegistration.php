@@ -19,6 +19,15 @@ class BlockRegistration {
         // 🟢 Register hooks explicitly (no constructor side effects).
         add_action('init', [self::class, 'fauboxBlockInit'], 15);
         add_filter('block_categories_all', [self::class, 'addRrzeCategory'], 10, 2);
+
+        add_action('init', function () {
+            wp_set_script_translations(
+                'rrze-faubox-editor', // ← HANDLE des Editor-Skripts
+                'rrze-faubox',
+                plugin_dir_path(__DIR__) . '../languages'
+            );
+        });
+
     }
 
     /**

@@ -48,7 +48,7 @@ class Settings
         ?>
         <div class="wrap">
             <h1> <?php echo esc_html__('FAUbox Settings', 'rrze-faubox'); ?> </h1>
-            <p> <?php echo esc_html__('To access the FAUbox folder, please register with your token and ID.', 'rrze-faubox'); ?></p>
+            <p> <?php echo esc_html__('To access your FAUbox folder, please register with your Token', 'rrze-faubox'); ?></p>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('rrze_faubox_settings');
@@ -58,27 +58,20 @@ class Settings
                     <tr>
                         <th scope="row">
                             <label for="rrze_faubox_token">
-                                <?php
-                                echo esc_html__('FAUbox API-Token', 'rrze-faubox');
-                                ?>
+                                <?php echo esc_html__('FAUbox API Token (JSESSIONID)', 'rrze-faubox'); ?>
                             </label>
                         </th>
                         <td>
-                            <input type="text" id="rrze_faubox_token" name="rrze_faubox_token"
-                                   value="<?php echo esc_attr(get_option('rrze_faubox_token')); ?>" class="regular-text">
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="rrze_faubox_folder">
-                                <?php
-                                echo esc_html__('File-ID', 'rrze-faubox')
-                                ?>
-                            </label>
-                        </th>
-                        <td>
-                            <input type="text" id="rrze_faubox_folder" name="rrze_faubox_folder"
-                                   value="<?php echo esc_attr(get_option('rrze_faubox_folder')); ?>" class="regular-text">
+                            <input type="text"
+                                   id="rrze_faubox_token"
+                                   name="rrze_faubox_token"
+                                   value="<?php echo esc_attr(get_option('rrze_faubox_token')); ?>"
+                                   class="regular-text"
+                                   autocomplete="off"
+                            />
+                            <p class="description">
+                                <?php echo esc_html__('Copy the value of the JSESSIONID cookie from your FAUbox login session and paste it here.', 'rrze-faubox'); ?>
+                            </p>
                         </td>
                     </tr>
                 </table>

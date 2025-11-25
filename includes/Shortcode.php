@@ -46,6 +46,7 @@ class Shortcode
             'sort' => 'asc',
             'orderby' => 'name',
             'changeTitle' => '',
+            'rootfolder'=>''
 
         ],
             $atts,
@@ -53,15 +54,11 @@ class Shortcode
         );
 
         // Token und Ordner-ID aus den Plugin-Settings laden
-        $token = get_option('rrze_faubox_token', '');
         $folderId = get_option('rrze_faubox_folder', '');
         $subdir = sanitize_text_field($atts['index']);
 
 
         // 🟩 Fallbacks aktivieren, wenn keine echten Werte da sind
-        if (empty($token)) {
-            $token = 'dummy-token';
-        }
 
         if (empty($folderId)) {
             $folderId = 'dummy-folder';
@@ -83,13 +80,9 @@ class Shortcode
         $changeTitle = sanitize_text_field($atts['changeTitle'] ?? '');
 
 
-        //Get files from API
-        $files = API::getFiles([
-            'index' => $subdir,
-            'filetype' => $atts['filetype'] ?? '',
-            'orderby' => $orderby,
-            'sort' => $sort,
-        ]);
+        //Fetch files from API
+        $rootFolder = $atts['rootfolder'] ?? '';
+        $files = API::fetchFiles($rootFolder, $subdir);
         $files = is_array($files) ? $files : []; // 🟩 Schutz vor null → leeres Array
 
         if (empty($files)) {

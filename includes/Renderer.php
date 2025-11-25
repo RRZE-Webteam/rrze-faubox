@@ -292,18 +292,20 @@ class Renderer
             }
 
             $html .= sprintf(
-                '<figure class="wp-block-image size-full is-style-large has-overlay">
-                <div class="image-wrapper">
-                <img src="%s" alt="%s" />
-                <span class="gallery-index-display">%d/%d</span>
-                <button class="image-fullscreen-btn" onclick="openImageFullscreen(\'%s\')">⛶</button>
+                '<figure class="wp-block-image size-full is-style-large has-overlay" aria-hidden="true">
+                <div class="image-wrapper" aria-hidden="true">
+                <img src="%s" alt="" aria-hidden="true"/>
+                <span class="gallery-index-display" aria-hidden="true">%d/%d</span>
+                <button class="image-fullscreen-btn" 
+                onclick="openImageFullscreen(\'%s\')"
+                aria-hidden="true"
+                tabindex="-1">⛶</button>
                 </div>
             </figure>',
-                esc_url($url),
-                esc_attr($name),
-                $index,
-                $total,
-                esc_url($url)
+                esc_url($url), // %s für img src
+                $index,        // %d current index
+                $total,        // %d total images
+                esc_url($url)  // %s für fullscreen button
             );
 
             $index++;

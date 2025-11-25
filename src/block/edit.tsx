@@ -37,12 +37,13 @@ interface EditProps {
         orderby: string;
         filetype: string[];
         changeTitle: string;
+        rootfolder: string;
     }
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
 
 export default function Edit({attributes, setAttributes}: EditProps) {
-    const {view, show, sort, index, show_title, isInitialSetup, orderby, filetype, changeTitle } = attributes;
+    const {view, show, sort, index, show_title, isInitialSetup, orderby, filetype, changeTitle, rootfolder } = attributes;
     const blockProps = useBlockProps();
 
     const toggleShow = (key: 'size' | 'type' | 'modified') => {
@@ -53,22 +54,39 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         setAttributes({show: newShow});
     };
 
+    // State für Root- und Subfolder-Optionen
+    const [rootFolderOptions, setRootFolderOptions] = useState<{ label: string; value: string }[]>([]);
     const [folderOptions, setFolderOptions] = useState<{ label: string; value: string }[]>([]);
-    // Load folder options via REST
+
+    // 1️⃣ Root-Folder laden (einmal)
     useEffect(() => {
-        fetch('/wp-json/rrze-faubox/v1/folders')
+        fetch('/wp-json/rrze-faubox/v1/root-folders')
+            .then((res) => res.json())
+            .then((data) => {
+                setRootFolderOptions(data);
+            })
+            .catch(() => {
+                setRootFolderOptions([]);
+            });
+    }, []);
+
+    // 2️⃣ Subfolder laden (abhängig vom Root-Folder)
+    useEffect(() => {
+        if (!rootfolder) {
+            setFolderOptions([]);
+            return;
+        }
+
+        fetch('/wp-json/rrze-faubox/v1/folders?folder=' + encodeURIComponent(rootfolder))
             .then((res) => res.json())
             .then((data) => {
                 setFolderOptions(data);
             })
             .catch(() => {
-                setFolderOptions([
-                    {value: '/ss25', label: 'SS25'},
-                    {value: '/ss24', label: 'SS24'},
-                    {value: '/ws23', label: 'WS23'},
-                ]);
+                setFolderOptions([]);
             });
-    }, []);
+    }, [rootfolder]);
+
 
 
     const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'png', 'svg', 'webp' ];
@@ -77,21 +95,27 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         <div {...blockProps}>
             {isInitialSetup ? (
                 <Placeholder
-                    label={__('Faubox Block', 'rrze-faubox')}
-                    instructions={__('Configure your Faubox block.', 'rrze-faubox')}
+                    label={__('FAUbox Block', 'rrze-faubox')}
+                    instructions={__('Configure your FAUbox block.', 'rrze-faubox')}
                     isColumnLayout={true}
                     icon={cloud}
                 >
                     <div>
                         <hr/>
                         <Spacer paddingBottom={"1rem"}/>
-                        <Heading level={3}>{__('Faubox File Settings', 'rrze-faubox')}</Heading>
+                        <Heading level={3}>{__('FAUbox Settings', 'rrze-faubox')}</Heading>
                         <p>{__('Please set up your FAUbox access in advance via the WordPress Dashboard > Settings > FAUbox.', 'rrze-faubox')}</p>
                         <Spacer paddingBottom={"1rem"}/>
 
                         <Grid columns={7}>
                             {/* lef side */}
                             <div style={{gridColumn: "span 3"}}>
+                                <SelectControl
+                                    label={__('Root folder', 'rrze-faubox')}
+                                    value={rootfolder}
+                                    options={rootFolderOptions}
+                                    onChange={(val: string) => setAttributes({ rootfolder: val })}
+                                />
                                 <SelectControl
                                     label={__('Folder Selection', 'rrze-faubox')}
                                     __next40pxDefaultSize
@@ -169,7 +193,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     onChange={() => toggleShow('modified')}
                                 />
                                 <CheckboxControl
-                                    label={__('File Title', 'rrze-faubox')}
+                                    label={__('Folder Title', 'rrze-faubox')}
                                     checked={show_title}
                                     onChange={(value) => setAttributes({show_title: value})}
                                 />
@@ -264,7 +288,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 onChange={() => toggleShow('modified')}
                             />
                             <CheckboxControl
-                                label={__('Show File Title', 'rrze-faubox')}
+                                label={__('Folder Title', 'rrze-faubox')}
                                 checked={show_title}
                                 onChange={(value) => setAttributes({show_title: value})}
                             />

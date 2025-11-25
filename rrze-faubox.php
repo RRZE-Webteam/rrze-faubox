@@ -60,7 +60,7 @@ add_action('init', function (): void {
     wp_set_script_translations(
         'rrze-faubox-editor',
         'rrze-faubox',
-        plugin_dir_path(__FILE__) . 'languages'
+        plugin_dir_path(__FILE__) . '/languages'
     );
 });
 
