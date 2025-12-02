@@ -33,10 +33,8 @@ interface EditProps {
         index: string;
         show_title: boolean;
         isInitialSetup: boolean;
-        orderby: string;
         filetype: string[];
         changeTitle: string;
-        rootfolder: string;
     }
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
@@ -50,10 +48,9 @@ export default function Edit({ attributes, setAttributes }: EditProps) {
         index,
         show_title,
         isInitialSetup,
-        orderby,
         filetype,
         changeTitle,
-        rootfolder
+
     } = attributes;
 
     const blockProps = useBlockProps();
@@ -71,52 +68,14 @@ export default function Edit({ attributes, setAttributes }: EditProps) {
     const [folderOptions, setFolderOptions] = useState<{ label: string; value: string }[]>([]);
 
 
-    // 1️⃣ Load root folders once
+    // Load subfolders (only one level, rootfolder comes from plugin settings)
     useEffect(() => {
         let isActive = true;
 
-        apiFetch({ path: '/rrze-faubox/v1/root-folders' })
+        apiFetch({ path: '/rrze-faubox/v1/folders' })
             .then((data) => {
-                if (!isActive) {
-                    return;
-                }
+                if (!isActive) return;
 
-                if (Array.isArray(data)) {
-                    setRootFolderOptions(data);
-                } else {
-                    setRootFolderOptions([]);
-                }
-            })
-            .catch(() => {
-                if (isActive) {
-                    setRootFolderOptions([]);
-                }
-            });
-
-        return () => {
-            isActive = false;
-        };
-    }, []);
-
-
-    // 2️⃣ Load subfolders based on rootfolder
-    useEffect(() => {
-
-        // Reset subfolders if no root selected
-        if (!rootfolder) {
-            setFolderOptions([]);
-            return;
-        }
-
-        let isActive = true;
-
-        apiFetch({ path: '/rrze-faubox/v1/folders?folder=' + encodeURIComponent(rootfolder) })
-            .then((data) => {
-                if (!isActive) {
-                    return;
-                }
-
-                // Data example: [ { value:"Bilder/UnterA", label:"UnterA" } ]
                 if (Array.isArray(data)) {
                     setFolderOptions(data);
                 } else {
@@ -124,17 +83,13 @@ export default function Edit({ attributes, setAttributes }: EditProps) {
                 }
             })
             .catch(() => {
-                if (isActive) {
-                    setFolderOptions([]);
-                }
+                if (isActive) setFolderOptions([]);
             });
 
         return () => {
             isActive = false;
         };
-
-    }, [rootfolder]);
-
+    }, []);
 
     // Allowed filetypes for sidebar controls
     const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'png', 'svg', 'webp'];
@@ -162,19 +117,6 @@ export default function Edit({ attributes, setAttributes }: EditProps) {
                             {/* LEFT SIDE */}
                             <div style={{ gridColumn: "span 3" }}>
 
-                                {/* ROOT FOLDER */}
-                                <SelectControl
-                                    label={__('Root folder', 'rrze-faubox')}
-                                    __next40pxDefaultSize
-                                    value={rootfolder}
-                                    options={[
-                                        { value: '', label: __('Select root folder', 'rrze-faubox'), disabled: true },
-                                        ...rootFolderOptions
-                                    ]}
-                                    onChange={(val: string) => {
-                                        setAttributes({ rootfolder: val, index: '' });
-                                    }}
-                                />
 
                                 {/* SUBFOLDER */}
                                 <SelectControl
@@ -213,19 +155,6 @@ export default function Edit({ attributes, setAttributes }: EditProps) {
                                     ]}
                                     onChange={(val: 'asc' | 'desc') =>
                                         setAttributes({sort: val as 'asc' | 'desc'})
-                                    }
-                                />
-                                <SelectControl
-                                    label={__('Order', 'rrze-faubox')}
-                                    __next40pxDefaultSize
-                                    value={orderby}
-                                    options={[
-                                        {label: __('File Name', 'rrze-faubox'), value: 'name'},
-                                        {label: __('File Type', 'rrze-faubox'), value: 'type'},
-
-                                    ]}
-                                    onChange={(val: 'name' | 'type') =>
-                                        setAttributes({orderby: val as 'name' |  'type'  })
                                     }
                                 />
 
@@ -369,17 +298,7 @@ export default function Edit({ attributes, setAttributes }: EditProps) {
                                     setAttributes({sort: val as 'asc' | 'desc'})
                                 }
                             />
-                            <SelectControl
-                                label={__('Order', 'rrze-faubox')}
-                                value={orderby}
-                                options={[
-                                    {label: __('File Name', 'rrze-faubox'), value: 'name'},
-                                    {label: __('File Type', 'rrze-faubox'), value: 'type'},
-                                ]}
-                                onChange={(val: 'name' | 'type' ) =>
-                                    setAttributes({orderby: val as 'name' | 'type' })
-                                }
-                            />
+
 
                         </PanelBody>
                     </InspectorControls>

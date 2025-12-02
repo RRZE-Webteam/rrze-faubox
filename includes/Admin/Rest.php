@@ -36,14 +36,14 @@ class Rest
     {
         register_rest_route('rrze-faubox/v1', '/root-folders', [
             'methods' => 'GET',
-            'callback' => [self::class, 'getRootFolders'],
-            'permission_callback' => fn() => current_user_can('manage_options'),
+            'callback' => [self::class, 'getRootFolder'],
+            'permission_callback' => fn() => current_user_can('edit_posts'),
         ]);
 
         register_rest_route('rrze-faubox/v1', '/folders', [
             'methods' => 'GET',
             'callback' => [self::class, 'getSubfolders'],
-            'permission_callback' => fn() => current_user_can('manage_options'),
+            'permission_callback' => fn() => current_user_can('edit_posts'),
         ]);
     }
 
@@ -53,7 +53,7 @@ class Rest
      *
      * @return WP_REST_Response
      */
-    public static function getRootFolders(WP_REST_Request $request): WP_REST_Response
+    public static function getRootFolder(WP_REST_Request $request): WP_REST_Response
     {
         // Load share link from settings
         $shareLink = get_option('rrze_faubox_sharelink', '');
@@ -146,7 +146,7 @@ class Rest
                 'label' => 'Share link missing'
             ]], 200);
         }
-
+        error_log('FAUbox sharelink: ' . print_r($shareLink, true));
         // Extract Share-ID
         $shareId = API::resolveShareIdFromUrl($shareLink);
         if (!$shareId) {

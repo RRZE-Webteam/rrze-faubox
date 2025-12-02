@@ -30,9 +30,7 @@
         "type": "string",
         "enum": [
           "name",
-          "type",
-          "size",
-          "modified"
+          "type"
         ]
       },
       "default": [
@@ -55,25 +53,11 @@
       "type": "boolean",
       "default": false
     },
-    "orderby": {
-      "type": "string",
-      "enum": [
-        "name",
-        "size",
-        "type",
-        "modified"
-      ],
-      "default": "name"
-    },
     "filetype": {
       "type": "array",
       "default": []
     },
     "changeTitle": {
-      "type": "string",
-      "default": ""
-    },
-    "rootfolder": {
       "type": "string",
       "default": ""
     }
