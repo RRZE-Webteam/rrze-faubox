@@ -72,6 +72,10 @@
     "changeTitle": {
       "type": "string",
       "default": ""
+    },
+    "rootfolder": {
+      "type": "string",
+      "default": ""
     }
   },
   "textdomain": "rrze-faubox",

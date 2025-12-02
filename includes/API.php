@@ -7,113 +7,187 @@ namespace RRZE\FAUbox;
 defined('ABSPATH') || exit;
 
 /**
- * Handles communication with the FAUbox API.
+ * Handles communication with the FAUbox public link API (/wapi/filelink).
  *
- * This version uses a manually stored JSESSIONID token from plugin settings.
- * No automatic cookie extraction. The admin must copy the token into the settings.
+ * This version does NOT require authentication.
+ * It uses the Share-ID provided by the user and resolves the internal Resource-ID.
+ *
+ * Workflow:
+ * 1. User enters a public share link.
+ * 2. We extract the Share-ID.
+ * 3. We resolve the internal Resource-ID via getFileInfo.
+ * 4. We list folders and files using the Resource-ID + Share-ID.
  */
 class API
 {
     /**
-     * Base API endpoint for the FAUbox installation.
+     * Base URL for the FAUbox WAPI interface.
+     *
+     * @var string
      */
-    private const BASE_API = 'https://fauboxtest.rrze.uni-erlangen.de/api';
+    private const BASE_WAPI = 'https://faubox.rrze.uni-erlangen.de/wapi/filelink';
+
 
     /**
-     * Returns the JSESSIONID token stored in WP options.
+     * Extracts the share ID from a public FAUbox link.
      *
-     * @return string|null The token or null if not configured.
+     * Example:
+     *  https://faubox.rrze.uni-erlangen.de/getlink/fiW1p6e2svmkxDNCVTB/
+     *  → fiW1p6e2svmkxDNCVTB
+     *
+     * @param string $url Public sharing link.
+     * @return string|null Share-ID or null on failure.
      */
-    private static function getToken(): ?string
+    public static function resolveShareIdFromUrl(string $url): ?string
     {
-        $token = get_option('rrze_faubox_token', '');
-        return !empty($token) ? $token : null;
+        $clean = rtrim($url, '/');
+        $parts = explode('/', $clean);
+        $shareId = end($parts);
+
+        return !empty($shareId) ? $shareId : null;
     }
 
-    /**
-     * Build an FAUbox API URL including optional subdirectory.
-     *
-     * @param string $folderId Root folder ID.
-     * @param string $subdir   Optional nested directory path.
-     *
-     * @return string Fully assembled URL to call with ?action=...
-     */
-    private static function buildUrl(string $folderId, string $subdir = ''): string
-    {
-        $path = rtrim(self::BASE_API . '/files/' . rawurlencode($folderId), '/');
-
-        if (!empty($subdir)) {
-            $clean = trim($subdir, '/');
-            $path .= '/' . $clean;
-        }
-
-        return $path;
-    }
 
     /**
-     * Fetches ALL items (files + folders) from FAUbox.
+     * Resolves the FAUbox internal Resource-ID from the Share-ID.
      *
-     * @param string $folderId Folder ID.
-     * @param string $subdir   Optional nested directory.
+     * API Call:
+     *  GET /wapi/filelink?action=getFileInfo&ID={shareId}&json=1
      *
-     * @return array|null Decoded JSON array or null on failure.
+     * Response contains:
+     *  "resourceURL": "https://faubox.../files/{resourceId}"
+     *
+     * @param string $shareId Public Share-ID.
+     * @return string|null Resource-ID or null if not resolvable.
      */
-    public static function fetchAll(string $folderId, string $subdir = ''): ?array
+    public static function resolveResourceId(string $shareId): ?string
     {
-        $token = self::getToken();
-        if ($token === null) {
-            return null;
-        }
+        $url = self::BASE_WAPI .
+            '?action=getFileInfo&ID=' . rawurlencode($shareId) . '&json=1';
 
-        $url = self::buildUrl($folderId, $subdir) . '?action=getAll';
-
-        $response = wp_remote_get($url, [
-            'timeout' => 10,
-            'headers' => [
-                // Token is sent exactly like the FAUbox UI expects it
-                'Cookie' => 'JSESSIONID=' . $token,
-            ],
-        ]);
+        $response = wp_remote_get($url, ['timeout' => 10]);
 
         if (is_wp_error($response)) {
             return null;
         }
 
         $body = wp_remote_retrieve_body($response);
-        if (!$body) {
+
+        if (empty($body)) {
             return null;
         }
 
-        // PowerFolder returns:
-        // { "ResultSet": { "Result": [ ...files... ] } }
-        if (isset($json['ResultSet']['Result']) && is_array($json['ResultSet']['Result'])) {
-            return $json['ResultSet']['Result'];
+        $json = json_decode($body, true);
+
+        if (!is_array($json) || empty($json['resourceURL'])) {
+            return null;
         }
 
-        return null;
+        // Extract the part after .../files/
+        $resourceUrl = $json['resourceURL'];
+        $pos = strrpos($resourceUrl, '/');
+
+        if ($pos === false) {
+            return null;
+        }
+
+        $resourceId = substr($resourceUrl, $pos + 1);
+
+        return !empty($resourceId) ? $resourceId : null;
     }
 
-    /**
-     * Fetch files only (FAUbox does not return folder objects)
-     *
-     * @param string $folderId FAUbox folder ID.
-     * @param string $subdir   Optional subdirectory inside the folder.
-     *
-     * @return array Array of file entries.
-     */
-    public static function fetchFiles(string $folderId, string $subdir = ''): array
-    {
-        $allItems = self::fetchAll($folderId, $subdir);
 
-        if (!is_array($allItems)) {
-            return [];
+    /**
+     * Fetch the root folder contents (folders + files).
+     *
+     * API Call:
+     *  GET /wapi/filelink/{resourceId}?action=getFiles&ID={shareId}&json=1
+     *
+     * @param string $resourceId Internal Resource-ID.
+     * @param string $shareId Public Share-ID.
+     * @return array|null Array of items or null on failure.
+     */
+    public static function fetchRoot(string $resourceId, string $shareId): ?array
+    {
+        $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) .
+            '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
+
+        $response = wp_remote_get($url, ['timeout' => 10]);
+
+        if (is_wp_error($response)) {
+            return null;
         }
 
+        $body = wp_remote_retrieve_body($response);
+        if (empty($body)) {
+            return null;
+        }
+
+        $json = json_decode($body, true);
+
+        if (!isset($json['ResultSet']['Result']) || !is_array($json['ResultSet']['Result'])) {
+            return null;
+        }
+
+        return $json['ResultSet']['Result'];
+    }
+
+
+    /**
+     * Fetch items from a subfolder.
+     *
+     * API Call:
+     *  GET /wapi/filelink/{resourceId}/{folderName}?action=getFiles&ID={shareId}&json=1
+     *
+     * Example:
+     *  /wapi/filelink/MlhFQ2lqUzMxcHdIaUVpaXFLb2/Bilder
+     *
+     * @param string $resourceId Internal Resource-ID.
+     * @param string $shareId Public Share-ID.
+     * @param string $folderName The subfolder name (URL encoded automatically).
+     * @return array|null Array of items or null.
+     */
+    public static function fetchSubfolder(string $resourceId, string $shareId, string $folderName): ?array
+    {
+        $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) . '/' . rawurlencode($folderName) .
+            '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
+
+        $response = wp_remote_get($url, ['timeout' => 10]);
+
+        if (is_wp_error($response)) {
+            return null;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        if (empty($body)) {
+            return null;
+        }
+
+        $json = json_decode($body, true);
+
+        if (!isset($json['ResultSet']['Result']) || !is_array($json['ResultSet']['Result'])) {
+            return null;
+        }
+
+        return $json['ResultSet']['Result'];
+    }
+
+
+    /**
+     * Filter an item array to only return files.
+     *
+     * FAUbox marks files as:
+     *  "type": "file"
+     *
+     * @param array $items Mixed items from fetchRoot() or fetchSubfolder().
+     * @return array Files only.
+     */
+    public static function filterFiles(array $items): array
+    {
         $files = [];
 
-        foreach ($allItems as $item) {
-            // FAUbox files have "fileName"
-            if (!empty($item['fileName'])) {
+        foreach ($items as $item) {
+            if (($item['type'] ?? '') === 'file') {
                 $files[] = $item;
             }
         }
@@ -123,44 +197,24 @@ class API
 
 
     /**
-     * Fetches all FAUbox folders available to the logged-in user.
+     * Filter an item array to only return folders.
      *
-     * Uses /api/accounts?action=getFolders.
-     * Returns folderName + folderID.
+     * FAUbox marks folders as:
+     *  "type": "dir"
      *
-     * @return array|null
+     * @param array $items Mixed items from fetchRoot() or fetchSubfolder().
+     * @return array Folders only.
      */
-    public static function fetchUserFolders(): ?array
+    public static function filterFolders(array $items): array
     {
-        $token = self::getToken();
-        if (empty($token)) {
-            return null;
+        $folders = [];
+
+        foreach ($items as $item) {
+            if (($item['type'] ?? '') === 'dir') {
+                $folders[] = $item;
+            }
         }
 
-        $url = self::BASE_API . '/accounts?action=getFolders';
-
-        $response = wp_remote_get($url, [
-            'timeout' => 10,
-            'headers' => [
-                'Cookie' => 'JSESSIONID=' . $token,
-            ],
-        ]);
-
-        if (is_wp_error($response)) {
-            return null;
-        }
-
-        $body = wp_remote_retrieve_body($response);
-        if (!$body) {
-            return null;
-        }
-
-        $json = json_decode($body, true);
-
-        if (isset($json['ResultSet']['Result']) && is_array($json['ResultSet']['Result'])) {
-            return $json['ResultSet']['Result'];
-        }
-
-        return null;
+        return $folders;
     }
 }

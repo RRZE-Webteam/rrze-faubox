@@ -41,10 +41,10 @@ class Renderer
     }
 
     /**
-     * Renders a heading with the given folder name.
+     * Renders title for folder block.
      *
-     * @param string $folderName The name or identifier of the folder.
-     * @return string The rendered HTML heading element.
+     * @param string $folderName
+     * @return string
      */
     public static function renderTitle(string $folderName): string
     {
@@ -53,11 +53,62 @@ class Renderer
 
 
     /**
-     * Render as unordered list.
+     * Renders folder list (before files).
      *
-     * @param array $data
+     * @param array $folders
+     * @param array $atts
      * @return string
      */
+    public static function renderFolders(array $folders, array $atts = []): string
+    {
+        if (empty($folders)) {
+            return '';
+        }
+
+        $currentFolder = $atts['folder'] ?? '/';
+
+        $html = '<div class="faubox-folders">';
+        $html .= sprintf(
+            '<p class="faubox-folders__intro">%s</p>',
+            sprintf(
+                esc_html__('Folders available in %s:', 'rrze-faubox'),
+                esc_html($currentFolder)
+            )
+        );
+
+        $html .= '<ul class="faubox-folder-list">';
+
+        foreach ($folders as $folder) {
+            $name = esc_html($folder['name'] ?? '');
+
+            if ($name === '') {
+                continue;
+            }
+
+            $path = $folder['path'] ?? '';
+
+            $html .= sprintf(
+                '<li class="faubox-folder"><strong>%s</strong>%s</li>',
+                $name,
+                $path !== '' ? ' <span class="faubox-folder-path">' . esc_html($path) . '</span>' : ''
+            );
+        }
+
+        $html .= '</ul>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+
+
+/**
+* Renders a simple list.
+*
+* @param array $data
+* @param array $atts
+* @return string
+*/
     private static function renderList(array $data, array $atts = []): string
     {
         if (empty($data)) {
@@ -67,37 +118,28 @@ class Renderer
         $html = '<ul class="wp-block-list wp-block-faubox-list">';
 
         foreach ($data as $file) {
-            $name = esc_html($file['name']);
-            $details = [];
+            $name = esc_html($file['name'] ?? '');
+            $url = esc_url($file['url'] ?? '');
 
-            // size anzeigen, wenn in show enthalten
-            if (isset($atts['show']) && is_array($atts['show']) && in_array('size', $atts['show'], true)) {
-                $details[] = esc_html($file['size'] ?? '-');
+            $suffix = '';
+
+            if (
+                isset($atts['show'])
+                && is_array($atts['show'])
+                && in_array('type', $atts['show'], true)
+            ) {
+                $ext = strtoupper(pathinfo($url, PATHINFO_EXTENSION));
+                $suffix = ' (' . esc_html($ext) . ')';
             }
-
-            // type anzeigen, wenn in show enthalten
-            if (isset($atts['show']) && is_array($atts['show']) && in_array('type', $atts['show'], true)) {
-                $extension = pathinfo($file['url'], PATHINFO_EXTENSION);
-                $details[] = esc_html(strtoupper($extension));
-            }
-
-            // modified anzeigen, wenn in show enthalten
-            if (isset($atts['show']) && is_array($atts['show']) && in_array('modified', $atts['show'], true)) {
-                $modified = $file['modified'] ?? '';
-                $formatted = $modified ? date('d.m.Y', strtotime($modified)) : '-';
-                $details[] = esc_html($formatted);
-            }
-
-            // Klammer nur anzeigen, wenn mind. ein Zusatzfeld aktiv ist
-            $suffix = $details ? ' (' . implode(', ', $details) . ')' : '';
 
             $html .= sprintf(
                 '<li><a href="%s" target="_blank" rel="noopener">%s</a>%s</li>',
-                esc_url($file['url']),
+                $url,
                 $name,
                 $suffix
             );
         }
+
 
         $html .= '</ul>';
 
@@ -105,72 +147,45 @@ class Renderer
     }
 
     /**
-     * Render as HTML table.
+     * Renders HTML table.
      *
      * @param array $data
+     * @param array $atts
      * @return string
      */
-    private static function renderTable(array $data, array $atts = []): string
+    private static function renderTable(array $data, array $atts): string
     {
         if (empty($data)) {
-            return '<p>' . __('No files found.', 'rrze-faubox') . '</p>';
+            return '<p>' . esc_html__('No files found.', 'rrze-faubox') . '</p>';
         }
 
-        $columns = $atts['show'] ?? ['name']; // fallback: nur Name
+        $columns = $atts['show'] ?? ['name'];
 
         $html = '<figure class="wp-block-table"><table class="faubox-filetable">';
         $html .= '<thead><tr>';
 
         foreach ($columns as $col) {
-            switch ($col) {
-                case 'name':
-                    $html .= '<th>' . esc_html__('name', 'rrze-faubox') . '</th>';
-                    break;
-                case 'size':
-                    $html .= '<th>' . esc_html__('size', 'rrze-faubox') . '</th>';
-                    break;
-                case 'type':
-                    $html .= '<th>' . esc_html__('type', 'rrze-faubox') . '</th>';
-                    break;
-                case 'modified':
-                    $html .= '<th>' . esc_html__('changed', 'rrze-faubox') . '</th>';
-                    break;
-            }
+            $html .= '<th>' . esc_html($col) . '</th>';
         }
 
-        $html .= '</tr></thead>';
-        $html .= '<tbody>';
-
+        $html .= '</tr></thead><tbody>';
 
         foreach ($data as $file) {
+            $name = esc_html($file['name']);
+            $url  = esc_url($file['url']);
+
             $html .= '<tr>';
 
             foreach ($columns as $col) {
-                switch ($col) {
-                    case 'name':
-                        $html .= sprintf(
-                            '<td><a href="%s" target="_blank" rel="noopener">%s</a></td>',
-                            esc_url($file['url']),
-                            esc_html($file['name'])
-                        );
-                        break;
-
-                    case 'size':
-                        $html .= sprintf('<td>%s</td>', esc_html($file['size'] ?? '-'));
-                        break;
-
-                    case 'type':
-                        // Dateityp aus URL ableiten (Dateiendung)
-                        $extension = pathinfo($file['url'], PATHINFO_EXTENSION);
-                        $html .= sprintf('<td>%s</td>', esc_html(strtoupper($extension)));
-                        break;
-
-                    case 'modified':
-                        $modified = $file['modified'] ?? null;
-                        $formatted = $modified ? date('d.m.Y', strtotime($modified)) : '-';
-                        $html .= sprintf('<td>%s</td>', esc_html($formatted));
-                        break;
-
+                if ($col === 'name') {
+                    $html .= sprintf(
+                        '<td><a href="%s" target="_blank" rel="noopener">%s</a></td>',
+                        $url,
+                        $name
+                    );
+                } elseif ($col === 'type') {
+                    $ext = strtoupper(pathinfo($url, PATHINFO_EXTENSION));
+                    $html .= '<td>' . esc_html($ext) . '</td>';
                 }
             }
 
@@ -183,144 +198,101 @@ class Renderer
     }
 
 
-
     /**
-     * Render image gallery in theme-compatible structure with navigation.
+     * Renders image gallery.
      *
-     * @param array $data List of image file arrays.
-     * @param array $atts Optional attributes like 'columns'.
-     * @return string HTML output for gallery view.
+     * @param array $data
+     * @param array $atts
+     * @return string
      */
-    private static function renderGallery(array $data, array $atts = []): string
+    private static function renderGallery(array $data, array $atts): string
     {
         wp_enqueue_script('faue-gallery-slider');
         wp_enqueue_script('image-fullscreen');
 
         if (empty($data)) {
-            return '<p>' . __('No images found.', 'rrze-faubox') . '</p>';
+            return '<p>' . esc_html__('No images found.', 'rrze-faubox') . '</p>';
         }
 
-        // Return summary message in Gutenberg block editor only (not in frontend)
+        // Editor SSR preview
         if (
             defined('REST_REQUEST')
             && REST_REQUEST
             && isset($_SERVER['REQUEST_URI'])
             && strpos($_SERVER['REQUEST_URI'], 'block-renderer') !== false
         ) {
-            $totalImages = 0;
-
-            foreach ($data as $file) {
-                $url = (string) ($file['url'] ?? $file['fileName'] ?? '');
-                $type = (string) ($file['type'] ?? $file['mimeType'] ?? '');
-
-                $isImageByMime = $type !== '' && str_starts_with($type, 'image/');
-                $isImageByExt = (bool) preg_match('/\.(jpe?g|png|gif|webp|avif)$/i', $url);
-
-                if ($url === '' || !($isImageByMime || $isImageByExt)) {
-                    continue;
+            $count = 0;
+            foreach ($data as $f) {
+                $ext = strtolower(pathinfo($f['url'], PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg','jpeg','png','gif','webp','avif'], true)) {
+                    $count++;
                 }
-
-                $totalImages++;
             }
 
-            if ($totalImages === 0) {
-                return '<p><strong>' . __('FAUbox gallery: no images available yet.', 'rrze-faubox') . '</strong></p>';
+            if ($count === 0) {
+                return '<p><strong>' .
+                    esc_html__('FAUbox gallery: no images available yet.', 'rrze-faubox') .
+                    '</strong></p>';
             }
 
-            $message = sprintf(
-            /* translators: %d: number of images found in FAUbox */
-                esc_html__('You create a FAUbox gallery with %d images.', 'rrze-faubox'),
-                $totalImages
+            return sprintf(
+                '<p><strong>' .
+                esc_html__('You create a FAUbox gallery with %d images.', 'rrze-faubox') .
+                '</strong></p>',
+                $count
             );
-
-            return '<p><strong>' . $message . '</strong></p>';
         }
 
-        // Count columns (only used in frontend layout)
-        $columns = isset($atts['columns']) ? (int) $atts['columns'] : 3;
-        if ($columns < 1) {
-            $columns = 3;
-        }
+        // Frontend rendering
+        $columns = isset($atts['columns']) ? max(1, (int)$atts['columns']) : 3;
 
         $galleryClasses = [
             'wp-block-gallery',
             'faubox-gallery',
-            'has-nested-images',
-            'is-cropped',
             'is-layout-flex',
-            'wp-block-gallery-is-layout-flex',
+            'has-nested-images',
             sprintf('columns-%d', $columns),
-            sprintf('has-%d-columns', $columns),
         ];
 
-        // Increase gallery instance counter
         self::$galleryInstance++;
-        $containerClass = 'wp-block-gallery-' . self::$galleryInstance . ' wp-block-core-gallery';
-
-        // Open outer container (recognized by theme)
         $html = sprintf(
-            '<div class="wp-block-gallery-container %s">',
-            esc_attr($containerClass)
-        );
-
-        // Open gallery <figure>
-        $html .= sprintf(
-            '<figure class="%s">',
+            '<div class="wp-block-gallery-container gallery-%d"><figure class="%s">',
+            self::$galleryInstance,
             esc_attr(implode(' ', $galleryClasses))
         );
 
         $index = 1;
         $total = count($data);
-        $itemsRendered = 0;
 
         foreach ($data as $file) {
-            $url = (string) ($file['url'] ?? $file['fileName'] ?? '');
-            if ($url === '') {
-                continue;
-            }
+            $url = $file['url'];
+            $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
 
-            $name = $file['name']
-                ?? basename(parse_url($url, PHP_URL_PATH) ?: '')
-                ?? 'Image';
-
-            $type = (string) ($file['type'] ?? $file['mimeType'] ?? '');
-            $isImageByMime = $type !== '' && str_starts_with($type, 'image/');
-            $isImageByExt = (bool) preg_match('/\.(jpe?g|png|gif|webp|avif)$/i', $url);
-
-            if (!($isImageByMime || $isImageByExt)) {
+            if (!in_array($ext, ['jpg','jpeg','png','gif','webp','avif'], true)) {
                 continue;
             }
 
             $html .= sprintf(
-                '<figure class="wp-block-image size-full is-style-large has-overlay" aria-hidden="true">
-                <div class="image-wrapper" aria-hidden="true">
-                <img src="%s" alt="" aria-hidden="true"/>
-                <span class="gallery-index-display" aria-hidden="true">%d/%d</span>
-                <button class="image-fullscreen-btn" 
-                onclick="openImageFullscreen(\'%s\')"
-                aria-hidden="true"
-                tabindex="-1">⛶</button>
-                </div>
-            </figure>',
-                esc_url($url), // %s für img src
-                $index,        // %d current index
-                $total,        // %d total images
-                esc_url($url)  // %s für fullscreen button
+                '<figure class="wp-block-image size-full has-overlay">
+                    <div class="image-wrapper">
+                        <img src="%s" alt=""/>
+                        <span class="gallery-index-display">%d/%d</span>
+                        <button class="image-fullscreen-btn" onclick="openImageFullscreen(\'%s\')">⛶</button>
+                    </div>
+                </figure>',
+                esc_url($url),
+                $index,
+                $total,
+                esc_url($url)
             );
 
             $index++;
-            $itemsRendered++;
         }
 
-        $html .= '</figure>';
-        $html .= '</div>'; // Close gallery-container
-
-        if ($itemsRendered === 0) {
-            return '<p>' . __('No images found.', 'rrze-faubox') . '</p>';
-        }
-
+        $html .= '</figure></div>';
         return $html;
     }
+
 
 
 

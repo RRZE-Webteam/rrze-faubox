@@ -51,7 +51,7 @@ add_action('init', function (): void {
     wp_register_script(
         'rrze-faubox-editor',
         plugins_url('build/block/index.js', __FILE__),
-        ['wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor'],
+        ['wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor', 'wp-api-fetch'],
         '1.0.0',
         true
     );

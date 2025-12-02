@@ -21,7 +21,8 @@
     "i18n:php": "wp i18n make-pot . languages/rrze-faubox-php.pot --exclude=node_modules,build,vendor --domain=rrze-faubox",
     "i18n:block": "wp-scripts i18n src --output-file=languages/rrze-faubox-block.pot",
     "i18n:merge": "wp i18n make-pot . languages/rrze-faubox.pot --exclude=node_modules,build,vendor --domain=rrze-faubox --merge=languages/rrze-faubox-block.pot",
-    "i18n:all": "npm run i18n:php && npm run i18n:block && npm run i18n:merge"
+    "i18n:json": "wp i18n make-json languages --no-purge",
+    "i18n:all": "npm run i18n:php && npm run i18n:block && npm run i18n:merge && npm run i18n:json"
   },
   "repository": {
     "type": "git",

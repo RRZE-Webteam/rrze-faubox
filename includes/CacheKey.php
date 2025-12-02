@@ -18,7 +18,7 @@ final class CacheKey
     public static function forFiles(array $args): string
     {
         $parts = [
-            'v1', // Versionsnummer, bei Änderungen hochsetzen
+            'v1', // version number
             'index=' . strtolower(trim((string) ($args['index'] ?? ''))),
             'filetype=' . strtolower(trim((string) ($args['filetype'] ?? ''))),
             'orderby=' . strtolower(trim((string) ($args['orderby'] ?? 'name'))),

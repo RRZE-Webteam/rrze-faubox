@@ -1,4 +1,4 @@
-import {__} from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 import {
     useBlockProps,
@@ -18,18 +18,17 @@ import {
     SelectControl,
 } from "@wordpress/components";
 
-import {cloud} from "@wordpress/icons";
+import { cloud } from "@wordpress/icons";
 
-import {useEffect, useState} from '@wordpress/element';
-
+import { useEffect, useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import ServerSideRender from '@wordpress/server-side-render';
 import "./editor.scss";
-
 
 interface EditProps {
     attributes: {
         view: 'list' | 'table' | 'gallery';
-        show: ('name' | 'type' | 'size' | 'modified')[];
+        show: ('name' | 'type')[];
         sort: 'asc' | 'desc';
         index: string;
         show_title: boolean;
@@ -42,80 +41,142 @@ interface EditProps {
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
 
-export default function Edit({attributes, setAttributes}: EditProps) {
-    const {view, show, sort, index, show_title, isInitialSetup, orderby, filetype, changeTitle, rootfolder } = attributes;
+export default function Edit({ attributes, setAttributes }: EditProps) {
+
+    const {
+        view,
+        show,
+        sort,
+        index,
+        show_title,
+        isInitialSetup,
+        orderby,
+        filetype,
+        changeTitle,
+        rootfolder
+    } = attributes;
+
     const blockProps = useBlockProps();
 
-    const toggleShow = (key: 'size' | 'type' | 'modified') => {
+    const toggleShow = (key: 'type' ) => {
         const newShow = show.includes(key)
             ? show.filter((item) => item !== key)
             : [...show, key];
 
-        setAttributes({show: newShow});
+        setAttributes({ show: newShow });
     };
 
-    // State für Root- und Subfolder-Optionen
+    // ■ Root + Subfolder state
     const [rootFolderOptions, setRootFolderOptions] = useState<{ label: string; value: string }[]>([]);
     const [folderOptions, setFolderOptions] = useState<{ label: string; value: string }[]>([]);
 
-    // 1️⃣ Root-Folder laden (einmal)
+
+    // 1️⃣ Load root folders once
     useEffect(() => {
-        fetch('/wp-json/rrze-faubox/v1/root-folders')
-            .then((res) => res.json())
+        let isActive = true;
+
+        apiFetch({ path: '/rrze-faubox/v1/root-folders' })
             .then((data) => {
-                setRootFolderOptions(data);
+                if (!isActive) {
+                    return;
+                }
+
+                if (Array.isArray(data)) {
+                    setRootFolderOptions(data);
+                } else {
+                    setRootFolderOptions([]);
+                }
             })
             .catch(() => {
-                setRootFolderOptions([]);
+                if (isActive) {
+                    setRootFolderOptions([]);
+                }
             });
+
+        return () => {
+            isActive = false;
+        };
     }, []);
 
-    // 2️⃣ Subfolder laden (abhängig vom Root-Folder)
+
+    // 2️⃣ Load subfolders based on rootfolder
     useEffect(() => {
+
+        // Reset subfolders if no root selected
         if (!rootfolder) {
             setFolderOptions([]);
             return;
         }
 
-        fetch('/wp-json/rrze-faubox/v1/folders?folder=' + encodeURIComponent(rootfolder))
-            .then((res) => res.json())
+        let isActive = true;
+
+        apiFetch({ path: '/rrze-faubox/v1/folders?folder=' + encodeURIComponent(rootfolder) })
             .then((data) => {
-                setFolderOptions(data);
+                if (!isActive) {
+                    return;
+                }
+
+                // Data example: [ { value:"Bilder/UnterA", label:"UnterA" } ]
+                if (Array.isArray(data)) {
+                    setFolderOptions(data);
+                } else {
+                    setFolderOptions([]);
+                }
             })
             .catch(() => {
-                setFolderOptions([]);
+                if (isActive) {
+                    setFolderOptions([]);
+                }
             });
+
+        return () => {
+            isActive = false;
+        };
+
     }, [rootfolder]);
 
 
+    // Allowed filetypes for sidebar controls
+    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'png', 'svg', 'webp'];
 
-    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'png', 'svg', 'webp' ];
 
     return (
         <div {...blockProps}>
+
             {isInitialSetup ? (
                 <Placeholder
                     label={__('FAUbox Block', 'rrze-faubox')}
                     instructions={__('Configure your FAUbox block.', 'rrze-faubox')}
-                    isColumnLayout={true}
                     icon={cloud}
+                    isColumnLayout={true}
                 >
                     <div>
-                        <hr/>
-                        <Spacer paddingBottom={"1rem"}/>
+                        <hr />
+                        <Spacer paddingBottom={"1rem"} />
                         <Heading level={3}>{__('FAUbox Settings', 'rrze-faubox')}</Heading>
-                        <p>{__('Please set up your FAUbox access in advance via the WordPress Dashboard > Settings > FAUbox.', 'rrze-faubox')}</p>
-                        <Spacer paddingBottom={"1rem"}/>
+                        <p>{__('Configure FAUbox root folder & folder view.', 'rrze-faubox')}</p>
+                        <Spacer paddingBottom={"1rem"} />
 
                         <Grid columns={7}>
-                            {/* lef side */}
-                            <div style={{gridColumn: "span 3"}}>
+
+                            {/* LEFT SIDE */}
+                            <div style={{ gridColumn: "span 3" }}>
+
+                                {/* ROOT FOLDER */}
                                 <SelectControl
                                     label={__('Root folder', 'rrze-faubox')}
+                                    __next40pxDefaultSize
                                     value={rootfolder}
-                                    options={rootFolderOptions}
-                                    onChange={(val: string) => setAttributes({ rootfolder: val })}
+                                    options={[
+                                        { value: '', label: __('Select root folder', 'rrze-faubox'), disabled: true },
+                                        ...rootFolderOptions
+                                    ]}
+                                    onChange={(val: string) => {
+                                        setAttributes({ rootfolder: val, index: '' });
+                                    }}
                                 />
+
+                                {/* SUBFOLDER */}
                                 <SelectControl
                                     label={__('Folder Selection', 'rrze-faubox')}
                                     __next40pxDefaultSize
@@ -160,12 +221,11 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     value={orderby}
                                     options={[
                                         {label: __('File Name', 'rrze-faubox'), value: 'name'},
-                                        {label: __('File Size', 'rrze-faubox'), value: 'size'},
                                         {label: __('File Type', 'rrze-faubox'), value: 'type'},
-                                        {label: __('File Changed Date', 'rrze-faubox'), value: 'modified'}
+
                                     ]}
-                                    onChange={(val: 'name' | 'size' | 'type' | 'modified') =>
-                                        setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified'})
+                                    onChange={(val: 'name' | 'type') =>
+                                        setAttributes({orderby: val as 'name' |  'type'  })
                                     }
                                 />
 
@@ -178,19 +238,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 <Heading level={4}>{__('Displayed file information', 'rrze-faubox')}</Heading>
                                 <Spacer paddingTop={"0.5rem"}/>
                                 <CheckboxControl
-                                    label={__('File Size', 'rrze-faubox')}
-                                    checked={show.includes('size')}
-                                    onChange={() => toggleShow('size')}
-                                />
-                                <CheckboxControl
                                     label={__('File Type', 'rrze-faubox')}
                                     checked={show.includes('type')}
                                     onChange={() => toggleShow('type')}
-                                />
-                                <CheckboxControl
-                                    label={__('File Changed Date', 'rrze-faubox')}
-                                    checked={show.includes('modified')}
-                                    onChange={() => toggleShow('modified')}
                                 />
                                 <CheckboxControl
                                     label={__('Folder Title', 'rrze-faubox')}
@@ -273,19 +323,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             <Divider margin="3" />
                             <Heading color="#03316a">{__('Displayed file information', 'rrze-faubox')}</Heading>
                             <CheckboxControl
-                                label={__('File Size', 'rrze-faubox')}
-                                checked={show.includes('size')}
-                                onChange={() => toggleShow('size')}
-                            />
-                            <CheckboxControl
                                 label={__("File Type", 'rrze-faubox')}
                                 checked={show.includes('type')}
                                 onChange={() => toggleShow('type')}
-                            />
-                            <CheckboxControl
-                                label={__("File Changed Date", 'rrze-faubox')}
-                                checked={show.includes('modified')}
-                                onChange={() => toggleShow('modified')}
                             />
                             <CheckboxControl
                                 label={__('Folder Title', 'rrze-faubox')}
@@ -334,12 +374,10 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 value={orderby}
                                 options={[
                                     {label: __('File Name', 'rrze-faubox'), value: 'name'},
-                                    {label: __('File Size', 'rrze-faubox'), value: 'size'},
                                     {label: __('File Type', 'rrze-faubox'), value: 'type'},
-                                    {label: __('File Changed Date', 'rrze-faubox'), value: 'modified'}
                                 ]}
-                                onChange={(val: 'name' | 'size' | 'type' | 'modified') =>
-                                    setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified'})
+                                onChange={(val: 'name' | 'type' ) =>
+                                    setAttributes({orderby: val as 'name' | 'type' })
                                 }
                             />
 

@@ -12,13 +12,12 @@ defined('ABSPATH') || exit;
 /**
  * Shortcode handler for [faubox].
  *
- * Usage example:
- * [faubox folder="abc123" view="list"]
+ * Now fully based on the FAUbox /wapi/filelink public API.
  */
 class Shortcode
 {
     /**
-     * Registers the shortcode
+     * Register the shortcode.
      */
     public static function register(): void
     {
@@ -27,191 +26,155 @@ class Shortcode
 
 
     /**
-     * Handles the shortcode rendering logic.
+     * Render shortcode output.
      *
-     * @param array $atts Shortcode attributes.
-     * @param string|null $content Optional enclosed content.
-     *
-     * @return string HTML output
+     * @param array $atts
+     * @param string|null $content
+     * @return string
      */
     public static function render(array $atts = [], ?string $content = null): string
     {
-        // Default attributes
+        // 1) Load share link from settings
+        $shareLink = get_option('rrze_faubox_sharelink', '');
+
+        if (empty($shareLink)) {
+            return '<p><strong>' . esc_html__('FAUbox share link is missing in settings.', 'rrze-faubox') . '</strong></p>';
+        }
+
+        // 2) Extract Share-ID
+        $shareId = API::resolveShareIdFromUrl($shareLink);
+
+        if (!$shareId) {
+            return '<p><strong>' . esc_html__('Invalid FAUbox share link format.', 'rrze-faubox') . '</strong></p>';
+        }
+
+        // 3) Resolve Resource-ID
+        $resourceId = API::resolveResourceId($shareId);
+
+        if (!$resourceId) {
+            return '<p><strong>' . esc_html__('Unable to resolve FAUbox resource ID.', 'rrze-faubox') . '</strong></p>';
+        }
+
+
+        // 4) Merge default shortcode attributes
         $atts = shortcode_atts([
-            'index' => '', //subfile of FAUbox file
+            'index' => '',         // Subfolder
             'view' => 'list',
-            'show' => 'name', //Default
-            'show_title' => 'false',
-            'filetype' => '',
+            'show' => ['name'],
+            'show_title' => false,
+            'filetype' => [],
             'sort' => 'asc',
             'orderby' => 'name',
             'changeTitle' => '',
-            'rootfolder'=>''
+        ], $atts, 'faubox');
 
-        ],
-            $atts,
-            'faubox'
-        );
-
-        // Token und Ordner-ID aus den Plugin-Settings laden
-        $folderId = get_option('rrze_faubox_folder', '');
-        $subdir = sanitize_text_field($atts['index']);
+        // Normalize subfolder
+        $subdir = trim((string) $atts['index'], '/');
 
 
-        // 🟩 Fallbacks aktivieren, wenn keine echten Werte da sind
+        // 5) Fetch items from FAUbox
+        $items = ($subdir === '')
+            ? API::fetchRoot($resourceId, $shareId)
+            : API::fetchSubfolder($resourceId, $shareId, $subdir);
 
-        if (empty($folderId)) {
-            $folderId = 'dummy-folder';
-        }
-
-        // Sanitize inputs
-        $view = sanitize_text_field($atts['view']);
-        $showInput = sanitize_text_field($atts['show']);
-        $showTitle = filter_var($atts['show_title'], FILTER_VALIDATE_BOOLEAN);
-        $sort = strtolower(sanitize_text_field($atts['sort']));
-        if (!in_array($sort, ['asc', 'desc'], true)) {
-            $sort = 'asc'; // fallback default
-        }
-        $orderby = sanitize_text_field($atts['orderby']);
-        $allowedOrderBy = ['name', 'size', 'type', 'modified'];
-        if (!in_array($orderby, $allowedOrderBy, true)) {
-            $orderby = 'name';
-        }
-        $changeTitle = sanitize_text_field($atts['changeTitle'] ?? '');
-
-
-        //Fetch files from API
-        $rootFolder = $atts['rootfolder'] ?? '';
-        $files = API::fetchFiles($rootFolder, $subdir);
-        $files = is_array($files) ? $files : []; // 🟩 Schutz vor null → leeres Array
-
-        if (empty($files)) {
+        if (!is_array($items) || empty($items)) {
             return '<p><strong>' . esc_html__('No files found.', 'rrze-faubox') . '</strong></p>';
         }
 
-        //Filter by custom file extensions (e.g. pdf, docx)
-        $filetype = $atts['filetype'] ?? [];
+        // Extract files only
+        $folders = API::filterFolders($items);
+        $files = API::filterFiles($items);
 
-        if (!is_array($filetype)) {
-            $filetype = array_map('trim', explode(',', (string) $filetype));
-        }
 
-        $filetype = array_filter(array_map('strtolower', $filetype));
-        if (is_array($filetype) && !empty($filetype)) {
-            $allowedExtensions = array_map('strtolower', array_map('trim', $filetype));
 
-            $files = array_filter($files, static function ($item) use ($allowedExtensions): bool {
-                $filename = $item['fileName'] ?? ($item['name'] ?? '');
-                $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-                return in_array($extension, $allowedExtensions, true);
+        // 6) Filetype filters (pdf, jpg, png, etc.)
+        $allowedTypes = is_array($atts['filetype']) ? $atts['filetype'] : [];
+        $allowedTypes = array_map('strtolower', $allowedTypes);
+
+        if (!empty($allowedTypes)) {
+            $files = array_filter($files, static function ($file) use ($allowedTypes) {
+
+                // Extract file extension
+                $name = $file['fileName'] ?? '';
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                return in_array($ext, $allowedTypes, true);
             });
         }
 
 
-        // Accept array (from block) OR comma-separated string (from shortcode)
-        $showFields = is_array($atts['show']) //
-            ? array_map('strtolower', array_map('trim', $atts['show']))
-            : array_map('trim', explode(',', strtolower($showInput)));
-        $allowed = ['name', 'size', 'type', 'modified'];
-        $showFields = array_values(array_intersect($showFields, $allowed));
-        if (empty($showFields)) {
-            $showFields = ['name'];
-        }
+        // 7) Transform items for Renderer
+        $files = array_map(static function ($file): array {
 
-        // Transform API data to match Renderer expectations
-        $transformedFiles = array_map(function ($file) use ($folderId, $subdir) {
-            $rawFileName = (string) ($file['fileName'] ?? '');
-            $displayName = (string) ($file['name'] ?? $rawFileName);
+            $name = $file['fileName'] ?? '';
+            $downloadUrl = $file['resourceURL'] ?? '';
 
-            // 1) Vorhandene URL aus Dummy-Daten übernehmen
-            if (!empty($file['url']) && filter_var($file['url'], FILTER_VALIDATE_URL)) {
-                $downloadUrl = $file['url'];
-            } elseif (filter_var($rawFileName, FILTER_VALIDATE_URL)) {
-                // 2) Oder fileName selbst ist schon eine vollqualifizierte URL
-                $downloadUrl = $rawFileName;
-            } else {
-                // 3) Nur falls wirklich nötig: Dummy-Link generieren (kann für Live-API später reaktiviert werden)
-                /*
-                $downloadUrl = sprintf(
-                    'https://faubox.fau.de/dl/%s/%s/%s',
-                    rawurlencode($folderId),
-                    trim($subdir, '/'),
-                    rawurlencode($rawFileName)
-                );
-                */
-                $downloadUrl = '';
-            }
-
-
+            // Determine extension type
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
             return [
-                'name' => $displayName !== '' ? $displayName : $rawFileName,
-                'url' => $downloadUrl,
-                'size' => size_format((float) ($file['fileSize'] ?? 0)),
-                'type' => (string) ($file['mimeType'] ?? ''),
-                'modified' => $file['lastModified'] ?? '',
-                'name_raw' => strtolower($displayName !== '' ? $displayName : $rawFileName),
-                'size_raw' => (int) ($file['fileSize'] ?? 0),
-                'type_raw' => strtolower((string) ($file['mimeType'] ?? '')),
-                'modified_ts' => strtotime((string) ($file['lastModified'] ?? '')),
+                'name' => $name,
+                'url'  => $downloadUrl,
+                'type' => $ext,
+                'name_raw' => strtolower($name),
+                'type_raw' => $ext,
 
             ];
         }, $files);
 
-        $files = $transformedFiles;
 
-        // Render folder title (optional)
-        $folderTitle = !empty($changeTitle)
-            ? $changeTitle
-            : basename(trim($subdir));
-        $titleHtml = ($showTitle && !empty($folderTitle))
-            ? Renderer::renderTitle($folderTitle)
-            : '';
+        // 8) Sorting
+        $orderby = $atts['orderby'];
+        $sort = strtolower($atts['sort']) === 'desc' ? 'desc' : 'asc';
 
+        usort($files, static function ($a, $b) use ($orderby, $sort): int {
 
+            $valA = $a[$orderby . '_raw'] ?? $a[$orderby] ?? '';
+            $valB = $b[$orderby . '_raw'] ?? $b[$orderby] ?? '';
 
-        // Sort files
-        usort($files, static function ($a, $b) use ($sort, $orderby): int {
-            switch ($orderby) {
-                case 'size':
-                    $valueA = $a['size_raw'] ?? 0;
-                    $valueB = $b['size_raw'] ?? 0;
-                    break;
-                case 'modified':
-                    $valueA = $a['modified_ts'] ?? 0;
-                    $valueB = $b['modified_ts'] ?? 0;
-                    break;
-                case 'type':
-                    $valueA = $a['type_raw'] ?? '';
-                    $valueB = $b['type_raw'] ?? '';
-                    break;
-                case 'name':
-                default:
-                    $valueA = $a['name_raw'] ?? '';
-                    $valueB = $b['name_raw'] ?? '';
-                    break;
-            }
-
-            if ($valueA === $valueB) {
+            if ($valA === $valB) {
                 return 0;
             }
 
-            if ($sort === 'desc') {
-                return ($valueA < $valueB) ? 1 : -1;
-            }
-
-            return ($valueA < $valueB) ? -1 : 1;
+            return ($sort === 'asc')
+                ? (($valA < $valB) ? -1 : 1)
+                : (($valA < $valB) ? 1 : -1);
         });
 
-        error_log(print_r($files[0], true));
-        // Render HTML
-        $listHtml = Renderer::render($files, [
-            'view' => $view,
-            'show' => $showFields,
+
+        // 9) Optional folder title
+        $output = '';
+        if (!empty($atts['changeTitle'])) {
+            $title = Renderer::renderTitle($atts['changeTitle']);
+        }
+
+
+        // 10) Render
+        $output = '';
+
+        if (!empty($folders)) {
+            $output .= Renderer::renderFolders($folders, [
+                'folder' => $subdir ?: '/',
+            ]);
+        }
+
+
+        /* render before data */
+        if (!empty($folders)) {
+            $output .= Renderer::renderFolders($folders, [
+                'folder' => $subdir ?: '/',
+            ]);
+        }
+
+        /* render data*/
+        $output .= Renderer::render($files, [
+            'view' => $atts['view'],
+            'show' => $atts['show'],
             'folder' => $subdir ?: '/',
         ]);
 
-// Step 8: Combine title + list output
-        return $titleHtml . $listHtml;
+
+        return $output;
     }
 }
+
+
