@@ -112,7 +112,7 @@ class Renderer
     private static function renderList(array $data, array $atts = []): string
     {
         if (empty($data)) {
-            return '<p>' . __('No files found.', 'rrze-faubox') . ' </p>';
+            return '<p>' . esc_html__('No files found.', 'rrze-faubox') . ' </p>'; // 🟢
         }
 
         $html = '<ul class="wp-block-list wp-block-faubox-list">';

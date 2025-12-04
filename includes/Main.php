@@ -26,7 +26,7 @@ final class Main
 
     private function initHooks(): void
     {
-        $this->initAdmin();
+//        $this->initAdmin();
         $this->initShortcodes();
         $this->initBlocks();
         $this->restAPI();
@@ -34,12 +34,12 @@ final class Main
 
     }
 
-    private function initAdmin(): void
-    {
-        if (is_admin()) {
-            Admin\Settings::register();
-        }
-    }
+//    private function initAdmin(): void
+//    {
+//        if (is_admin()) {
+//            Admin\Settings::register();
+//        }
+//    }
 
     private function initShortcodes(): void
     {

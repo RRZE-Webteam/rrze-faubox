@@ -40,11 +40,23 @@ class API
      */
     public static function resolveShareIdFromUrl(string $url): ?string
     {
+        // Normalize
         $clean = rtrim($url, '/');
-        $parts = explode('/', $clean);
-        $shareId = end($parts);
 
-        return !empty($shareId) ? $shareId : null;
+        // Extract after /getlink/
+        $pos = strpos($clean, '/getlink/');
+        if ($pos === false) {
+            return null;
+        }
+
+        // Keep only the path after /getlink/
+        $after = substr($clean, $pos + strlen('/getlink/'));
+
+        // Share-ID is always the first segment
+        $parts = explode('/', $after);
+        $shareId = $parts[0] ?? '';
+
+        return $shareId !== '' ? $shareId : null;
     }
 
 
@@ -52,7 +64,7 @@ class API
      * Resolves the FAUbox internal Resource-ID from the Share-ID.
      *
      * API Call:
-     *  GET /wapi/filelink?action=getFileInfo&ID={shareId}&json=1
+     *  GET /wapi/filelink/?action=getFileInfo&ID={shareId}&json=1
      *
      * Response contains:
      *  "resourceURL": "https://faubox.../files/{resourceId}"
@@ -65,26 +77,33 @@ class API
         $url = self::BASE_WAPI .
             '?action=getFileInfo&ID=' . rawurlencode($shareId) . '&json=1';
 
-        $response = wp_remote_get($url, ['timeout' => 10]);
+        error_log('resolveResourceID url:');
+        error_log(print_r($url, true));
+
+        $response = wp_safe_remote_get($url);
 
         if (is_wp_error($response)) {
             return null;
         }
 
         $body = wp_remote_retrieve_body($response);
+        error_log('resolveResourceID body:');
+        error_log(print_r($body, true));
 
         if (empty($body)) {
             return null;
         }
 
         $json = json_decode($body, true);
+        error_log('resolveResourceID json:');
+        error_log(print_r($json, true));
 
-        if (!is_array($json) || empty($json['resourceURL'])) {
+        if (!is_array($json) || empty($json['ResultSet']['Result'][0]['resourceURL'])) {
             return null;
         }
 
         // Extract the part after .../files/
-        $resourceUrl = $json['resourceURL'];
+        $resourceUrl = $json['ResultSet']['Result'][0]['resourceURL'];
         $pos = strrpos($resourceUrl, '/');
 
         if ($pos === false) {
@@ -112,11 +131,17 @@ class API
         $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) .
             '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
 
-        $response = wp_remote_get($url, ['timeout' => 10]);
+        error_log('fetchroot url:');
+        error_log($url);
+
+        $response = wp_safe_remote_get($url);
 
         if (is_wp_error($response)) {
             return null;
         }
+
+        error_log('fetchRoot url:');
+        error_log(print_r($response, true));
 
         $body = wp_remote_retrieve_body($response);
         if (empty($body)) {
@@ -128,6 +153,9 @@ class API
         if (!isset($json['ResultSet']['Result']) || !is_array($json['ResultSet']['Result'])) {
             return null;
         }
+
+        error_log('fetchRoot Return:');
+        error_log( print_r($json['ResultSet']['Result'], true));
 
         return $json['ResultSet']['Result'];
     }
@@ -147,12 +175,15 @@ class API
      * @param string $folderName The subfolder name (URL encoded automatically).
      * @return array|null Array of items or null.
      */
+
+
     public static function fetchSubfolder(string $resourceId, string $shareId, string $folderName): ?array
     {
-        $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) . '/' . rawurlencode($folderName) .
+        // folderName is already encoded from resourceURL → do NOT re-encode
+        $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) . '/' . $folderName .
             '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
 
-        $response = wp_remote_get($url, ['timeout' => 10]);
+        $response = wp_safe_remote_get($url);
 
         if (is_wp_error($response)) {
             return null;
@@ -169,10 +200,11 @@ class API
             return null;
         }
 
+        error_log('fetchSubfolder');
+        error_log( print_r($json['ResultSet']['Result'], true));
+
         return $json['ResultSet']['Result'];
     }
-
-
     /**
      * Filter an item array to only return files.
      *
@@ -187,7 +219,8 @@ class API
         $files = [];
 
         foreach ($items as $item) {
-            if (($item['type'] ?? '') === 'file') {
+            $type = strtolower((string)($item['type'] ?? ''));
+            if ($type === 'file') {
                 $files[] = $item;
             }
         }
@@ -210,7 +243,8 @@ class API
         $folders = [];
 
         foreach ($items as $item) {
-            if (($item['type'] ?? '') === 'dir') {
+            $type = strtolower((string)($item['type'] ?? ''));
+            if ($type === 'dir') {
                 $folders[] = $item;
             }
         }

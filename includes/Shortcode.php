@@ -9,11 +9,6 @@ use RRZE\FAUbox\Renderer;
 
 defined('ABSPATH') || exit;
 
-/**
- * Shortcode handler for [faubox].
- *
- * Now fully based on the FAUbox /wapi/filelink public API.
- */
 class Shortcode
 {
     /**
@@ -24,110 +19,205 @@ class Shortcode
         add_shortcode('faubox', [self::class, 'render']);
     }
 
-
     /**
-     * Render shortcode output.
-     *
-     * @param array $atts
-     * @param string|null $content
-     * @return string
+     * Shortcode + Block renderer.
      */
     public static function render(array $atts = [], ?string $content = null): string
     {
-        // 1) Load share link from settings
-        $shareLink = get_option('rrze_faubox_sharelink', '');
+        /**
+         * --------------------------------------------------------------
+         * 1) SHARE LINK
+         * --------------------------------------------------------------
+         */
+        $shareLink = trim((string)($atts['sharelink'] ?? ''));
 
-        if (empty($shareLink)) {
-            return '<p><strong>' . esc_html__('FAUbox share link is missing in settings.', 'rrze-faubox') . '</strong></p>';
+        if ($shareLink === '') {
+            return '<p>FAUbox share link missing.</p>';
         }
 
-        // 2) Extract Share-ID
         $shareId = API::resolveShareIdFromUrl($shareLink);
-
         if (!$shareId) {
-            return '<p><strong>' . esc_html__('Invalid FAUbox share link format.', 'rrze-faubox') . '</strong></p>';
+            return '<p>Invalid FAUbox public link.</p>';
         }
 
-        // 3) Resolve Resource-ID
         $resourceId = API::resolveResourceId($shareId);
-
         if (!$resourceId) {
-            return '<p><strong>' . esc_html__('Unable to resolve FAUbox resource ID.', 'rrze-faubox') . '</strong></p>';
+            return '<p>Unable to resolve FAUbox resource ID.</p>';
         }
 
-
-        // 4) Merge default shortcode attributes
+        /**
+         * --------------------------------------------------------------
+         * 2) DEFAULT ATTRIBUTES
+         * --------------------------------------------------------------
+         */
         $atts = shortcode_atts([
-            'index' => '',         // Subfolder
-            'view' => 'list',
-            'show' => ['name'],
-            'show_title' => false,
-            'filetype' => [],
-            'sort' => 'asc',
-            'orderby' => 'name',
-            'changeTitle' => '',
+            'index'           => '',
+            'view'            => 'list',
+            'show'            => ['name'],
+            'filetype'        => [],
+            'sort'            => 'asc',
+            'orderby'         => 'name',
+            'show_title'      => false,
+            'changeTitle'     => '',
+            'selectedFolders' => [],
+            'selectedFiles'   => [],
         ], $atts, 'faubox');
 
-        // Normalize subfolder
-        $subdir = trim((string) $atts['index'], '/');
+        $folderName = trim((string)$atts['index']);
+        $selectedFolders = array_map('strval', (array)$atts['selectedFolders']);
+        $selectedFiles = array_map('strval', (array)$atts['selectedFiles']);
 
+        /**
+         * --------------------------------------------------------------
+         * 3) API LOAD (ROOT OR SUBFOLDER)
+         * --------------------------------------------------------------
+         */
+        $allItems = [];
 
-        // 5) Fetch items from FAUbox
-        $items = ($subdir === '')
-            ? API::fetchRoot($resourceId, $shareId)
-            : API::fetchSubfolder($resourceId, $shareId, $subdir);
-
-        if (!is_array($items) || empty($items)) {
-            return '<p><strong>' . esc_html__('No files found.', 'rrze-faubox') . '</strong></p>';
+        // 1) Ausgewählte Ordner laden
+        foreach ($selectedFolders as $folder) {
+            $items = API::fetchSubfolder($resourceId, $shareId, $folder);
+            if (is_array($items)) {
+                $allItems = array_merge($allItems, $items);
+            }
         }
 
-        // Extract files only
-        $folders = API::filterFolders($items);
-        $files = API::filterFiles($items);
+        // 2) Einzelne Dateien (Root + Unterordner) laden
+        if (!empty($selectedFiles)) {
+            $fileSelections = [];
 
+            foreach ($selectedFiles as $fileRef) {
+                $fileRef = trim((string)$fileRef);
+                if ($fileRef === '') {
+                    continue;
+                }
 
+                $folderKey = '';
+                $fileName = '';
 
-        // 6) Filetype filters (pdf, jpg, png, etc.)
-        $allowedTypes = is_array($atts['filetype']) ? $atts['filetype'] : [];
-        $allowedTypes = array_map('strtolower', $allowedTypes);
+                if ($fileRef !== '' && $fileRef[0] === '{') {
+                    $decoded = json_decode($fileRef, true);
+                    if (is_array($decoded)) {
+                        $folderKey = (string)($decoded['folder'] ?? '');
+                        $fileName = (string)($decoded['name'] ?? '');
+                    }
+                }
 
-        if (!empty($allowedTypes)) {
-            $files = array_filter($files, static function ($file) use ($allowedTypes) {
+                if ($fileName === '') {
+                    if (strpos($fileRef, '|') !== false) {
+                        [$folderKey, $fileName] = explode('|', $fileRef, 2);
+                    } else {
+                        $fileName = $fileRef;
+                    }
+                }
 
-                // Extract file extension
-                $name = $file['fileName'] ?? '';
-                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                return in_array($ext, $allowedTypes, true);
-            });
+                if ($fileName === '') {
+                    continue;
+                }
+
+                $fileSelections[] = [
+                    'folder' => $folderKey,
+                    'name'   => $fileName,
+                ];
+            }
+
+            $rootItems = null;
+            $folderCache = [];
+
+            foreach ($fileSelections as $selection) {
+                $folderKey = $selection['folder'];
+                $targetName = $selection['name'];
+
+                if ($folderKey === '' || $folderKey === null) {
+                    if ($rootItems === null) {
+                        $rootItems = API::fetchRoot($resourceId, $shareId) ?? [];
+                    }
+
+                    foreach ($rootItems as $item) {
+                        if (($item['type'] ?? '') === 'file' && ($item['fileName'] ?? '') === $targetName) {
+                            $allItems[] = $item;
+                            break;
+                        }
+                    }
+
+                    continue;
+                }
+
+                if (!isset($folderCache[$folderKey])) {
+                    $folderCache[$folderKey] = API::fetchSubfolder($resourceId, $shareId, $folderKey) ?? [];
+                }
+
+                foreach ($folderCache[$folderKey] as $item) {
+                    if (($item['type'] ?? '') === 'file' && ($item['fileName'] ?? '') === $targetName) {
+                        $allItems[] = $item;
+                        break;
+                    }
+                }
+            }
         }
 
+        // 3) Wenn nichts ausgewählt: Root laden (Fallback)
+        if (empty($selectedFolders) && empty($selectedFiles)) {
+            $allItems = API::fetchRoot($resourceId, $shareId) ?? [];
+        }
 
-        // 7) Transform items for Renderer
-        $files = array_map(static function ($file): array {
+        /**
+         * --------------------------------------------------------------
+         * 4) SPLIT INTO FILES & FOLDERS
+         * --------------------------------------------------------------
+         */
+        $files   = API::filterFiles($allItems);
+        $folders = API::filterFolders($allItems);
+
+        /**
+         * --------------------------------------------------------------
+         * 5) CONVERT FILES FOR RENDERER
+         * --------------------------------------------------------------
+         */
+        $files = array_map(static function ($file) use ($shareId) {
 
             $name = $file['fileName'] ?? '';
-            $downloadUrl = $file['resourceURL'] ?? '';
+            $resourceUrl = $file['resourceURL'] ?? '';
 
-            // Determine extension type
-            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            // Extract actual file ID from URL
+            $fileId = basename($resourceUrl);
+
+            // Correct download URL
+            $downloadUrl = sprintf(
+                'https://faubox.rrze.uni-erlangen.de/download/%s',
+                rawurlencode($fileId)
+            );
 
             return [
-                'name' => $name,
-                'url'  => $downloadUrl,
-                'type' => $ext,
+                'name'     => $name,
+                'url'      => $downloadUrl,
+                'type'     => strtolower(pathinfo($name, PATHINFO_EXTENSION)),
                 'name_raw' => strtolower($name),
-                'type_raw' => $ext,
-
             ];
         }, $files);
 
+        /**
+         * --------------------------------------------------------------
+         * 6) FILTER FILETYPES
+         * --------------------------------------------------------------
+         */
+        $allowedTypes = array_map('strtolower', (array)$atts['filetype']);
 
-        // 8) Sorting
+        if (!empty($allowedTypes)) {
+            $files = array_filter($files, static function ($file) use ($allowedTypes) {
+                return in_array($file['type'], $allowedTypes, true);
+            });
+        }
+
+        /**
+         * --------------------------------------------------------------
+         * 7) SORTING
+         * --------------------------------------------------------------
+         */
         $orderby = $atts['orderby'];
-        $sort = strtolower($atts['sort']) === 'desc' ? 'desc' : 'asc';
+        $sort    = strtolower($atts['sort']) === 'desc' ? 'desc' : 'asc';
 
         usort($files, static function ($a, $b) use ($orderby, $sort): int {
-
             $valA = $a[$orderby . '_raw'] ?? $a[$orderby] ?? '';
             $valB = $b[$orderby . '_raw'] ?? $b[$orderby] ?? '';
 
@@ -136,45 +226,49 @@ class Shortcode
             }
 
             return ($sort === 'asc')
-                ? (($valA < $valB) ? -1 : 1)
-                : (($valA < $valB) ? 1 : -1);
+                ? ($valA < $valB ? -1 : 1)
+                : ($valA < $valB ? 1 : -1);
         });
 
-
-        // 9) Optional folder title
-        $output = '';
-        if (!empty($atts['changeTitle'])) {
-            $title = Renderer::renderTitle($atts['changeTitle']);
-        }
-
-
-        // 10) Render
+        /**
+         * --------------------------------------------------------------
+         * 8) RENDERING
+         * --------------------------------------------------------------
+         */
         $output = '';
 
-        if (!empty($folders)) {
-            $output .= Renderer::renderFolders($folders, [
-                'folder' => $subdir ?: '/',
-            ]);
+        // Optional custom title
+        if ($atts['show_title']) {
+            $title = trim((string)$atts['changeTitle']);
+            if ($title === '') {
+                if (!empty($selectedFolders)) {
+                    $title = rawurldecode((string)$selectedFolders[0]);
+                } elseif ($folderName !== '') {
+                    $title = $folderName;
+                } else {
+                    $title = '/';
+                }
+            }
+            $output .= Renderer::renderTitle($title);
         }
 
-
-        /* render before data */
+        // Render folders
         if (!empty($folders)) {
-            $output .= Renderer::renderFolders($folders, [
-                'folder' => $subdir ?: '/',
-            ]);
+            $mappedFolders = array_map(static function ($folder) use ($folderName): array {
+                return [
+                    'name' => $folder['fileName'],
+                    'path' => $folderName === '' ? $folder['fileName'] : $folderName . '/' . $folder['fileName'],
+                ];
+            }, $folders);
+            $output .= Renderer::renderFolders($mappedFolders, ['folder' => $folderName ?: '/']);
         }
 
-        /* render data*/
+        // Render files
         $output .= Renderer::render($files, [
             'view' => $atts['view'],
             'show' => $atts['show'],
-            'folder' => $subdir ?: '/',
         ]);
-
 
         return $output;
     }
 }
-
-

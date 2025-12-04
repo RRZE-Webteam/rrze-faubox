@@ -45,10 +45,6 @@
       ],
       "default": "asc"
     },
-    "index": {
-      "type": "string",
-      "default": ""
-    },
     "show_title": {
       "type": "boolean",
       "default": false
@@ -60,6 +56,18 @@
     "changeTitle": {
       "type": "string",
       "default": ""
+    },
+    "sharelink": {
+      "type": "string",
+      "default": ""
+    },
+    "selectedFolders": {
+      "type": "array",
+      "default": []
+    },
+    "selectedFiles": {
+      "type": "array",
+      "default": []
     }
   },
   "textdomain": "rrze-faubox",
