@@ -70,6 +70,5 @@ add_action('enqueue_block_editor_assets', function (): void {
 });
 
 
-
 // Starte das Plugin über die zentrale Main-Klasse
 new Main();

@@ -71,20 +71,12 @@ class Rest
             return new WP_REST_Response([], 200);
         }
 
-        // 🟩 Debug: anzeigen, welcher Ordner abgefragt wird
-        error_log('📁 [FAUbox REST] Share-ID: ' . $shareId);
-        error_log('📁 [FAUbox REST] Resource-ID: ' . $resourceId);
-        error_log('📁 [FAUbox REST] Folder: ' . ($folderName ?: '[ROOT]'));
-
 
         // 2. Fetch either root or subfolder
         $items = ($folderName === '')
             ? API::fetchRoot($resourceId, $shareId)
             : API::fetchSubfolder($resourceId, $shareId, $folderName);
 
-        // 🟩 Debug: zeigen, was von der FAUbox-API zurückkommt
-        error_log('📦 [FAUbox REST] All returned items:');
-        error_log(print_r($items, true));
 
         if (!is_array($items)) {
             return new WP_REST_Response([], 200);
@@ -92,20 +84,12 @@ class Rest
 
 
         $folders = API::filterFolders($items);
-        $files   = API::filterFiles($items);
-
-// 🟩 Debug: zeigen, welche Dateien erkannt wurden
-        error_log('📄 [FAUbox REST] Filtered FILES:');
-        error_log(print_r($files, true));
-
-        // 🟩 Debug: zeigen, welche Ordner erkannt wurden
-        error_log('📂 [FAUbox REST] Filtered FOLDERS:');
-        error_log(print_r($folders, true));
+        $files = API::filterFiles($items);
 
 
         $result = [
             'folders' => [],
-            'files'   => []
+            'files' => []
         ];
 
         $appendFiles = static function (array $fileItems, string $folderLabel = '', string $folderValue = '') use (&$result): void {
@@ -118,7 +102,7 @@ class Rest
                 $result['files'][] = [
                     'value' => wp_json_encode([
                         'folder' => $folderValue,
-                        'name'   => $fileName,
+                        'name' => $fileName,
                     ]),
                     'label' => $folderLabel !== '' ? $folderLabel . ' / ' . $fileName : $fileName,
                 ];
@@ -128,32 +112,60 @@ class Rest
         // Root-Dateien
         $appendFiles($files);
 
-        // Ordner + deren Dateien sammeln
-        foreach ($folders as $folder) {
-            $path = $folder['resourceURL'] ?? $folder['fileName'];
-            $encodedFolder = basename((string)$path);
+        $queue = array_map(static fn($folder) => [
+            'path'  => self::relativePath($folder, $resourceId),
+            'label' => $folder['fileName'],
+        ], $folders);
 
+        while ($queue) {
+            $current = array_shift($queue);
             $result['folders'][] = [
-                'value' => $encodedFolder, // bereits URL-kodiert aus resourceURL
-                'label' => $folder['fileName'],
+                'value' => $current['path'],
+                'label' => $current['label'],
             ];
 
-            $subItems = API::fetchSubfolder($resourceId, $shareId, $encodedFolder);
-            if (is_array($subItems)) {
-                $appendFiles(API::filterFiles($subItems), $folder['fileName'], $encodedFolder);
+            $subItems = API::fetchSubfolder($resourceId, $shareId, $current['path']);
+            if (!is_array($subItems)) {
+                continue;
+            }
+
+            $appendFiles(API::filterFiles($subItems), $current['label'], $current['path']);
+
+            foreach (API::filterFolders($subItems) as $child) {
+                $queue[] = [
+                    'path'  => self::relativePath($child, $resourceId),
+                    'label' => $child['fileName'],
+                ];
             }
         }
+
 
         return new WP_REST_Response($result, 200);
 
 
-
-
     }
 
+    /**
+     * Helper for extracting URL part from resource URL
+     * @param array $folder
+     * @param string $resourceId
+     * @return string
+     */
+    private static function relativePath(array $folder, string $resourceId): string
+    {
+        $resourceUrl = (string)($folder['resourceURL'] ?? '');
+        if ($resourceUrl !== '') {
+            $needle = '/' . $resourceId . '/';
+            $pos = strpos($resourceUrl, $needle);
+            if ($pos !== false) {
+                $path = substr($resourceUrl, $pos + strlen($needle));
+                return trim($path, '/');
+            }
+        }
 
-
-
+        $fileName = (string)($folder['fileName'] ?? '');
+        return $fileName !== '' ? rawurlencode($fileName) : '';
+    }
 
 
     /**

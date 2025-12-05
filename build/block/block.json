@@ -19,8 +19,7 @@
       "type": "string",
       "enum": [
         "list",
-        "table",
-        "gallery"
+        "table"
       ],
       "default": "list"
     },
@@ -62,10 +61,6 @@
       "default": ""
     },
     "selectedFolders": {
-      "type": "array",
-      "default": []
-    },
-    "selectedFiles": {
       "type": "array",
       "default": []
     }

@@ -35,8 +35,6 @@ interface EditProps {
         changeTitle: string;
         sharelink: string;
         selectedFolders: string[];
-        selectedFiles: string[];
-
     }
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
@@ -53,7 +51,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         changeTitle,
         sharelink,
         selectedFolders = [],
-        selectedFiles = []
     } = attributes;
 
     const blockProps = useBlockProps();
@@ -72,7 +69,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
     // Folder + File options coming from REST
     const [folderOptions, setFolderOptions] = useState<{ label: string; value: string }[]>([]);
-    const [fileOptions, setFileOptions] = useState<{ label: string; value: string }[]>([]);
 
     /**
      * Load root folders + files from REST
@@ -80,7 +76,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     useEffect(() => {
         if (!sharelink || !isValidSharelink) {
             setFolderOptions([]);
-            setFileOptions([]);
+
             return;
         }
 
@@ -89,17 +85,17 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         })
             .then((data: any) => {
                 setFolderOptions(data.folders || []);
-                setFileOptions(data.files || []);
+
             })
             .catch(() => {
                 setFolderOptions([]);
-                setFileOptions([]);
+
             });
     }, [sharelink]);
 
 
     // Allowed filetypes for sidebar controls
-    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'png', 'svg', 'webp'];
+    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpeg', 'png', 'svg', 'webp'];
 
 
     return (
@@ -120,7 +116,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 label={__('FAUbox Share Link', 'rrze-faubox')}
                                 value={attributes.sharelink}
                                 onChange={(val) => setAttributes({sharelink: val})}
-                                help={__('Paste your FAUbox public link here.', 'rrze-faubox')}
+                                help={__('Paste your FAUbox public link here (Root Folder)', 'rrze-faubox')}
                             />
                             {/* Validation message */}
                             {sharelink !== '' && !isValidSharelink && (
@@ -168,9 +164,8 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
                         {/* Folder Selection */}
                         <PanelBody title={__('Select Folders', 'rrze-faubox')} initialOpen={true}>
-                            <Heading level={4}>{__('Folders', 'rrze-faubox')}</Heading>
                             <Spacer padding="0.5rem"/>
-
+                            <p className="block-font-size">{__('Wählen Sie den Ordner aus, den Sie darstellen möchten', 'rrze-faubox')}</p>
                             {folderOptions.length === 0 && <p>{__('No folders found.', 'rrze-faubox')}</p>}
 
                             {folderOptions.map((folder) => (
@@ -188,29 +183,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             ))}
                         </PanelBody>
 
-                        {/* File Selection */}
-                        <PanelBody title={__('Select Individual Files', 'rrze-faubox')} initialOpen={false}>
-                            <Heading level={4}>{__('Files in Root & Subfolders', 'rrze-faubox')}</Heading>
-                            <Spacer padding="0.5rem"/>
-
-                            {fileOptions.length === 0 && <p>{__('No files found.', 'rrze-faubox')}</p>}
-
-                            {fileOptions.map((file) => (
-                                <CheckboxControl
-                                    key={file.value}
-                                    label={file.label}
-                                    checked={selectedFiles.includes(file.value)}
-                                    onChange={(checked) => {
-                                        const updated = checked
-                                            ? [...selectedFiles, file.value]
-                                            : selectedFiles.filter((v) => v !== file.value);
-
-                                        setAttributes({selectedFiles: updated})
-                                    }}
-                                />
-                            ))}
-                        </PanelBody>
-
 
                         <PanelBody title={__('Display Options', 'rrze-faubox')} initialOpen={false}>
                             <Spacer paddingTop={"0.5rem"}/>
@@ -221,7 +193,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     {disabled: true, label: __('Select an Option', 'rrze-faubox'), value: ''},
                                     {label: __('List', 'rrze-faubox'), value: 'list'},
                                     {label: __('Table', 'rrze-faubox'), value: 'table'},
-                                    {label: __('Gallery', 'rrze-faubox'), value: 'gallery'},
                                 ]}
                                 onChange={(val: 'list' | 'table' | 'gallery') =>
                                     setAttributes({view: val as 'list' | 'table' | 'gallery'})
@@ -282,7 +253,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                         </PanelBody>
                     </InspectorControls>
                     { /* Ausgabe nach Setup */}
-                    {selectedFolders.length === 0 && selectedFiles.length === 0 ? (
+                    {selectedFolders.length === 0 ? (
                         <p style={{opacity: 0.7}}>
                             {__('FAUbox block configured. Select folder in the sidebar.', 'rrze-faubox')}
                         </p>

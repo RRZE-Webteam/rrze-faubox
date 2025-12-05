@@ -16,8 +16,6 @@ class Renderer
      */
     private static int $galleryInstance = 0;
 
-
-
     /**
      * Render file list as HTML output based on view type.
      *
@@ -196,8 +194,6 @@ class Renderer
 
         return $html;
     }
-
-
     /**
      * Renders image gallery.
      *
@@ -292,9 +288,4 @@ class Renderer
         $html .= '</figure></div>';
         return $html;
     }
-
-
-
-
-
 }

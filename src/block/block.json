@@ -19,8 +19,7 @@
       "type": "string",
       "enum": [
         "list",
-        "table",
-        "gallery"
+        "table"
       ],
       "default": "list"
     },
@@ -45,7 +44,6 @@
       ],
       "default": "asc"
     },
-
     "show_title": {
       "type": "boolean",
       "default": false
@@ -63,10 +61,6 @@
       "default": ""
     },
     "selectedFolders": {
-      "type": "array",
-      "default": []
-    },
-    "selectedFiles": {
       "type": "array",
       "default": []
     }

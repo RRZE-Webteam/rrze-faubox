@@ -14,7 +14,7 @@
   position: absolute;
   bottom: 1rem;
   right: 1rem;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
@@ -22,5 +22,6 @@
 }
 
 
-
-
+.block-font-size {
+  font-size: 0.8rem;
+}
