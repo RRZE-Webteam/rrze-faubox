@@ -95,7 +95,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
 
     // Allowed filetypes for sidebar controls
-    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpeg', 'png', 'svg', 'webp'];
+    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
 
 
     return (
@@ -117,6 +117,12 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 value={attributes.sharelink}
                                 onChange={(val) => setAttributes({sharelink: val})}
                                 help={__('Paste your FAUbox public link here (Root Folder)', 'rrze-faubox')}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault(); // verhindert Zeilenumbrüche
+                                        setAttributes({ isInitialSetup: false });
+                                    }
+                                }}
                             />
                             {/* Validation message */}
                             {sharelink !== '' && !isValidSharelink && (
@@ -151,6 +157,12 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 label={__('FAUbox Share Link', 'rrze-faubox')}
                                 value={sharelink}
                                 onChange={(val) => setAttributes({sharelink: val})}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault(); // verhindert Zeilenumbrüche
+                                        setAttributes({ isInitialSetup: false });
+                                    }
+                                }}
                             />
 
                             {sharelink !== '' && !isValidSharelink && (
@@ -158,14 +170,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     {__('Invalid FAUbox public link.', 'rrze-faubox')}
                                 </p>
                             )}
+                            <Spacer paddingTop={"0.5rem"}/>
+                            <Heading color="#03316a">{__('Select Folders', 'rrze-faubox')}</Heading>
 
-
-                        </PanelBody>
-
-                        {/* Folder Selection */}
-                        <PanelBody title={__('Select Folders', 'rrze-faubox')} initialOpen={true}>
-                            <Spacer padding="0.5rem"/>
-                            <p className="block-font-size">{__('Wählen Sie den Ordner aus, den Sie darstellen möchten', 'rrze-faubox')}</p>
                             {folderOptions.length === 0 && <p>{__('No folders found.', 'rrze-faubox')}</p>}
 
                             {folderOptions.map((folder) => (
@@ -182,7 +189,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 />
                             ))}
                         </PanelBody>
-
 
                         <PanelBody title={__('Display Options', 'rrze-faubox')} initialOpen={false}>
                             <Spacer paddingTop={"0.5rem"}/>
@@ -212,6 +218,13 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 onChange={(value) => setAttributes({show_title: value})}
                             />
                             <Divider margin="2"/>
+                            <TextControl
+                                label={__('Overwrite folder name', 'rrze-faubox')}
+                                help={__('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox')}
+                                value={changeTitle}
+                                onChange={(val) => setAttributes({changeTitle: val})}
+                            />
+                            <Divider margin="2"/>
                             <Heading color="#03316a">{__('Permitted file formats', 'rrze-faubox')}</Heading>
                             {filetypeOptions.map((type) => (
                                 <CheckboxControl
@@ -226,17 +239,8 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     }}
                                 />
                             ))}
-                            <Divider margin="2"/>
-                            <TextControl
-                                label={__('Overwrite folder name', 'rrze-faubox')}
-                                help={__('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox')}
-                                value={changeTitle}
-                                onChange={(val) => setAttributes({changeTitle: val})}
-                            />
-                        </PanelBody>
 
-                        <PanelBody title={__('Sorting & Order', 'rrze-faubox')} initialOpen={false}>
-                            <Spacer paddingTop={"0.5rem"}/>
+                            <Divider margin="2"/>
                             <SelectControl
                                 label={__('Sorting', 'rrze-faubox')}
                                 value={sort}
@@ -248,14 +252,13 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     setAttributes({sort: val as 'asc' | 'desc'})
                                 }
                             />
-
-
                         </PanelBody>
+
                     </InspectorControls>
                     { /* Ausgabe nach Setup */}
                     {selectedFolders.length === 0 ? (
                         <p style={{opacity: 0.7}}>
-                            {__('FAUbox block configured. Select folder in the sidebar.', 'rrze-faubox')}
+                            {__('FAUbox link saved. Select your folder in the sidebar.', 'rrze-faubox')}
                         </p>
                     ) : (
                         <ServerSideRender

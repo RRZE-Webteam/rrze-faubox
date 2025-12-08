@@ -74,11 +74,18 @@ class API
      */
     public static function resolveResourceId(string $shareId): ?string
     {
+        //Cache key für ResourceID
+        $cacheKey = 'faubox_resid_' . md5($shareId);
+
+        // check if in cache
+        $cached = get_transient($cacheKey);
+        if ($cached !== false) {
+            return $cached;
+        }
+
+
         $url = self::BASE_WAPI .
             '?action=getFileInfo&ID=' . rawurlencode($shareId) . '&json=1';
-
-        error_log('resolveResourceID url:');
-        error_log(print_r($url, true));
 
         $response = wp_safe_remote_get($url);
 
@@ -95,6 +102,7 @@ class API
         }
 
         $json = json_decode($body, true);
+
         error_log('resolveResourceID json:');
         error_log(print_r($json, true));
 
@@ -112,6 +120,11 @@ class API
 
         $resourceId = substr($resourceUrl, $pos + 1);
 
+        if (!empty($resourceId)) {
+            //Cache 1 hour
+            set_transient($cacheKey, $resourceId, 60*60);
+        }
+
         return !empty($resourceId) ? $resourceId : null;
     }
 
@@ -128,6 +141,15 @@ class API
      */
     public static function fetchRoot(string $resourceId, string $shareId): ?array
     {
+        //Cache key
+        $cacheKey = 'faubox_root_' . md5($resourceId . '_' . $shareId);
+
+        // check Cache
+        $cached = get_transient($cacheKey);
+        if ($cached !== false) {
+            return $cached;
+        }
+
         $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) .
             '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
 
@@ -140,8 +162,6 @@ class API
             return null;
         }
 
-        error_log('fetchRoot url:');
-        error_log(print_r($response, true));
 
         $body = wp_remote_retrieve_body($response);
         if (empty($body)) {
@@ -155,9 +175,14 @@ class API
         }
 
         error_log('fetchRoot Return:');
-        error_log( print_r($json['ResultSet']['Result'], true));
+        error_log(print_r($json['ResultSet']['Result'], true));
 
-        return $json['ResultSet']['Result'];
+        $items = $json['ResultSet']['Result'];
+
+        set_transient($cacheKey, $items, 60*60);
+
+        return $items;
+
     }
 
 
@@ -179,6 +204,15 @@ class API
 
     public static function fetchSubfolder(string $resourceId, string $shareId, string $folderName): ?array
     {
+        $cacheKey =
+            'faubox_sub_' .
+            md5($resourceId . '_' . $shareId . '_' . $folderName);
+
+        $cached = get_transient($cacheKey);
+        if ($cached !== false) {
+            return $cached;
+        }
+
         // folderName is already encoded from resourceURL → do NOT re-encode
         $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) . '/' . $folderName .
             '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
@@ -201,10 +235,15 @@ class API
         }
 
         error_log('fetchSubfolder');
-        error_log( print_r($json['ResultSet']['Result'], true));
+        error_log(print_r($json['ResultSet']['Result'], true));
 
-        return $json['ResultSet']['Result'];
+        $items = $json['ResultSet']['Result'];
+
+        set_transient($cacheKey, $items, 60*60);
+
+        return $items;
     }
+
     /**
      * Filter an item array to only return files.
      *

@@ -70,5 +70,7 @@ add_action('enqueue_block_editor_assets', function (): void {
 });
 
 
-// Starte das Plugin über die zentrale Main-Klasse
-new Main();
+// Starte das Plugin erst, wenn alle Plugins geladen sind.
+add_action('plugins_loaded', static function (): void {
+    new Main();
+});

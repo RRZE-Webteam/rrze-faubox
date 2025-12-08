@@ -32,17 +32,17 @@ class Shortcode
         $shareLink = trim((string)($atts['sharelink'] ?? ''));
 
         if ($shareLink === '') {
-            return '<p>FAUbox share link missing.</p>';
+            return '<p>'. __('FAUbox share link missing.', 'rrze-faubox') . '</p>';
         }
 
         $shareId = API::resolveShareIdFromUrl($shareLink);
         if (!$shareId) {
-            return '<p>Invalid FAUbox public link.</p>';
+            return '<p>' . __('Invalid FAUbox public link.', 'rrze-faubbox') . '</p>';
         }
 
         $resourceId = API::resolveResourceId($shareId);
         if (!$resourceId) {
-            return '<p>Unable to resolve FAUbox resource ID.</p>';
+            return '<p>' . __('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
         }
 
         /**
@@ -77,8 +77,12 @@ class Shortcode
         // load selected folders
         foreach ($selectedFolders as $folder) {
             $items = API::fetchSubfolder($resourceId, $shareId, $folder);
+
             if (is_array($items)) {
-                $allItems = array_merge($allItems, $items);
+                // keep only files
+                $filesOnly = API::filterFiles($items);
+
+                $allItems = array_merge($allItems, $filesOnly);
             }
         }
 
@@ -176,16 +180,6 @@ class Shortcode
             $output .= Renderer::renderTitle($title);
         }
 
-        // Render folders
-        if (!empty($folders)) {
-            $mappedFolders = array_map(static function ($folder) use ($folderName): array {
-                return [
-                    'name' => $folder['fileName'],
-                    'path' => $folderName === '' ? $folder['fileName'] : $folderName . '/' . $folder['fileName'],
-                ];
-            }, $folders);
-            $output .= Renderer::renderFolders($mappedFolders, ['folder' => $folderName ?: '/']);
-        }
 
         // Render files
         $output .= Renderer::render($files, [

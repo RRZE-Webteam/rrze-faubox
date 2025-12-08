@@ -109,11 +109,11 @@ class Rest
             }
         };
 
-        // Root-Dateien
+        // root data
         $appendFiles($files);
 
         $queue = array_map(static fn($folder) => [
-            'path'  => self::relativePath($folder, $resourceId),
+            'path' => self::relativePath($folder, $resourceId),
             'label' => $folder['fileName'],
         ], $folders);
 
@@ -133,7 +133,7 @@ class Rest
 
             foreach (API::filterFolders($subItems) as $child) {
                 $queue[] = [
-                    'path'  => self::relativePath($child, $resourceId),
+                    'path' => self::relativePath($child, $resourceId),
                     'label' => $child['fileName'],
                 ];
             }

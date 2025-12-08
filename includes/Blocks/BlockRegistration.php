@@ -14,7 +14,7 @@ class BlockRegistration
      */
     public static function register(): void
     {
-        add_action('init', [self::class, 'fauboxBlockInit'], 15);
+        add_action('init', [self::class, 'fauboxBlockInit']);
         add_filter('block_categories_all', [self::class, 'addRrzeCategory'], 10, 2);
     }
 
@@ -31,6 +31,7 @@ class BlockRegistration
      */
     public static function fauboxRegisterBlocks(): void
     {
+
         $blockPath = dirname(__DIR__, 2) . '/build/block';
 
         register_block_type(
@@ -39,6 +40,11 @@ class BlockRegistration
                 'render_callback' => [BlockRender::class, 'output']
             ]
         );
+
+
+//        $script_handle = generate_block_asset_handle('rrze/faubox', 'editorScript');
+//        wp_set_script_translations($script_handle, 'rrze-faubox', plugin_dir_path(__DIR__) . 'languages');
+//        load_plugin_textdomain('rrze_faubox', false, dirname(plugin_basename(__DIR__)) . '/languages');
     }
 
     /**
@@ -60,3 +66,4 @@ class BlockRegistration
         return $categories;
     }
 }
+

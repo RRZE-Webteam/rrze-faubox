@@ -31,7 +31,7 @@ var cloud_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODUL
   \******************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze/faubox","version":"0.0.1","title":"FAUbox","category":"rrze","icon":"cloud","description":"Integrates data files from FAUbox.","supports":{"html":false},"attributes":{"isInitialSetup":{"type":"boolean","default":true},"view":{"type":"string","enum":["list","table"],"default":"list"},"show":{"type":"array","items":{"type":"string","enum":["name","type"]},"default":["name"]},"sort":{"type":"string","enum":["asc","desc"],"default":"asc"},"show_title":{"type":"boolean","default":false},"filetype":{"type":"array","default":[]},"changeTitle":{"type":"string","default":""},"sharelink":{"type":"string","default":""},"selectedFolders":{"type":"array","default":[]}},"textdomain":"rrze-faubox","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style.css","example":{"attributes":{"isInitialSetup":false}}}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze/faubox","version":"0.0.1","title":"FAUbox","category":"rrze","icon":"cloud","description":"Integriert Daten aus der FAUbox.","supports":{"html":false},"attributes":{"isInitialSetup":{"type":"boolean","default":true},"view":{"type":"string","enum":["list","table"],"default":"list"},"show":{"type":"array","items":{"type":"string","enum":["name","type"]},"default":["name"]},"sort":{"type":"string","enum":["asc","desc"],"default":"asc"},"show_title":{"type":"boolean","default":false},"filetype":{"type":"array","default":[]},"changeTitle":{"type":"string","default":""},"sharelink":{"type":"string","default":""},"selectedFolders":{"type":"array","default":[]}},"textdomain":"rrze-faubox","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style.css","example":{"attributes":{"isInitialSetup":false}}}');
 
 /***/ }),
 
@@ -116,7 +116,7 @@ function Edit({
   }, [sharelink]);
 
   // Allowed filetypes for sidebar controls
-  const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpeg', 'png', 'svg', 'webp'];
+  const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
     ...blockProps,
     children: isInitialSetup ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Placeholder, {
@@ -134,7 +134,15 @@ function Edit({
             onChange: val => setAttributes({
               sharelink: val
             }),
-            help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Paste your FAUbox public link here (Root Folder)', 'rrze-faubox')
+            help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Paste your FAUbox public link here (Root Folder)', 'rrze-faubox'),
+            onKeyDown: e => {
+              if (e.key === 'Enter') {
+                e.preventDefault(); // verhindert Zeilenumbrüche
+                setAttributes({
+                  isInitialSetup: false
+                });
+              }
+            }
           }), sharelink !== '' && !isValidSharelink && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
             style: {
               color: "red",
@@ -168,22 +176,26 @@ function Edit({
             value: sharelink,
             onChange: val => setAttributes({
               sharelink: val
-            })
+            }),
+            onKeyDown: e => {
+              if (e.key === 'Enter') {
+                e.preventDefault(); // verhindert Zeilenumbrüche
+                setAttributes({
+                  isInitialSetup: false
+                });
+              }
+            }
           }), sharelink !== '' && !isValidSharelink && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
             style: {
               color: "red",
               marginTop: "4px"
             },
             children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Invalid FAUbox public link.', 'rrze-faubox')
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select Folders', 'rrze-faubox'),
-          initialOpen: true,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalSpacer, {
-            padding: "0.5rem"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
-            className: "block-font-size",
-            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Wählen Sie den Ordner aus, den Sie darstellen möchten', 'rrze-faubox')
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalSpacer, {
+            paddingTop: "0.5rem"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalHeading, {
+            color: "#03316a",
+            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select Folders', 'rrze-faubox')
           }), folderOptions.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
             children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No folders found.', 'rrze-faubox')
           }), folderOptions.map(folder => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.CheckboxControl, {
@@ -235,6 +247,15 @@ function Edit({
             })
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalDivider, {
             margin: "2"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Overwrite folder name', 'rrze-faubox'),
+            help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox'),
+            value: changeTitle,
+            onChange: val => setAttributes({
+              changeTitle: val
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalDivider, {
+            margin: "2"
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalHeading, {
             color: "#03316a",
             children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Permitted file formats', 'rrze-faubox')
@@ -249,19 +270,6 @@ function Edit({
             }
           }, type)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalDivider, {
             margin: "2"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Overwrite folder name', 'rrze-faubox'),
-            help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox'),
-            value: changeTitle,
-            onChange: val => setAttributes({
-              changeTitle: val
-            })
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Sorting & Order', 'rrze-faubox'),
-          initialOpen: false,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalSpacer, {
-            paddingTop: "0.5rem"
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Sorting', 'rrze-faubox'),
             value: sort,
@@ -281,7 +289,7 @@ function Edit({
         style: {
           opacity: 0.7
         },
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('FAUbox block configured. Select folder in the sidebar.', 'rrze-faubox')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('FAUbox link saved. Select your folder in the sidebar.', 'rrze-faubox')
       }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)((_wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_6___default()), {
         block: "rrze/faubox",
         attributes: attributes
