@@ -32,17 +32,17 @@ class Shortcode
         $shareLink = trim((string)($atts['sharelink'] ?? ''));
 
         if ($shareLink === '') {
-            return '<p>'. __('FAUbox share link missing.', 'rrze-faubox') . '</p>';
+            return '<p>' . esc_html__('FAUbox share link missing.', 'rrze-faubox') . '</p>';
         }
 
         $shareId = API::resolveShareIdFromUrl($shareLink);
         if (!$shareId) {
-            return '<p>' . __('Invalid FAUbox public link.', 'rrze-faubbox') . '</p>';
+            return '<p>' . esc_html__('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
         }
 
         $resourceId = API::resolveResourceId($shareId);
         if (!$resourceId) {
-            return '<p>' . __('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
+            return '<p>' . esc_html__('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
         }
 
         /**
@@ -56,7 +56,6 @@ class Shortcode
             'show' => ['name'],
             'filetype' => [],
             'sort' => 'asc',
-            'orderby' => 'name',
             'show_title' => false,
             'changeTitle' => '',
             'selectedFolders' => [],
@@ -66,6 +65,7 @@ class Shortcode
         $folderName = trim((string)$atts['index']);
         $selectedFolders = array_map('strval', (array)$atts['selectedFolders']);
 
+        $atts['show_title'] = filter_var($atts['show_title'], FILTER_VALIDATE_BOOLEAN);
 
         /**
          * --------------------------------------------------------------
@@ -94,11 +94,11 @@ class Shortcode
 
         /**
          * --------------------------------------------------------------
-         * 4) SPLIT INTO FILES & FOLDERS
+         * 4) SPLIT INTO FILES
          * --------------------------------------------------------------
          */
         $files = API::filterFiles($allItems);
-        $folders = API::filterFolders($allItems);
+
 
         /**
          * --------------------------------------------------------------
@@ -142,12 +142,12 @@ class Shortcode
          * 7) SORTING
          * --------------------------------------------------------------
          */
-        $orderby = $atts['orderby'];
+
         $sort = strtolower($atts['sort']) === 'desc' ? 'desc' : 'asc';
 
-        usort($files, static function ($a, $b) use ($orderby, $sort): int {
-            $valA = $a[$orderby . '_raw'] ?? $a[$orderby] ?? '';
-            $valB = $b[$orderby . '_raw'] ?? $b[$orderby] ?? '';
+        usort($files, static function ($a, $b) use ($sort): int {
+            $valA = strtolower($a['name'] ?? '');
+            $valB = strtolower($b['name'] ?? '');
 
             if ($valA === $valB) {
                 return 0;

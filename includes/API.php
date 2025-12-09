@@ -94,17 +94,13 @@ class API
         }
 
         $body = wp_remote_retrieve_body($response);
-        error_log('resolveResourceID body:');
-        error_log(print_r($body, true));
+
 
         if (empty($body)) {
             return null;
         }
 
         $json = json_decode($body, true);
-
-        error_log('resolveResourceID json:');
-        error_log(print_r($json, true));
 
         if (!is_array($json) || empty($json['ResultSet']['Result'][0]['resourceURL'])) {
             return null;
@@ -153,9 +149,6 @@ class API
         $url = self::BASE_WAPI . '/' . rawurlencode($resourceId) .
             '?action=getFiles&ID=' . rawurlencode($shareId) . '&json=1';
 
-        error_log('fetchroot url:');
-        error_log($url);
-
         $response = wp_safe_remote_get($url);
 
         if (is_wp_error($response)) {
@@ -174,8 +167,6 @@ class API
             return null;
         }
 
-        error_log('fetchRoot Return:');
-        error_log(print_r($json['ResultSet']['Result'], true));
 
         $items = $json['ResultSet']['Result'];
 
@@ -233,9 +224,6 @@ class API
         if (!isset($json['ResultSet']['Result']) || !is_array($json['ResultSet']['Result'])) {
             return null;
         }
-
-        error_log('fetchSubfolder');
-        error_log(print_r($json['ResultSet']['Result'], true));
 
         $items = $json['ResultSet']['Result'];
 

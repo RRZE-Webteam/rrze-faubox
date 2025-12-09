@@ -42,6 +42,8 @@ class BlockRegistration
         );
 
 
+
+
 //        $script_handle = generate_block_asset_handle('rrze/faubox', 'editorScript');
 //        wp_set_script_translations($script_handle, 'rrze-faubox', plugin_dir_path(__DIR__) . 'languages');
 //        load_plugin_textdomain('rrze_faubox', false, dirname(plugin_basename(__DIR__)) . '/languages');

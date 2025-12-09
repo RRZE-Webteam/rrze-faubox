@@ -39,7 +39,9 @@ spl_autoload_register(function ($class) {
     }
 });
 
-//load textdomain (PHP files)
+/**
+ * Load plugin textdomain for PHP strings.
+ */
 add_action('init', function () {
     load_plugin_textdomain('rrze-faubox', false, dirname(plugin_basename(__FILE__)) . '/languages');
 });
@@ -70,7 +72,9 @@ add_action('enqueue_block_editor_assets', function (): void {
 });
 
 
-// Starte das Plugin erst, wenn alle Plugins geladen sind.
+/**
+ * Bootstrap the plugin once all plugins are loaded.
+ */
 add_action('plugins_loaded', static function (): void {
     new Main();
 });

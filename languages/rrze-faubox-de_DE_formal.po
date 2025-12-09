@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2025-12-08T13:59:23+00:00\n"
-"PO-Revision-Date: 2025-12-08 15:01+0100\n"
+"POT-Creation-Date: 2025-12-09T10:39:02+00:00\n"
+"PO-Revision-Date: 2025-12-09 11:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -40,19 +40,24 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Blocks/BlockRegistration.php:63
+#: includes/Blocks/BlockRegistration.php:65
 msgid "RRZE"
 msgstr "RRZE"
 
-#: includes/Renderer.php:112 includes/Renderer.php:156
+#: includes/Renderer.php:73 includes/Renderer.php:140
 msgid "No files found."
 msgstr "Keine Dateien gefunden."
 
-#: includes/Renderer.php:163
+#: includes/Renderer.php:96 includes/Renderer.php:97 includes/Renderer.php:179
+#: includes/Renderer.php:180
+msgid "Preview"
+msgstr "Vorschau"
+
+#: includes/Renderer.php:147
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Renderer.php:164
+#: includes/Renderer.php:148
 msgid "Type"
 msgstr "Dateiformat"
 
@@ -60,99 +65,99 @@ msgstr "Dateiformat"
 msgid "FAUbox share link missing."
 msgstr "Der FAUbox Teilen Link fehlt."
 
-#: includes/Shortcode.php:45 build/block/index.js:151 build/block/index.js:193
+#: includes/Shortcode.php:40 includes/Shortcode.php:45 build/block/index.js:1
 msgid "Invalid FAUbox public link."
 msgstr "Ungültiger FAUbox Link."
 
-#: build/block/index.js:123
+#: build/block/index.js:1
 msgid "FAUbox Block"
 msgstr "FAUbox Block"
 
-#: build/block/index.js:124
+#: build/block/index.js:1
 msgid "Configure your FAUbox block."
 msgstr "Konfigurieren Sie Ihren FAUbox-Block."
 
-#: build/block/index.js:132 build/block/index.js:175
+#: build/block/index.js:1
 msgid "FAUbox Share Link"
 msgstr "FAUbox Teilen Link"
 
-#: build/block/index.js:137
+#: build/block/index.js:1
 msgid "Paste your FAUbox public link here (Root Folder)"
 msgstr "Fügen Sie Ihren FAUbox Link hier ein (Basisordner)"
 
-#: build/block/index.js:162
+#: build/block/index.js:1
 msgid "Save Link"
 msgstr "Link speichern"
 
-#: build/block/index.js:170
+#: build/block/index.js:1
 msgid "Data Choice"
 msgstr "Datenauswahl"
 
-#: build/block/index.js:198
+#: build/block/index.js:1
 msgid "Select Folders"
 msgstr "Ordner auswählen"
 
-#: build/block/index.js:200
+#: build/block/index.js:1
 msgid "No folders found."
 msgstr "Keine Ordner gefunden."
 
-#: build/block/index.js:212
+#: build/block/index.js:1
 msgid "Display Options"
 msgstr "Anzeigeoptionen"
 
-#: build/block/index.js:217
+#: build/block/index.js:1
 msgid "View"
 msgstr "Ansicht"
 
-#: build/block/index.js:221
+#: build/block/index.js:1
 msgid "Select an Option"
 msgstr "Wählen Sie eine Option"
 
-#: build/block/index.js:224
+#: build/block/index.js:1
 msgid "List"
 msgstr "Liste"
 
-#: build/block/index.js:227
+#: build/block/index.js:1
 msgid "Table"
 msgstr "Tabelle"
 
-#: build/block/index.js:237
+#: build/block/index.js:1
 msgid "Displayed file information"
 msgstr "Angezeigte Dateiinformationen"
 
-#: build/block/index.js:239
+#: build/block/index.js:1
 msgid "File Type"
 msgstr "Dateityp"
 
-#: build/block/index.js:243
+#: build/block/index.js:1
 msgid "Folder Title"
 msgstr "Ordnername"
 
-#: build/block/index.js:251
+#: build/block/index.js:1
 msgid "Overwrite folder name"
 msgstr "Ordnername überschreiben"
 
-#: build/block/index.js:252
+#: build/block/index.js:1
 msgid "If left blank, the FAUbox folder name will be used automatically."
 msgstr "Wenn leer, wird automatisch der FAUbox-Ordnername verwendet."
 
-#: build/block/index.js:261
+#: build/block/index.js:1
 msgid "Permitted file formats"
 msgstr "Erlaubte Dateiformate"
 
-#: build/block/index.js:274
+#: build/block/index.js:1
 msgid "Sorting"
 msgstr "Sortierung"
 
-#: build/block/index.js:277
+#: build/block/index.js:1
 msgid "Ascending"
 msgstr "Aufsteigend"
 
-#: build/block/index.js:280
+#: build/block/index.js:1
 msgid "Descending"
 msgstr "Absteigend"
 
-#: build/block/index.js:292
+#: build/block/index.js:1
 msgid "FAUbox link saved. Select your folder in the sidebar."
 msgstr ""
 "Link gespeichert. Bitte wählen Sie den darzustellenden Ordner in den "
@@ -165,7 +170,7 @@ msgstr "FAUbox"
 
 #: build/block/block.json
 msgctxt "block description"
-msgid "Integrates data files from FAUbox."
+msgid "Integriert Daten aus der FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
 
 #, php-format
@@ -241,9 +246,6 @@ msgstr "Integriert Daten aus der FAUbox."
 
 #~ msgid "Finish initial setup"
 #~ msgstr "Einrichtung beenden"
-
-#~ msgid "Data Preview"
-#~ msgstr "Vorschau"
 
 #~ msgid "Faubox File Settings"
 #~ msgstr "FAUbox Ordner Einstellungen"
