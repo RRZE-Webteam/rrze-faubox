@@ -6,7 +6,7 @@
   "title": "FAUbox",
   "category": "rrze",
   "icon": "cloud",
-  "description": "Integriert Daten aus der FAUbox.",
+  "description": "Integrates data from FAUbox.",
   "supports": {
     "html": false
   },

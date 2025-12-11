@@ -49,7 +49,7 @@ add_action('init', function () {
 
 //Register block editor script + JS translations early (runs on init).
 add_action('init', function (): void {
-    // Register the compiled editor bundle. Adjust path/version if needed.
+    // Register the compiled editor bundle. 
     wp_register_script(
         'rrze-faubox-editor',
         plugins_url('build/block/index.js', __FILE__),

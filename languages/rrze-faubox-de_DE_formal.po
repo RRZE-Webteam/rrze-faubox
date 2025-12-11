@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2025-12-09T10:39:02+00:00\n"
-"PO-Revision-Date: 2025-12-09 11:41+0100\n"
+"POT-Creation-Date: 2025-12-10T09:45:36+00:00\n"
+"PO-Revision-Date: 2025-12-10 10:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -40,24 +40,24 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Blocks/BlockRegistration.php:65
+#: includes/Blocks/BlockRegistration.php:89
 msgid "RRZE"
 msgstr "RRZE"
 
-#: includes/Renderer.php:73 includes/Renderer.php:140
+#: includes/Renderer.php:73 includes/Renderer.php:144
 msgid "No files found."
 msgstr "Keine Dateien gefunden."
 
-#: includes/Renderer.php:96 includes/Renderer.php:97 includes/Renderer.php:179
-#: includes/Renderer.php:180
+#: includes/Renderer.php:96 includes/Renderer.php:97 includes/Renderer.php:183
+#: includes/Renderer.php:184 includes/Renderer.php:192
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/Renderer.php:147
+#: includes/Renderer.php:151
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Renderer.php:148
+#: includes/Renderer.php:152
 msgid "Type"
 msgstr "Dateiformat"
 
@@ -127,7 +127,11 @@ msgstr "Angezeigte Dateiinformationen"
 
 #: build/block/index.js:1
 msgid "File Type"
-msgstr "Dateityp"
+msgstr "Dateiformat"
+
+#: build/block/index.js:1
+msgid "Image Preview Icon"
+msgstr "Bildvorschau Icon"
 
 #: build/block/index.js:1
 msgid "Folder Title"
@@ -169,8 +173,11 @@ msgid "FAUbox"
 msgstr "FAUbox"
 
 #: build/block/block.json
+#, fuzzy
+#| msgctxt "block description"
+#| msgid "Integriert Daten aus der FAUbox."
 msgctxt "block description"
-msgid "Integriert Daten aus der FAUbox."
+msgid "Integrates data from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
 
 #, php-format

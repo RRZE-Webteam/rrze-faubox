@@ -67,6 +67,7 @@ class Shortcode
 
         $atts['show_title'] = filter_var($atts['show_title'], FILTER_VALIDATE_BOOLEAN);
 
+
         /**
          * --------------------------------------------------------------
          * 3) API LOAD (ROOT OR SUBFOLDER)

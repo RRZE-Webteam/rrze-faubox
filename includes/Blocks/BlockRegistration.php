@@ -4,6 +4,8 @@ namespace RRZE\FAUbox\Blocks;
 
 defined('ABSPATH') || exit;
 
+
+
 /**
  * Handles the Registration & Localization of the FAUbox block.
  */
@@ -17,6 +19,7 @@ class BlockRegistration
         add_action('init', [self::class, 'fauboxBlockInit']);
         add_filter('block_categories_all', [self::class, 'addRrzeCategory'], 10, 2);
     }
+
 
     /**
      * Register block on init.
@@ -40,6 +43,7 @@ class BlockRegistration
                 'render_callback' => [BlockRender::class, 'output']
             ]
         );
+    }
 
 
 
@@ -47,7 +51,7 @@ class BlockRegistration
 //        $script_handle = generate_block_asset_handle('rrze/faubox', 'editorScript');
 //        wp_set_script_translations($script_handle, 'rrze-faubox', plugin_dir_path(__DIR__) . 'languages');
 //        load_plugin_textdomain('rrze_faubox', false, dirname(plugin_basename(__DIR__)) . '/languages');
-    }
+//    }
 
     /**
      * Adds the RRZE block category (if not present).

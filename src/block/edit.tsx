@@ -95,7 +95,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
 
     // Allowed filetypes for sidebar controls
-    const filetypeOptions = ['pdf', 'docx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
+    const filetypeOptions = ['pdf', 'docx','xlsx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
 
 
     return (
@@ -208,7 +208,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             <Divider margin="3"/>
                             <Heading color="#03316a">{__('Displayed file information', 'rrze-faubox')}</Heading>
                             <CheckboxControl
-                                label={__("File Type", 'rrze-faubox')}
+                                label={__('File Type', 'rrze-faubox')}
                                 checked={show.includes('type')}
                                 onChange={() => toggleShow('type')}
                             />
