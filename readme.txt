@@ -1,87 +1,140 @@
 === RRZE FAUbox ===
 Contributors: rrze
-Tags: files, cloud, fau, faubox, directory, list, table, preview
-Tested up to: 6.5
+Tags: files, cloud, fau, faubox, directory, list, table
 Requires at least: 6.0
+Tested up to: 6.5
 Requires PHP: 8.1
 Stable tag: 1.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-A WordPress plugin providing a file browser for FAUbox public share links. Includes table, list and image preview display, filtering options, and server-side rendering.
+Display files from FAUbox public share links as lists or tables in WordPress.
 
 == Description ==
 
 RRZE FAUbox integrates publicly shared FAUbox folders into WordPress.
 
-The plugin allows editors to embed FAUbox content via a Gutenberg block or shortcode.  
-Files are fetched via the FAUbox WAPI endpoint of a public share link.  
+The plugin allows editors to embed files from FAUbox public share links using
+either a Gutenberg block or a shortcode. Files are fetched server-side via the
+FAUbox WAPI endpoint and rendered directly in WordPress.
+
+No authentication or API keys are required. The plugin works exclusively with
+public FAUbox share links.
 
 **Features:**
-- Display FAUbox folders as *list* or *table*
-- Preview image files directly in the browser
-- all file are download files
-- Filetype filtering (e.g. pdf, png, zip)
-- Custom folder title override
-- Shortcode support
-- Works entirely server-side (SSR), no client-side API keys required
-- No authentication needed for public shares
+- Display files from FAUbox public shares
+- List and table view modes
+- Optional display of file name and file extension
+- File type filtering (e.g. pdf, jpg, png)
+- Optional custom folder title
+- Gutenberg block and shortcode support
+- Server-side rendering (SSR)
+- No authentication required for public shares
 
-The block is designed for users of the FAU (Friedrich-Alexander-Universität Erlangen-Nürnberg).
 
 == Installation ==
 
 1. Upload the plugin folder `rrze-faubox` to `/wp-content/plugins/`.
 2. Activate the plugin via **Plugins → Installed Plugins**.
-3. In the WordPress editor, add the **FAUbox** block under the category **RRZE**.
-4. Insert a public FAUbox share link (example:  
-   `https://faubox.rrze.uni-erlangen.de/getlink/fi12345ABCDEF/`).
-5. Select a folder and configure the display options.
+3. In the WordPress editor, add the **FAUbox** block from the **RRZE** category.
+4. Paste a public FAUbox share link, for example:
+   `https://faubox.rrze.uni-erlangen.de/getlink/fi12345ABCDEF/`
+5. Select folders and configure the display options.
 
-== Usage ==
 
-### Block Editor
+=== Shortcode ===
 
-After adding the FAUbox block:
+The plugin provides the shortcode `[faubox]`.
 
-1. Paste the public FAUbox link.
-2. Choose list or table
-3. Configure:
-   - Sorting  
-   - Visible file information (`name`, `type`)
-   - Filetype filter
-   - Optional custom folder title  
-4. The block renders server-side.
+The attribute `sharelink` is required. All other attributes are optional.
 
-### Shortcode
+Basic usage (root folder only):
 
-The plugin provides a shortcode that displays files from a public FAUbox link.
-The shortcode is [faubox] and requires at least the sharelink attribute.
-All other attributes are optional and control display mode, filters, and sorting.
-
-Basic usage:
 [faubox sharelink="https://faubox.rrze.uni-erlangen.de/getlink/…"]
 
 Display a specific subfolder:
-[faubox sharelink="…" index="Images"]
 
-Combine multiple folders:
-[faubox sharelink="…" selectedFolders="Images,Documents"]
+[faubox sharelink="…" selectedfolders="Images"]
 
-Change the view mode (list, table):
+Display multiple subfolders:
+
+[faubox sharelink="…" selectedfolders="Images,Documents"]
+
+Display a nested subfolder:
+
+[faubox sharelink="…" selectedfolders="folder/subfolder"]
+
+Change the view mode:
+
 [faubox sharelink="…" view="table"]
 
-Show additional file information (name, type):
+Show file name and file type:
+
 [faubox sharelink="…" show="name,type"]
 
 Filter by file types:
+
 [faubox sharelink="…" filetype="pdf,jpg,png"]
 
-Sorting options:
+Sorting order:
+
 [faubox sharelink="…" sort="desc"]
 
 Custom folder title:
-[faubox sharelink="…" show_title="true" changeTitle="Project Files"]
+
+[faubox sharelink="…" show_title="true" changetitle="Project Files"]
+
+
+== Shortcode Attributes ==
+
+= sharelink =
+Public FAUbox share link (required).
+
+= selectedfolders =
+One or more FAUbox folder paths.
+Use exact folder names as shown in FAUbox.
+Nested folders must be separated by `/`.
+
+Examples:
+- `Images`
+- `Images,Documents`
+- `Projects/2024`
+
+= view =
+Display mode.
+Possible values: `list`, `table`
+Default: `list`
+
+= show =
+Controls which file information is displayed.
+Possible values:
+- `name` (file name)
+- `type` (file extension, e.g. PDF, JPG)
+
+Example:
+`show="name,type"`
+
+= filetype =
+Limits the displayed files to specific file extensions.
+
+Example:
+`filetype="pdf,jpg,png"`
+
+= sort =
+Sorting order by file name.
+Possible values:
+- `asc` (ascending)
+- `desc` (descending)
+
+Default: `asc`
+
+= show_title =
+Displays a title above the file list.
+Possible values: `true`, `false`
+Default: `false`
+
+= changetitle =
+Overrides the displayed folder title when `show_title` is enabled.
 
 
 

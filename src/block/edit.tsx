@@ -32,9 +32,9 @@ interface EditProps {
         show_title: boolean;
         isInitialSetup: boolean;
         filetype: string[];
-        changeTitle: string;
+        changetitle: string;
         sharelink: string;
-        selectedFolders: string[];
+        selectedfolders: string[];
     }
     setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
 }
@@ -48,9 +48,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         show_title,
         isInitialSetup,
         filetype,
-        changeTitle,
+        changetitle,
         sharelink,
-        selectedFolders = [],
+        selectedfolders = [],
     } = attributes;
 
     const blockProps = useBlockProps();
@@ -95,7 +95,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
 
     // Allowed filetypes for sidebar controls
-    const filetypeOptions = ['pdf', 'docx','xlsx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
+    const filetypeOptions = ['pdf', 'docx', 'xlsx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
 
 
     return (
@@ -120,7 +120,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault(); // verhindert Zeilenumbrüche
-                                        setAttributes({ isInitialSetup: false });
+                                        setAttributes({isInitialSetup: false});
                                     }
                                 }}
                             />
@@ -160,7 +160,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault(); // verhindert Zeilenumbrüche
-                                        setAttributes({ isInitialSetup: false });
+                                        setAttributes({isInitialSetup: false});
                                     }
                                 }}
                             />
@@ -179,12 +179,12 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 <CheckboxControl
                                     key={folder.value}
                                     label={folder.label}
-                                    checked={selectedFolders.includes(folder.value)}
+                                    checked={selectedfolders.includes(folder.value)}
                                     onChange={(checked) => {
                                         const updated = checked
-                                            ? [...selectedFolders, folder.value]
-                                            : selectedFolders.filter((v) => v !== folder.value);
-                                        setAttributes({selectedFolders: updated})
+                                            ? [...selectedfolders, folder.value]
+                                            : selectedfolders.filter((v) => v !== folder.value);
+                                        setAttributes({selectedfolders: updated})
                                     }}
                                 />
                             ))}
@@ -221,8 +221,8 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             <TextControl
                                 label={__('Overwrite folder name', 'rrze-faubox')}
                                 help={__('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox')}
-                                value={changeTitle}
-                                onChange={(val) => setAttributes({changeTitle: val})}
+                                value={changetitle}
+                                onChange={(val) => setAttributes({changetitle: val})}
                             />
                             <Divider margin="2"/>
                             <Heading color="#03316a">{__('Permitted file formats', 'rrze-faubox')}</Heading>
@@ -256,7 +256,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
                     </InspectorControls>
                     { /* Ausgabe nach Setup */}
-                    {selectedFolders.length === 0 ? (
+                    {selectedfolders.length === 0 ? (
                         <p style={{opacity: 0.7}}>
                             {__('FAUbox link saved. Select your folder in the sidebar.', 'rrze-faubox')}
                         </p>

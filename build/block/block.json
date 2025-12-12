@@ -52,7 +52,7 @@
       "type": "array",
       "default": []
     },
-    "changeTitle": {
+    "changetitle": {
       "type": "string",
       "default": ""
     },
@@ -60,7 +60,7 @@
       "type": "string",
       "default": ""
     },
-    "selectedFolders": {
+    "selectedfolders": {
       "type": "array",
       "default": []
     }
