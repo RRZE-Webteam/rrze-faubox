@@ -7,8 +7,6 @@ defined('ABSPATH') || exit;
 use RRZE\FAUbox\Blocks\BlockRegistration;
 use RRZE\FAUbox\Admin\Rest;
 
-
-
 /**
  * Main class
  *
@@ -26,20 +24,11 @@ final class Main
 
     private function initHooks(): void
     {
-//        $this->initAdmin();
         $this->initShortcodes();
         $this->initBlocks();
-        $this->restAPI();
-
-
+        $this->registerRestRoute();
     }
 
-//    private function initAdmin(): void
-//    {
-//        if (is_admin()) {
-//            Admin\Settings::register();
-//        }
-//    }
 
     private function initShortcodes(): void
     {
@@ -53,15 +42,9 @@ final class Main
 
     /**
      * Registers custom REST API routes for the FAUbox plugin.
-     *
-     * Currently provides a dummy folder list for use in the block editor.
-     * Replace or extend with real API routes later.
      */
-    private function restAPI(): void
+    private function registerRestRoute(): void
     {
         Rest::register();
     }
-
-
-
 }

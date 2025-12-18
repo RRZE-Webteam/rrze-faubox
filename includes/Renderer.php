@@ -48,18 +48,6 @@ class Renderer
     }
 
 
-//    private static function getPreviewIcon(): string
-//    {
-//        $path = plugin_dir_path(__DIR__, 2) . 'assets/svg/image_arrow_up.svg';
-//
-//        if (file_exists($path)) {
-//            return file_get_contents($path);
-//        }
-//
-//        return ''; // fallback
-//    }
-
-
     /**
      * Renders a simple list.
      *
@@ -118,7 +106,7 @@ class Renderer
 
         $columns = $atts['show'] ?? ['name'];
 
-        // 🟩 Mapping: internal column → translated label
+        // Mapping: internal column → translated label
         $columnLabels = [
             'name' => __('File Name', 'rrze-faubox'),
             'type' => __('Type', 'rrze-faubox'),

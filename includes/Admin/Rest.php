@@ -53,72 +53,124 @@ class Rest
      */
     public static function getFolders(WP_REST_Request $request): WP_REST_Response
     {
-        $shareLink = trim((string)$request->get_param('sharelink'));
+        $validated = self::validateShareRequest($request);
+        if ($validated === false) {
+            return new WP_REST_Response([], 200);
+        }
+
         $folderName = trim((string)$request->get_param('folder'));
 
-        // 1. Validate share link
-        if ($shareLink === '') {
-            return new WP_REST_Response([], 200);
-        }
-
-        $shareId = API::resolveShareIdFromUrl($shareLink);
-        if (!$shareId) {
-            return new WP_REST_Response([], 200);
-        }
-
-        $resourceId = API::resolveResourceId($shareId);
-        if (!$resourceId) {
-            return new WP_REST_Response([], 200);
-        }
-
-
-        // 2. Fetch either root or subfolder
-        $items = ($folderName === '')
-            ? API::fetchRoot($resourceId, $shareId)
-            : API::fetchSubfolder($resourceId, $shareId, $folderName);
-
+        $items = self::loadFolderItems(
+            $validated['resourceId'],
+            $validated['shareId'],
+            $folderName
+        );
 
         if (!is_array($items)) {
             return new WP_REST_Response([], 200);
         }
 
+        $result = self::buildInitialResult($items);
+        $result = self::buildFolderTree($result, $validated, $items);
 
-        $folders = API::filterFolders($items);
-        $files = API::filterFiles($items);
+        return new WP_REST_Response($result, 200);
+    }
 
 
-        $result = [
-            'folders' => [],
-            'files' => []
+    /**
+     * Validates the share link and resolves Share-ID + Resource-ID.
+     * Returns false on invalid input or an array with both IDs.
+     */
+    private static function validateShareRequest(WP_REST_Request $request): array|false
+    {
+        $shareLink = trim((string)$request->get_param('sharelink'));
+
+        if ($shareLink === '') {
+            return false;
+        }
+
+        $shareId = API::resolveShareIdFromUrl($shareLink);
+        if (!$shareId) {
+            return false;
+        }
+
+        $resourceId = API::resolveResourceId($shareId);
+        if (!$resourceId) {
+            return false;
+        }
+
+        return [
+            'shareId' => $shareId,
+            'resourceId' => $resourceId
         ];
+    }
 
-        $appendFiles = static function (array $fileItems, string $folderLabel = '', string $folderValue = '') use (&$result): void {
-            foreach ($fileItems as $file) {
-                $fileName = $file['fileName'] ?? '';
-                if ($fileName === '') {
-                    continue;
-                }
+    /**
+     * Loads either root items or subfolder items depending on folderName.
+     * Always returns an array (empty on failure).
+     */
+    private static function loadFolderItems(string $resourceId, string $shareId, string $folderName): array
+    {
+        return ($folderName === '')
+            ? (API::fetchRoot($resourceId, $shareId) ?? [])
+            : (API::fetchSubfolder($resourceId, $shareId, $folderName) ?? []);
+    }
 
-                $result['files'][] = [
-                    'value' => wp_json_encode([
-                        'folder' => $folderValue,
-                        'name' => $fileName,
-                    ]),
-                    'label' => $folderLabel !== '' ? $folderLabel . ' / ' . $fileName : $fileName,
-                ];
+    /**
+     * Creates the base result structure with root folders and root files.
+     * Used as the starting point for building the folder tree.
+     */
+    private static function buildInitialResult(array $items): array
+    {
+        return [
+            'folders' => [],
+            'files' => [],
+            'rootFolders' => API::filterFolders($items),
+            'rootFiles' => API::filterFiles($items)
+        ];
+    }
+
+    /**
+     * Adds file entries to the result array with label/value formatting.
+     * Used for both root files and files inside subfolders.
+     */
+    private static function appendFiles(array &$result, array $fileItems, string $folderLabel = '', string $folderValue = ''): void
+    {
+        foreach ($fileItems as $file) {
+            $fileName = $file['fileName'] ?? '';
+            if ($fileName === '') {
+                continue;
             }
-        };
 
-        // root data
-        $appendFiles($files);
+            $result['files'][] = [
+                'value' => wp_json_encode([
+                    'folder' => $folderValue,
+                    'name' => $fileName,
+                ]),
+                'label' => $folderLabel !== '' ? $folderLabel . ' / ' . $fileName : $fileName,
+            ];
+        }
+    }
+
+    /**
+     * Iterates through all folders and builds a recursive folder tree.
+     * Adds folders and their contained files to the result structure.
+     */
+    private static function buildFolderTree(array $result, array $validated, array $items): array
+    {
+        $resourceId = $validated['resourceId'];
+        $shareId = $validated['shareId'];
+
+        self::appendFiles($result, API::filterFiles($items));
 
         $queue = array_map(static fn($folder) => [
             'path' => self::relativePath($folder, $resourceId),
             'label' => $folder['fileName'],
-        ], $folders);
+        ], API::filterFolders($items));
 
         while ($queue) {
             $current = array_shift($queue);
+
             $result['folders'][] = [
                 'value' => $current['path'],
                 'label' => $current['label'],
@@ -129,7 +181,12 @@ class Rest
                 continue;
             }
 
-            $appendFiles(API::filterFiles($subItems), $current['label'], $current['path']);
+            self::appendFiles(
+                $result,
+                API::filterFiles($subItems),
+                $current['label'],
+                $current['path']
+            );
 
             foreach (API::filterFolders($subItems) as $child) {
                 $queue[] = [
@@ -139,17 +196,13 @@ class Rest
             }
         }
 
-
-        return new WP_REST_Response($result, 200);
-
-
+        return $result;
     }
 
+
     /**
-     * Helper for extracting URL part from resource URL
-     * @param array $folder
-     * @param string $resourceId
-     * @return string
+     * Extracts the folder path from resourceURL relative to the resource ID.
+     * Falls back to URL-encoded fileName if no path is found.
      */
     private static function relativePath(array $folder, string $resourceId): string
     {
@@ -169,7 +222,8 @@ class Rest
 
 
     /**
-     * Returns FILES ONLY for SSR rendering
+     * REST endpoint: returns only the files of a share or a subfolder.
+     * Used by the server-side renderer.
      */
     public static function getFiles(WP_REST_Request $request): WP_REST_Response
     {

@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2025-12-10T09:45:36+00:00\n"
-"PO-Revision-Date: 2025-12-10 10:48+0100\n"
+"POT-Creation-Date: 2025-12-17T13:29:50+00:00\n"
+"PO-Revision-Date: 2025-12-17 14:31+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -40,32 +40,27 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Blocks/BlockRegistration.php:89
+#: includes/Blocks/BlockRegistration.php:69
 msgid "RRZE"
 msgstr "RRZE"
 
-#: includes/Renderer.php:73 includes/Renderer.php:144
+#: includes/Renderer.php:61 includes/Renderer.php:104
 msgid "No files found."
 msgstr "Keine Dateien gefunden."
 
-#: includes/Renderer.php:96 includes/Renderer.php:97 includes/Renderer.php:183
-#: includes/Renderer.php:184 includes/Renderer.php:192
-msgid "Preview"
-msgstr "Vorschau"
-
-#: includes/Renderer.php:151
+#: includes/Renderer.php:111
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Renderer.php:152
+#: includes/Renderer.php:112
 msgid "Type"
 msgstr "Dateiformat"
 
-#: includes/Shortcode.php:35
+#: includes/Shortcode.php:194
 msgid "FAUbox share link missing."
 msgstr "Der FAUbox Teilen Link fehlt."
 
-#: includes/Shortcode.php:40 includes/Shortcode.php:45 build/block/index.js:1
+#: includes/Shortcode.php:199 includes/Shortcode.php:204 build/block/index.js:1
 msgid "Invalid FAUbox public link."
 msgstr "Ungültiger FAUbox Link."
 
@@ -78,20 +73,12 @@ msgid "Configure your FAUbox block."
 msgstr "Konfigurieren Sie Ihren FAUbox-Block."
 
 #: build/block/index.js:1
-msgid "FAUbox Share Link"
-msgstr "FAUbox Teilen Link"
+msgid "FAUbox Link"
+msgstr "FAUbox Link"
 
 #: build/block/index.js:1
 msgid "Paste your FAUbox public link here (Root Folder)"
 msgstr "Fügen Sie Ihren FAUbox Link hier ein (Basisordner)"
-
-#: build/block/index.js:1
-msgid "Save Link"
-msgstr "Link speichern"
-
-#: build/block/index.js:1
-msgid "Data Choice"
-msgstr "Datenauswahl"
 
 #: build/block/index.js:1
 msgid "Select Folders"
@@ -100,6 +87,18 @@ msgstr "Ordner auswählen"
 #: build/block/index.js:1
 msgid "No folders found."
 msgstr "Keine Ordner gefunden."
+
+#: build/block/index.js:1
+msgid "Save"
+msgstr "Speichern"
+
+#: build/block/index.js:1
+msgid "Data Choice"
+msgstr "Datenauswahl"
+
+#: build/block/index.js:1
+msgid "FAUbox Share Link"
+msgstr "FAUbox Teilen Link"
 
 #: build/block/index.js:1
 msgid "Display Options"
@@ -130,10 +129,6 @@ msgid "File Type"
 msgstr "Dateiformat"
 
 #: build/block/index.js:1
-msgid "Image Preview Icon"
-msgstr "Bildvorschau Icon"
-
-#: build/block/index.js:1
 msgid "Folder Title"
 msgstr "Ordnername"
 
@@ -162,9 +157,9 @@ msgid "Descending"
 msgstr "Absteigend"
 
 #: build/block/index.js:1
-msgid "FAUbox link saved. Select your folder in the sidebar."
+msgid "Folder selection is missing. Please select your folder in the sidebar."
 msgstr ""
-"Link gespeichert. Bitte wählen Sie den darzustellenden Ordner in den "
+"Ordnerauswahl fehlt. Bitte wählen Sie den darzustellenden Ordner in den "
 "Blockeinstellungen der Seitenleiste."
 
 #: build/block/block.json
@@ -179,6 +174,12 @@ msgstr "FAUbox"
 msgctxt "block description"
 msgid "Integrates data from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "Preview"
+#~ msgstr "Vorschau"
+
+#~ msgid "Image Preview Icon"
+#~ msgstr "Bildvorschau Icon"
 
 #, php-format
 #~ msgid "Folders available in %s:"

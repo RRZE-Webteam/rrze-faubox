@@ -46,31 +46,25 @@ add_action('init', function () {
     load_plugin_textdomain('rrze-faubox', false, dirname(plugin_basename(__FILE__)) . '/languages');
 });
 
-
-//Register block editor script + JS translations early (runs on init).
-add_action('init', function (): void {
-    // Register the compiled editor bundle. 
-    wp_register_script(
-        'rrze-faubox-editor',
-        plugins_url('build/block/index.js', __FILE__),
-        ['wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor', 'wp-api-fetch'],
-        '1.0.0',
-        true
+/**
+ * Register Block
+ */
+add_action('init', function () {
+    $block = register_block_type(
+        __DIR__ . '/build/block',
+        [
+            'render_callback' => [\RRZE\FAUbox\Blocks\BlockRender::class, 'output'],
+        ]
     );
 
-    // Bind JS translations found in /languages to the registered handle.
-    wp_set_script_translations(
-        'rrze-faubox-editor',
-        'rrze-faubox',
-        plugin_dir_path(__FILE__) . '/languages'
-    );
+    if ($block && !empty($block->editor_script)) {
+        wp_set_script_translations(
+            $block->editor_script,
+            'rrze-faubox',
+            __DIR__ . '/languages'
+        );
+    }
 });
-
-//Enqueue the editor script only inside the block editor.
-add_action('enqueue_block_editor_assets', function (): void {
-    wp_enqueue_script('rrze-faubox-editor');
-});
-
 
 /**
  * Bootstrap the plugin once all plugins are loaded.

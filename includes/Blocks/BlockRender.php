@@ -21,7 +21,6 @@ class BlockRender
      */
     public static function output(array $attributes = []): string
     {
-        // Passes block attributes directly to the shortcode renderer
         return Shortcode::render($attributes);
     }
 

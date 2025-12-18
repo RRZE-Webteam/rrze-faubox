@@ -26,24 +26,17 @@ class Shortcode
     {
         /**
          * --------------------------------------------------------------
-         * 1) SHARE LINK
+         * 1) SHARE LINK VALIDATION
          * --------------------------------------------------------------
          */
-        $shareLink = trim((string)($atts['sharelink'] ?? ''));
+        $validation = self::validateShareLink($atts['sharelink'] ?? '');
 
-        if ($shareLink === '') {
-            return '<p>' . esc_html__('FAUbox share link missing.', 'rrze-faubox') . '</p>';
+        if (is_string($validation)) {
+            return $validation;
         }
 
-        $shareId = API::resolveShareIdFromUrl($shareLink);
-        if (!$shareId) {
-            return '<p>' . esc_html__('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
-        }
-
-        $resourceId = API::resolveResourceId($shareId);
-        if (!$resourceId) {
-            return '<p>' . esc_html__('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
-        }
+        $shareId = $validation['shareId'];
+        $resourceId = $validation['resourceId'];
 
         /**
          * --------------------------------------------------------------
@@ -83,7 +76,7 @@ class Shortcode
                 $allItems = $rootItems;
             }
         } else {
-            // 🟩 Load multiple folders
+            // Load multiple folders
             foreach ($selectedFolders as $folder) {
                 $items = API::fetchSubfolder($resourceId, $shareId, $folder);
                 if (is_array($items)) {
@@ -187,6 +180,35 @@ class Shortcode
 
         return $output;
     }
+
+    /**
+     * Validates share link input and resolves corresponding IDs.
+     *
+     * @return array{shareId:string, resourceId:string}|string
+     */
+    public static function validateShareLink(string $shareLink)
+    {
+        $shareLink = trim($shareLink);
+
+        if ($shareLink === '') {
+            return '<p>' . esc_html__('FAUbox share link missing.', 'rrze-faubox') . '</p>';
+        }
+
+        $shareId = API::resolveShareIdFromUrl($shareLink);
+        if (!$shareId) {
+            return '<p>' . esc_html__('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
+        }
+
+        $resourceId = API::resolveResourceId($shareId);
+        if (!$resourceId) {
+            return '<p>' . esc_html__('Invalid FAUbox public link.', 'rrze-faubox') . '</p>';
+        }
+        return [
+            'shareId' => $shareId,
+            'resourceId' => $resourceId,
+        ];
+    }
+
 
     /**
      * Normalizes the "show" attribute to valid table/list columns.

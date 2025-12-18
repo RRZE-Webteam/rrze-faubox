@@ -112,8 +112,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                         <hr/>
                         <Spacer paddingBottom={"1rem"}/>
                         <div>
+                            <Heading level={4} color="#03316a">{__('FAUbox Link', 'rrze-faubox')}</Heading>
+                            <Spacer paddingTop={"0.5rem"}/>
                             <TextControl
-                                label={__('FAUbox Share Link', 'rrze-faubox')}
                                 value={attributes.sharelink}
                                 onChange={(val) => setAttributes({sharelink: val})}
                                 help={__('Paste your FAUbox public link here (Root Folder)', 'rrze-faubox')}
@@ -130,7 +131,24 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                     {__('Invalid FAUbox public link.', 'rrze-faubox')}
                                 </p>
                             )}
+                            <Spacer paddingTop={"0.5rem"}/>
+                            <Heading level={4} color="#03316a">{__('Select Folders', 'rrze-faubox')}</Heading>
+                            <Spacer paddingTop={"0.5rem"}/>
+                            {folderOptions.length === 0 && <p>{__('No folders found.', 'rrze-faubox')}</p>}
 
+                            {folderOptions.map((folder) => (
+                                <CheckboxControl
+                                    key={folder.value}
+                                    label={folder.label}
+                                    checked={selectedfolders.includes(folder.value)}
+                                    onChange={(checked) => {
+                                        const updated = checked
+                                            ? [...selectedfolders, folder.value]
+                                            : selectedfolders.filter((v) => v !== folder.value);
+                                        setAttributes({selectedfolders: updated})
+                                    }}
+                                />
+                            ))}
 
                         </div>
                         <Spacer paddingTop=".5rem"/>
@@ -141,7 +159,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             variant="primary"
                             onClick={() => setAttributes({isInitialSetup: false})}
                         >
-                            {__('Save Link', 'rrze-faubox')}
+                            {__('Save', 'rrze-faubox')}
                         </Button>
                         <Spacer paddingBottom={"0.5rem"}/>
                     </div>
@@ -258,7 +276,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                     { /* Ausgabe nach Setup */}
                     {selectedfolders.length === 0 ? (
                         <p style={{opacity: 0.7}}>
-                            {__('FAUbox link saved. Select your folder in the sidebar.', 'rrze-faubox')}
+                            {__('Folder selection is missing. Please select your folder in the sidebar.', 'rrze-faubox')}
                         </p>
                     ) : (
                         <ServerSideRender

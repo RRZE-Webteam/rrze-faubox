@@ -1,4 +1,4 @@
-import './editor.scss'; // 🟢 Styles für Editor laden
+import './editor.scss';
 
 import { registerBlockType, type BlockConfiguration } from '@wordpress/blocks';
 import Edit from './edit';

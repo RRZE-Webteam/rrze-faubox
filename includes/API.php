@@ -83,7 +83,6 @@ class API
             return $cached;
         }
 
-
         $url = self::BASE_WAPI .
             '?action=getFileInfo&ID=' . rawurlencode($shareId) . '&json=1';
 
@@ -94,7 +93,6 @@ class API
         }
 
         $body = wp_remote_retrieve_body($response);
-
 
         if (empty($body)) {
             return null;
@@ -155,7 +153,6 @@ class API
             return null;
         }
 
-
         $body = wp_remote_retrieve_body($response);
         if (empty($body)) {
             return null;
@@ -167,13 +164,11 @@ class API
             return null;
         }
 
-
         $items = $json['ResultSet']['Result'];
 
         set_transient($cacheKey, $items, 60*60);
 
         return $items;
-
     }
 
 
@@ -191,8 +186,6 @@ class API
      * @param string $folderName The subfolder name (URL encoded automatically).
      * @return array|null Array of items or null.
      */
-
-
     public static function fetchSubfolder(string $resourceId, string $shareId, string $folderName): ?array
     {
         $cacheKey =
@@ -251,7 +244,6 @@ class API
                 $files[] = $item;
             }
         }
-
         return $files;
     }
 
@@ -275,7 +267,6 @@ class API
                 $folders[] = $item;
             }
         }
-
         return $folders;
     }
 }
