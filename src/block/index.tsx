@@ -4,7 +4,7 @@ import { registerBlockType, type BlockConfiguration } from '@wordpress/blocks';
 import Edit from './edit';
 import metadata from './block.json';
 
-// Block registrieren
+// register block
 registerBlockType(metadata.name as any, {
     ...metadata,
     edit: Edit,

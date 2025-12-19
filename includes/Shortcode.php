@@ -24,11 +24,7 @@ class Shortcode
      */
     public static function render(array $atts = [], ?string $content = null): string
     {
-        /**
-         * --------------------------------------------------------------
-         * 1) SHARE LINK VALIDATION
-         * --------------------------------------------------------------
-         */
+        //SHARE LINK VALIDATION
         $validation = self::validateShareLink($atts['sharelink'] ?? '');
 
         if (is_string($validation)) {
@@ -38,11 +34,7 @@ class Shortcode
         $shareId = $validation['shareId'];
         $resourceId = $validation['resourceId'];
 
-        /**
-         * --------------------------------------------------------------
-         * 2) DEFAULT ATTRIBUTES
-         * --------------------------------------------------------------
-         */
+        //DEFAULT ATTRIBUTES
         $atts = shortcode_atts([
             'view' => 'list',
             'show' => ['name'],
@@ -61,125 +53,16 @@ class Shortcode
 
         $atts['show_title'] = filter_var($atts['show_title'], FILTER_VALIDATE_BOOLEAN);
 
+        $allItems = self::loadApi($resourceId, $shareId, $selectedFolders);
 
-        /**
-         * --------------------------------------------------------------
-         * 3) API LOAD (ROOT OR SUBFOLDER)
-         * --------------------------------------------------------------
-         */
-        $allItems = [];
-
-        // If no folder selected → Load root
-        if (empty($selectedFolders)) {
-            $rootItems = API::fetchRoot($resourceId, $shareId);
-            if (is_array($rootItems)) {
-                $allItems = $rootItems;
-            }
-        } else {
-            // Load multiple folders
-            foreach ($selectedFolders as $folder) {
-                $items = API::fetchSubfolder($resourceId, $shareId, $folder);
-                if (is_array($items)) {
-                    $files = API::filterFiles($items);
-                    $allItems = array_merge($allItems, $files);
-                }
-            }
-        }
-
-
-        /** --------------------------------------------------------------
-         * 4) KEEP FILES ONLY
-         * --------------------------------------------------------------
-         */
         $files = API::filterFiles($allItems);
+        $files = self::normalizeFileData($files);
+        $files = self::filterFileType($files, $atts['filetype']);
+        $files = self::sortFiles($files, $atts['sort']);
 
-
-        /**
-         * --------------------------------------------------------------
-         * 5) NORMALIZE FILE DATA FOR RENDERER
-         * --------------------------------------------------------------
-         */
-        $files = array_map(static function ($file): array {
-
-            $name = $file['fileName'] ?? '';
-            $resourceUrl = $file['resourceURL'] ?? '';
-
-            // Extract actual file ID from URL
-            $downloadUrl = str_replace('/files/', '/download/', $resourceUrl);
-
-            return [
-                'name' => $name,
-                'url' => $downloadUrl,
-                'type' => strtolower(pathinfo($name, PATHINFO_EXTENSION)),
-                'name_raw' => strtolower($name),
-            ];
-        }, $files);
-
-        /**
-         * --------------------------------------------------------------
-         * 6) FILTER FILETYPES
-         * --------------------------------------------------------------
-         */
-        $allowedTypes = array_map('strtolower', (array)$atts['filetype']);
-
-        if (!empty($allowedTypes)) {
-            $files = array_filter($files, static function ($file) use ($allowedTypes) {
-                return in_array($file['type'], $allowedTypes, true);
-            });
-        }
-
-        /**
-         * --------------------------------------------------------------
-         * 7) SORTING
-         * --------------------------------------------------------------
-         */
-
-        $sort = strtolower($atts['sort']) === 'desc' ? 'desc' : 'asc';
-
-        usort($files, static function ($a, $b) use ($sort): int {
-            $valA = strtolower($a['name'] ?? '');
-            $valB = strtolower($b['name'] ?? '');
-
-            if ($valA === $valB) {
-                return 0;
-            }
-
-            return ($sort === 'asc')
-                ? ($valA < $valB ? -1 : 1)
-                : ($valA < $valB ? 1 : -1);
-        });
-
-        /**
-         * --------------------------------------------------------------
-         * 8) RENDERING
-         * --------------------------------------------------------------
-         */
-        $output = '';
-
-        // Optional custom title
-        if ($atts['show_title']) {
-            $title = trim((string)$atts['changetitle']);
-
-            if ($title === '') {
-                if (!empty($selectedFolders)) {
-                    $title = rawurldecode((string)$selectedFolders[0]);
-                } else {
-                    $title = 'FAUbox';
-                }
-            }
-
-            $output .= Renderer::renderTitle($title);
-        }
-
-
-        // Render files
-        $output .= Renderer::render($files, [
-            'view' => $atts['view'],
-            'show' => $atts['show'],
-        ]);
-
-        return $output;
+        return self::renderOutput($files, $atts, $selectedFolders);
     }
+
 
     /**
      * Validates share link input and resolves corresponding IDs.
@@ -209,6 +92,151 @@ class Shortcode
         ];
     }
 
+
+    /**
+     * Loads items from FAUbox API (root or multiple subfolders).
+     *
+     * @param string $resourceId
+     * @param string $shareId
+     * @param array $selectedFolders
+     * @return array
+     */
+    public static function loadApi(string $resourceId, string $shareId, array $selectedFolders): array
+    {
+        $allItems = [];
+
+        // If no folder selected → load root folder
+        if (empty($selectedFolders)) {
+            $rootItems = API::fetchRoot($resourceId, $shareId);
+            if (is_array($rootItems)) {
+                $allItems = $rootItems;
+            }
+            return $allItems;
+        }
+
+        // Otherwise load items from each subfolder
+        foreach ($selectedFolders as $folder) {
+            $items = API::fetchSubfolder($resourceId, $shareId, $folder);
+            if (is_array($items)) {
+                $files = API::filterFiles($items);
+                $allItems = array_merge($allItems, $files);
+            }
+        }
+
+        return $allItems;
+    }
+
+    /**
+     * Normalizes FAUbox file data into a simple array for the Renderer.
+     *
+     * @param array $files
+     * @return array
+     */
+    public static function normalizeFileData($files): array
+    {
+        return array_map(static function ($file): array {
+
+            $name = $file['fileName'] ?? '';
+            $resourceUrl = $file['resourceURL'] ?? '';
+
+            // Extract actual file ID from URL
+            $downloadUrl = str_replace('/files/', '/download/', $resourceUrl);
+
+            return [
+                'name' => $name,
+                'url' => $downloadUrl,
+                'type' => strtolower(pathinfo($name, PATHINFO_EXTENSION)),
+                'name_raw' => strtolower($name),
+            ];
+        }, $files);
+
+    }
+
+    /**
+     * Filters files by allowed file extensions.
+     *
+     * @param array $files
+     * @param array $allowedTypes
+     * @return array
+     */
+    public static function filterFileType(array $files, array $allowedTypes): array
+    {
+        // Normalize all allowed types to lowercase
+        $allowedTypes = array_map('strtolower', $allowedTypes);
+        // If nothing selected → do not filter
+        if (!empty($allowedTypes)) {
+            return $files;
+
+        }
+        return array_filter($files, static function ($file) use ($allowedTypes) {
+            return in_array($file['type'], $allowedTypes, true);
+        });
+    }
+
+
+/**
+* Sorts files alphabetically by name in asc or desc order.
+*
+* @param array  $files
+* @param string $sort  'asc' or 'desc'
+* @return array
+*/
+    public static function sortFiles(array $files, string $sort): array
+    {
+        $sort = strtolower($sort) === 'desc' ? 'desc' : 'asc';
+
+        usort($files, static function ($a, $b) use ($sort): int {
+            $valA = strtolower($a['name'] ?? '');
+            $valB = strtolower($b['name'] ?? '');
+
+            if ($valA === $valB) {
+                return 0;
+            }
+
+            return ($sort === 'asc')
+                ? ($valA < $valB ? -1 : 1)
+                : ($valA < $valB ? 1 : -1);
+        });
+
+        return $files;
+
+    }
+
+    /**
+     * Builds final HTML output including optional title and rendered file list.
+     *
+     * @param array $files
+     * @param array $atts
+     * @param array $selectedFolders
+     * @return string
+     */
+    public static function renderOutput(array $files, array $atts, array $selectedFolders): string
+    {
+        $output = '';
+
+        // Optional custom or folder title
+        if (!empty($atts['show_title'])) {
+            $title = trim((string)$atts['changetitle']);
+
+            if ($title === '') {
+                if (!empty($selectedFolders)) {
+                    $title = rawurldecode((string)$selectedFolders[0]);
+                } else {
+                    $title = 'FAUbox';
+                }
+            }
+
+            $output .= Renderer::renderTitle($title);
+        }
+
+        // Main file rendering (table, list, etc.)
+        $output .= Renderer::render($files, [
+            'view' => $atts['view'],
+            'show' => $atts['show'],
+        ]);
+
+        return $output;
+    }
 
     /**
      * Normalizes the "show" attribute to valid table/list columns.

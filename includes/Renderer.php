@@ -10,13 +10,6 @@ class Renderer
 {
 
     /**
-     * Gallery instance counter to generate unique container classes.
-     *
-     * @var int
-     */
-    private static int $galleryInstance = 0;
-
-    /**
      * Render file list as HTML output based on view type.
      *
      * @param array $data The file list array.
@@ -106,11 +99,8 @@ class Renderer
 
         $columns = $atts['show'] ?? ['name'];
 
-        // Mapping: internal column → translated label
-        $columnLabels = [
-            'name' => __('File Name', 'rrze-faubox'),
-            'type' => __('Type', 'rrze-faubox'),
-        ];
+        // Load column labels from Helper class
+        $columnLabels = Helper::getColumnLabels();
 
         $html = '<figure class="wp-block-table"><table class="faubox-filetable">';
         $html .= '<thead><tr>';
