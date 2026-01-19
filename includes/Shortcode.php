@@ -164,7 +164,7 @@ class Shortcode
         // Normalize all allowed types to lowercase
         $allowedTypes = array_map('strtolower', $allowedTypes);
         // If nothing selected → do not filter
-        if (!empty($allowedTypes)) {
+        if (empty($allowedTypes)) {
             return $files;
 
         }

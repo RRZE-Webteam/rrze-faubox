@@ -46,25 +46,7 @@ add_action('init', function () {
     load_plugin_textdomain('rrze-faubox', false, dirname(plugin_basename(__FILE__)) . '/languages');
 });
 
-/**
- * Register Block
- */
-add_action('init', function () {
-    $block = register_block_type(
-        __DIR__ . '/build/block',
-        [
-            'render_callback' => [\RRZE\FAUbox\Blocks\BlockRender::class, 'output'],
-        ]
-    );
 
-    if ($block && !empty($block->editor_script)) {
-        wp_set_script_translations(
-            $block->editor_script,
-            'rrze-faubox',
-            __DIR__ . '/languages'
-        );
-    }
-});
 
 /**
  * Bootstrap the plugin once all plugins are loaded.

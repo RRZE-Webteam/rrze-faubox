@@ -25,7 +25,7 @@ final class Main
     private function initHooks(): void
     {
         $this->initShortcodes();
-        $this->initBlocks();
+        $this->initBlockRegistration();
         $this->registerRestRoute();
     }
 
@@ -35,7 +35,7 @@ final class Main
         add_action('init', [Shortcode::class, 'register']);
     }
 
-    private function initBlocks(): void
+    public function initBlockRegistration(): void
     {
         BlockRegistration::register();
     }
