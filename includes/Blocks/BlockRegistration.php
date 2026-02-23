@@ -2,6 +2,8 @@
 
 namespace RRZE\FAUbox\Blocks;
 
+use RRZE\FAUbox\Helper;
+
 defined('ABSPATH') || exit;
 
 
@@ -27,8 +29,14 @@ class BlockRegistration
      */
     public static function registerBlock(): void
     {
+
+        error_log(print_r('rrze-faubox', true));
+        Helper::debug('testlauf');
+        Helper::debug(__DIR__ . '/build/block');
+        Helper::debug(dirname(__DIR__, 2) . '/build/block');
+
         $block = register_block_type(
-            __DIR__ . '/build/block',
+            dirname(__DIR__, 2) . '/build/block',
             [
                 'render_callback' => [\RRZE\FAUbox\Blocks\BlockRender::class, 'output'],
             ]
@@ -39,7 +47,7 @@ class BlockRegistration
             wp_set_script_translations(
                 $block->editor_script,
                 'rrze-faubox',
-                __DIR__ . '/languages'
+                dirname(__DIR__, 2) .  '/languages'
             );
         }
     }
@@ -50,6 +58,9 @@ class BlockRegistration
      */
     public static function addRrzeCategory(array $categories, $post): array
     {
+//        Helper::debug('rrze-categories');
+//        Helper::debug($categories);
+
         foreach ($categories as $category) {
             if ($category['slug'] === 'rrze') {
                 return $categories;

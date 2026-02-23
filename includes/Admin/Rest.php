@@ -9,6 +9,7 @@ defined('ABSPATH') || exit;
 use WP_REST_Request;
 use WP_REST_Response;
 use RRZE\FAUbox\API;
+use RRZE\FAUbox\Helper;
 
 /**
  * REST endpoints for Gutenberg FAUbox block.
@@ -53,25 +54,39 @@ class Rest
      */
     public static function getFolders(WP_REST_Request $request): WP_REST_Response
     {
+        Helper::debug('getFolder Aufruf startet hier:');
+
+        Helper::debug($request);
+
         $validated = self::validateShareRequest($request);
+        Helper::debug('Variable validated:');
+        Helper::debug($validated);
         if ($validated === false) {
             return new WP_REST_Response([], 200);
         }
 
         $folderName = trim((string)$request->get_param('folder'));
+        Helper::debug('Folder Name trimmed:');
+        Helper::debug($folderName);
 
         $items = self::loadFolderItems(
             $validated['resourceId'],
             $validated['shareId'],
             $folderName
         );
+        Helper::debug('Variable Items:');
+        Helper::debug($items);
 
         if (!is_array($items)) {
             return new WP_REST_Response([], 200);
         }
 
         $result = self::buildInitialResult($items);
+        Helper::debug('Variable Result 1. Verarbeitungsschritt');
+        Helper::debug($result);
         $result = self::buildFolderTree($result, $validated, $items);
+        Helper::debug('Variable Result 2. Verarbeitungsschritt und finales Output');
+        Helper::debug($result);
 
         return new WP_REST_Response($result, 200);
     }

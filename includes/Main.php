@@ -15,7 +15,7 @@ use RRZE\FAUbox\Admin\Rest;
  *
  * @package RRZE\FAUbox
  */
-final class Main
+class Main
 {
     public function __construct()
     {
