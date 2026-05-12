@@ -1,1 +1,18 @@
-.wp-block-faubox-list{list-style:disc;margin-left:1.5rem;padding-left:0}.wp-block-faubox-list li{line-height:1.4;margin-bottom:.5rem}.block-font-size{font-size:.8rem}
+/*!**********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/block/editor.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************/
+/* Editor styles for FAUbox List */
+.wp-block-faubox-list {
+  list-style: disc;
+  margin-left: 1.5rem;
+  padding-left: 0;
+}
+.wp-block-faubox-list li {
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+.block-font-size {
+  font-size: 0.8rem;
+}
+
+/*# sourceMappingURL=index.css.map*/

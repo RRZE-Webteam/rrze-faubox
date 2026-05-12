@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace RRZE\FAUbox;
+namespace RRZE\FAUbox\Frontend;
+
+use RRZE\FAUbox\Helper;
 
 defined('ABSPATH') || exit;
 

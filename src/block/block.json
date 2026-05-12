@@ -6,7 +6,7 @@
   "title": "FAUbox",
   "category": "rrze",
   "icon": "cloud",
-  "description": "Integrates data from FAUbox.",
+  "description": "Integrates files from FAUbox.",
   "supports": {
     "html": false
   },
@@ -14,6 +14,10 @@
     "isInitialSetup": {
       "type": "boolean",
       "default": true
+    },
+    "path": {
+      "type": "string",
+      "default": ""
     },
     "view": {
       "type": "string",
@@ -44,6 +48,11 @@
       ],
       "default": "asc"
     },
+    "orderby": {
+      "type": "string",
+      "enum": ["name", "size", "type", "modified"],
+      "default": "name"
+    },
     "show_title": {
       "type": "boolean",
       "default": false
@@ -55,14 +64,6 @@
     "changetitle": {
       "type": "string",
       "default": ""
-    },
-    "sharelink": {
-      "type": "string",
-      "default": ""
-    },
-    "selectedfolders": {
-      "type": "array",
-      "default": []
     }
   },
   "textdomain": "rrze-faubox",

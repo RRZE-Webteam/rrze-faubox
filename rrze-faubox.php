@@ -25,7 +25,6 @@ const FAUBOX_PHP_VERSION = '8.2';
 const FAUBOX_WP_VERSION = '6.8';
 
 
-
 spl_autoload_register(function ($class) {
     $prefix = __NAMESPACE__ . '\\';
     $baseDir = __DIR__ . '/includes/';
@@ -75,14 +74,15 @@ function systemRequirements(): string
  */
 add_action('plugins_loaded', __NAMESPACE__ . '\initializePlugin');
 
-function initializePlugin(): void {
+function initializePlugin(): void
+{
     load_plugin_textdomain(
         'rrze-faubox',
         false,
         dirname(plugin_basename(__FILE__)) . '/languages'
     );
     $error = systemRequirements();
-    if ($error !==''){
+    if ($error !== '') {
         add_action('admin_notices', static function () use ($error): void {
             echo '<div class="notice notice-error"><p>' . esc_html($error) . '</p></div>';
         });

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace RRZE\FAUbox\Blocks;
 
-use RRZE\FAUbox\Shortcode;
+use RRZE\FAUbox\API\Client;
+use RRZE\FAUbox\API\FileService;
+use RRZE\FAUbox\Frontend\Renderer;
+
 
 defined('ABSPATH') || exit;
 
@@ -21,8 +24,17 @@ class BlockRender
      */
     public static function output(array $attributes = []): string
     {
-        return Shortcode::render($attributes);
+        $client = new Client();
+        $service = new FileService($client);
+
+        $files = $service->getPreparedFilesFromFolder(
+            (string)($attributes['path'] ?? ''),
+            (array)($attributes['filetype'] ?? []),
+            (string)($attributes['sort'] ?? 'asc'),
+            (string)($attributes['orderby'] ?? 'name')
+        );
+
+
+        return Renderer::render($files, $attributes);
     }
-
 }
-

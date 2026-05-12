@@ -1,10 +1,5 @@
 import {__} from '@wordpress/i18n';
-
-import {
-    useBlockProps,
-    InspectorControls
-} from "@wordpress/block-editor";
-
+import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
 import {
     Placeholder,
     __experimentalHeading as Heading,
@@ -12,217 +7,142 @@ import {
     __experimentalDivider as Divider,
     CheckboxControl,
     Button,
-    TextControl,
     PanelBody,
     SelectControl,
-} from "@wordpress/components";
-
-import {cloud} from "@wordpress/icons";
-
+    Spinner,
+} from '@wordpress/components';
+import {cloud} from '@wordpress/icons';
 import {useEffect, useState} from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import ServerSideRender from '@wordpress/server-side-render';
-import "./editor.scss";
+import './editor.scss';
+
+interface FolderOption {
+    name: string;
+    path: string;
+}
 
 interface EditProps {
     attributes: {
-        view: 'list' | 'table' | 'gallery';
+        isInitialSetup: boolean;
+        path: string;
+        view: 'list' | 'table';
         show: ('name' | 'type')[];
         sort: 'asc' | 'desc';
+        orderby: 'name' | 'size' | 'type' | 'modified';
         show_title: boolean;
-        isInitialSetup: boolean;
-        filetype: string[];
         changetitle: string;
-        sharelink: string;
-        selectedfolders: string[];
-    }
-    setAttributes: (attributes: Partial<EditProps["attributes"]>) => void;
+        filetype: string[];
+    };
+    setAttributes: (attributes: Partial<EditProps['attributes']>) => void;
 }
 
 export default function Edit({attributes, setAttributes}: EditProps) {
-
     const {
+        isInitialSetup,
+        path,
         view,
         show,
         sort,
+        orderby,
         show_title,
-        isInitialSetup,
-        filetype,
         changetitle,
-        sharelink,
-        selectedfolders = [],
+        filetype,
     } = attributes;
 
     const blockProps = useBlockProps();
 
+    const [folders, setFolders] = useState<FolderOption[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [loadError, setLoadError] = useState<boolean>(false);
+
+    const filetypeOptions = ['pdf', 'docx', 'xlsx', 'txt', 'zip', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
+
     const toggleShow = (key: 'type') => {
-        const newShow = show.includes(key)
+        const updated = show.includes(key)
             ? show.filter((item) => item !== key)
             : [...show, key];
-
-        setAttributes({show: newShow});
+        setAttributes({show: updated});
     };
-// Regex for public FAUbox share link
-    const isValidSharelink = /^https:\/\/faubox\.rrze\.uni\-erlangen\.de\/getlink\/[A-Za-z0-9]+\/?$/.test(
-        sharelink
-    );
 
-    // Folder + File options coming from REST
-    const [folderOptions, setFolderOptions] = useState<{ label: string; value: string }[]>([]);
-
-    /**
-     * Load root folders + files from REST
-     */
+    // Load root folders from REST endpoint (uses stored token server-side)
     useEffect(() => {
-        if (!sharelink || !isValidSharelink) {
-            setFolderOptions([]);
+        setLoading(true);
+        setLoadError(false);
 
-            return;
-        }
-
-        apiFetch({
-            path: `/rrze-faubox/v1/folders?sharelink=${encodeURIComponent(sharelink)}`
-        })
-            .then((data: any) => {
-                setFolderOptions(data.folders || []);
-
+        apiFetch<FolderOption[]>({path: '/rrze-faubox/v1/folders'})
+            .then((data) => {
+                setFolders(Array.isArray(data) ? data : []);
+                setLoading(false);
             })
             .catch(() => {
-                setFolderOptions([]);
-
+                setLoadError(true);
+                setLoading(false);
             });
-    }, [sharelink]);
+    }, []);
 
+    const folderSelectOptions = [
+        {label: __('— Select folder —', 'rrze-faubox'), value: ''},
+        ...folders.map((f) => ({label: f.name, value: f.path})),
+    ];
 
-    // Allowed filetypes for sidebar controls
-    const filetypeOptions = ['pdf', 'docx', 'xlsx', 'txt', 'zip', 'ppt', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
-
+    const FolderSelect = () => (
+        <>
+            {loading && <Spinner/>}
+            {loadError && (
+                <p style={{color: 'red'}}>
+                    {__('Folders could not be loaded. Please check your FAUbox credentials in the settings.', 'rrze-faubox')}
+                </p>
+            )}
+            {!loading && !loadError && (
+                <SelectControl
+                    label={__('FAUbox Folder', 'rrze-faubox')}
+                    value={path}
+                    options={folderSelectOptions}
+                    onChange={(val) => setAttributes({path: val})}
+                />
+            )}
+        </>
+    );
 
     return (
         <div {...blockProps}>
-
             {isInitialSetup ? (
                 <Placeholder
                     label={__('FAUbox Block', 'rrze-faubox')}
-                    instructions={__('Configure your FAUbox block.', 'rrze-faubox')}
+                    instructions={__('Select a FAUbox folder to display its files.', 'rrze-faubox')}
                     icon={cloud}
                     isColumnLayout={true}
                 >
-                    <div>
-                        <hr/>
-                        <Spacer paddingBottom={"1rem"}/>
-                        <div>
-                            <Heading level={4} color="#03316a">{__('FAUbox Link', 'rrze-faubox')}</Heading>
-                            <Spacer paddingTop={"0.5rem"}/>
-                            <TextControl
-                                value={attributes.sharelink}
-                                onChange={(val) => setAttributes({sharelink: val})}
-                                help={__('Paste your FAUbox public link here (Root Folder)', 'rrze-faubox')}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault(); // verhindert Zeilenumbrüche
-                                        setAttributes({isInitialSetup: false});
-                                    }
-                                }}
-                            />
-                            {/* Validation message */}
-                            {sharelink !== '' && !isValidSharelink && (
-                                <p style={{color: "red", marginTop: "4px"}}>
-                                    {__('Invalid FAUbox public link.', 'rrze-faubox')}
-                                </p>
-                            )}
-                            <Spacer paddingTop={"0.5rem"}/>
-                            <Heading level={4} color="#03316a">{__('Select Folders', 'rrze-faubox')}</Heading>
-                            <Spacer paddingTop={"0.5rem"}/>
-                            {folderOptions.length === 0 && <p>{__('No folders found.', 'rrze-faubox')}</p>}
-
-                            {folderOptions.map((folder) => (
-                                <CheckboxControl
-                                    key={folder.value}
-                                    label={folder.label}
-                                    checked={selectedfolders.includes(folder.value)}
-                                    onChange={(checked) => {
-                                        const updated = checked
-                                            ? [...selectedfolders, folder.value]
-                                            : selectedfolders.filter((v) => v !== folder.value);
-                                        setAttributes({selectedfolders: updated})
-                                    }}
-                                />
-                            ))}
-
-                        </div>
-                        <Spacer paddingTop=".5rem"/>
-
-
-                        <Spacer paddingBottom={"0.5rem"}/>
-                        <Button
-                            variant="primary"
-                            onClick={() => setAttributes({isInitialSetup: false})}
-                        >
-                            {__('Save', 'rrze-faubox')}
-                        </Button>
-                        <Spacer paddingBottom={"0.5rem"}/>
-                    </div>
-
-
+                    <Spacer paddingBottom={'0.5rem'}/>
+                    <FolderSelect/>
+                    <Spacer paddingTop={'1rem'}/>
+                    <Button
+                        variant="primary"
+                        disabled={!path}
+                        onClick={() => setAttributes({isInitialSetup: false})}
+                    >
+                        {__('Save', 'rrze-faubox')}
+                    </Button>
+                    <Spacer paddingBottom={'0.5rem'}/>
                 </Placeholder>
             ) : (
                 <>
                     <InspectorControls>
-                        <PanelBody title={__('Data Choice', 'rrze-faubox')} initialOpen={false}>
-                            <Spacer paddingTop={"0.5rem"}/>
-                            <TextControl
-                                label={__('FAUbox Share Link', 'rrze-faubox')}
-                                value={sharelink}
-                                onChange={(val) => setAttributes({sharelink: val})}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault(); // verhindert Zeilenumbrüche
-                                        setAttributes({isInitialSetup: false});
-                                    }
-                                }}
-                            />
-
-                            {sharelink !== '' && !isValidSharelink && (
-                                <p style={{color: "red", marginTop: "4px"}}>
-                                    {__('Invalid FAUbox public link.', 'rrze-faubox')}
-                                </p>
-                            )}
-                            <Spacer paddingTop={"0.5rem"}/>
-                            <Heading color="#03316a">{__('Select Folders', 'rrze-faubox')}</Heading>
-
-                            {folderOptions.length === 0 && <p>{__('No folders found.', 'rrze-faubox')}</p>}
-
-                            {folderOptions.map((folder) => (
-                                <CheckboxControl
-                                    key={folder.value}
-                                    label={folder.label}
-                                    checked={selectedfolders.includes(folder.value)}
-                                    onChange={(checked) => {
-                                        const updated = checked
-                                            ? [...selectedfolders, folder.value]
-                                            : selectedfolders.filter((v) => v !== folder.value);
-                                        setAttributes({selectedfolders: updated})
-                                    }}
-                                />
-                            ))}
+                        <PanelBody title={__('Data', 'rrze-faubox')} initialOpen={true}>
+                            <FolderSelect/>
                         </PanelBody>
 
                         <PanelBody title={__('Display Options', 'rrze-faubox')} initialOpen={false}>
-                            <Spacer paddingTop={"0.5rem"}/>
                             <SelectControl
                                 label={__('View', 'rrze-faubox')}
                                 value={view}
                                 options={[
-                                    {disabled: true, label: __('Select an Option', 'rrze-faubox'), value: ''},
                                     {label: __('List', 'rrze-faubox'), value: 'list'},
                                     {label: __('Table', 'rrze-faubox'), value: 'table'},
                                 ]}
-                                onChange={(val: 'list' | 'table' | 'gallery') =>
-                                    setAttributes({view: val as 'list' | 'table' | 'gallery'})
-                                }
+                                onChange={(val) => setAttributes({view: val as 'list' | 'table'})}
                             />
-
                             <Divider margin="3"/>
                             <Heading color="#03316a">{__('Displayed file information', 'rrze-faubox')}</Heading>
                             <CheckboxControl
@@ -236,47 +156,62 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 onChange={(value) => setAttributes({show_title: value})}
                             />
                             <Divider margin="2"/>
-                            <TextControl
-                                label={__('Overwrite folder name', 'rrze-faubox')}
-                                help={__('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox')}
-                                value={changetitle}
-                                onChange={(val) => setAttributes({changetitle: val})}
+                            <SelectControl
+                                label={__('Sort by', 'rrze-faubox')}
+                                value={orderby}
+                                options={[
+                                    {label: __('Name', 'rrze-faubox'), value: 'name'},
+                                    {label: __('Size', 'rrze-faubox'), value: 'size'},
+                                    {label: __('Type', 'rrze-faubox'), value: 'type'},
+                                    {label: __('Date', 'rrze-faubox'), value: 'modified'},
+                                ]}
+                                onChange={(val) => setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified'})}
                             />
-                            <Divider margin="2"/>
+                            <SelectControl
+                                label={__('Sort direction', 'rrze-faubox')}
+                                value={sort}
+                                options={[
+                                    {label: __('Ascending', 'rrze-faubox'), value: 'asc'},
+                                    {label: __('Descending', 'rrze-faubox'), value: 'desc'},
+                                ]}
+                                onChange={(val) => setAttributes({sort: val as 'asc' | 'desc'})}
+                            />
+                        </PanelBody>
+
+                        <PanelBody title={__('File Filter', 'rrze-faubox')} initialOpen={false}>
                             <Heading color="#03316a">{__('Permitted file formats', 'rrze-faubox')}</Heading>
+                            <Spacer paddingTop={'0.5rem'}/>
                             {filetypeOptions.map((type) => (
                                 <CheckboxControl
                                     key={type}
                                     label={type}
                                     checked={filetype.includes(type)}
-                                    onChange={(isChecked) => {
-                                        const updated = isChecked
+                                    onChange={(checked) => {
+                                        const updated = checked
                                             ? [...filetype, type]
                                             : filetype.filter((item) => item !== type);
                                         setAttributes({filetype: updated});
                                     }}
                                 />
                             ))}
-
-                            <Divider margin="2"/>
-                            <SelectControl
-                                label={__('Sorting', 'rrze-faubox')}
-                                value={sort}
-                                options={[
-                                    {label: __('Ascending', 'rrze-faubox'), value: 'asc'},
-                                    {label: __('Descending', 'rrze-faubox'), value: 'desc'},
-                                ]}
-                                onChange={(val: 'asc' | 'desc') =>
-                                    setAttributes({sort: val as 'asc' | 'desc'})
-                                }
-                            />
                         </PanelBody>
 
+                        <PanelBody title={__('Title', 'rrze-faubox')} initialOpen={false}>
+                            <SelectControl
+                                label={__('Overwrite folder name', 'rrze-faubox')}
+                                value={changetitle}
+                                options={[
+                                    {label: __('Use FAUbox folder name', 'rrze-faubox'), value: ''},
+                                    ...folders.map((f) => ({label: f.name, value: f.name})),
+                                ]}
+                                onChange={(val) => setAttributes({changetitle: val})}
+                            />
+                        </PanelBody>
                     </InspectorControls>
-                    { /* Ausgabe nach Setup */}
-                    {selectedfolders.length === 0 ? (
+
+                    {!path ? (
                         <p style={{opacity: 0.7}}>
-                            {__('Folder selection is missing. Please select your folder in the sidebar.', 'rrze-faubox')}
+                            {__('No folder selected. Please select a folder in the sidebar.', 'rrze-faubox')}
                         </p>
                     ) : (
                         <ServerSideRender
@@ -284,7 +219,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                             attributes={attributes}
                         />
                     )}
-
                 </>
             )}
         </div>

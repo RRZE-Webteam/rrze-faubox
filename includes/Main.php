@@ -5,7 +5,10 @@ namespace RRZE\FAUbox;
 defined('ABSPATH') || exit;
 
 use RRZE\FAUbox\Blocks\BlockRegistration;
-use RRZE\FAUbox\Admin\Rest;
+use RRZE\FAUbox\Rest\RestController;
+use RRZE\FAUbox\API\Client;
+use RRZE\FAUbox\API\FileService;
+use RRZE\FAUbox\Admin\Settings;
 
 /**
  * Main class
@@ -19,32 +22,22 @@ class Main
 {
     public function __construct()
     {
-        $this->initHooks();
-    }
-
-    private function initHooks(): void
-    {
-        $this->initShortcodes();
-        $this->initBlockRegistration();
-        $this->registerRestRoute();
-    }
-
-
-    private function initShortcodes(): void
-    {
-        add_action('init', [Shortcode::class, 'register']);
-    }
-
-    public function initBlockRegistration(): void
-    {
-        BlockRegistration::register();
+        $this->init();
     }
 
     /**
-     * Registers custom REST API routes for the FAUbox plugin.
+     * Create shared service instances.
      */
-    private function registerRestRoute(): void
+    private function init(): void
     {
-        Rest::register();
+        $client = new Client();
+        $fileService = new FileService($client);
+
+        new BlockRegistration();
+        new RestController($fileService, $client);
+
+        if (is_admin()) {
+            new Settings();
+        }
     }
 }
