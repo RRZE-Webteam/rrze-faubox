@@ -18,8 +18,8 @@ class Helper
         return [
             'name' => __('File Name', 'rrze-faubox'),
             'type' => __('Type', 'rrze-faubox'),
-//            'size' => __('File Size', 'rrze-faubox'),
-//            'modified' => __('Changed', 'rrze-faubox'),
+            'size' => __('File Size', 'rrze-faubox'),
+            'modified' => __('Changed', 'rrze-faubox'),
         ];
     }
 

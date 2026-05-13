@@ -130,8 +130,7 @@ final class RestController
      */
     public function getFolders(): array
     {
-        return
-            $this->fileService->getAccessibleRootFolders();
+        return $this->fileService->getAccessibleRootFolders();
     }
 
     /**
@@ -165,7 +164,7 @@ final class RestController
         $contentType = $result['content_type'] ?: 'application/octet-stream';
 
         header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Content-Disposition: inline;filename="' . $fileName . '"');
         header('Content-Length: ' . strlen($result['body']));
         header('X-Content-Type-Options: nosniff');
 

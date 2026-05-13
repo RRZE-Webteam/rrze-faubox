@@ -5,8 +5,8 @@ import Edit from './edit';
 import metadata from './block.json';
 
 // register block
-registerBlockType(metadata.name as any, {
+registerBlockType(metadata.name as string, {
     ...metadata,
     edit: Edit,
-    save: (): any => null,
+    save: (): null => null,
 } as any);

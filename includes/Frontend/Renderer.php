@@ -52,25 +52,37 @@ class Renderer
      */
     private static function renderList(array $data, array $atts = []): string
     {
-        if (empty($data)) {
-            return '<p>' . esc_html__('No files found.', 'rrze-faubox') . '</p>';
+        $html = '';
+
+        if (!empty($atts['show_title']) || !empty($atts['changetitle'])) {
+            $title = !empty($atts['changetitle'])
+                ? $atts['changetitle']
+                : basename((string)($atts['path'] ?? ''));
+            $html .= self::renderTitle($title);
         }
 
-        $html = '<ul class="wp-block-list wp-block-faubox-list">';
+        if (empty($data)) {
+            return $html . '<p>' . esc_html__('No files found.', 'rrze-faubox') . '</p>';
+        }
+
+        $html .= '<ul class="wp-block-list wp-block-faubox-list">';
 
         foreach ($data as $file) {
             $name = esc_html($file['name'] ?? '');
             $url = esc_url($file['url'] ?? '');
 
+            $show = isset($atts['show']) && is_array($atts['show']) ? $atts['show'] : [];
             $suffix = '';
 
-            if (
-                isset($atts['show']) &&
-                is_array($atts['show']) &&
-                in_array('type', $atts['show'], true)
-            ) {
-                $ext = strtoupper(pathinfo($url, PATHINFO_EXTENSION));
-                $suffix = ' (' . esc_html($ext) . ')';
+            if (in_array('type', $show, true)) {
+                $ext = strtoupper(pathinfo($name, PATHINFO_EXTENSION));
+                $suffix .= ' (' . esc_html($ext) . ')';
+            }
+            if (in_array('size', $show, true) && !empty($file['size'])) {
+                $suffix .= ' · ' . esc_html($file['size']);
+            }
+            if (in_array('modified', $show, true) && !empty($file['modified'])) {
+                $suffix .= ' · ' . esc_html($file['modified']);
             }
 
             $html .= sprintf(
@@ -95,16 +107,27 @@ class Renderer
      */
     private static function renderTable(array $data, array $atts): string
     {
-        if (empty($data)) {
-            return '<p>' . esc_html__('No files found.', 'rrze-faubox') . '</p>';
+        $html = '';
+
+        if (!empty($atts['show_title']) || !empty($atts['changetitle'])) {
+            $title = !empty($atts['changetitle'])
+                ? $atts['changetitle']
+                : basename((string)($atts['path'] ?? ''));
+            $html .= self::renderTitle($title);
         }
 
-        $columns = $atts['show'] ?? ['name'];
+        if (empty($data)) {
+            return $html . '<p>' . esc_html__('No files found.', 'rrze-faubox') . '</p>';
+        }
+
+        $columnOrder = ['name', 'size', 'modified', 'type'];
+        $columns = array_values(array_intersect($columnOrder, $atts['show'] ?? ['name']));
+
 
         // Load column labels from Helper class
         $columnLabels = Helper::getColumnLabels();
 
-        $html = '<figure class="wp-block-table"><table class="faubox-filetable">';
+        $html .= '<figure class="wp-block-table"><table class="faubox-filetable">';
         $html .= '<thead><tr>';
 
         foreach ($columns as $col) {
@@ -130,6 +153,10 @@ class Renderer
                 } elseif ($col === 'type') {
                     $ext = strtoupper(pathinfo($url, PATHINFO_EXTENSION));
                     $html .= '<td>' . esc_html($ext) . '</td>';
+                } elseif ($col === 'size') {
+                    $html .= '<td>' . esc_html($file['size'] ?? '—') . '</td>';
+                } elseif ($col === 'modified') {
+                    $html .= '<td>' . esc_html($file['modified'] ?? '—') . '</td>';
                 }
             }
 

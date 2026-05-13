@@ -56,6 +56,9 @@ class Settings
         register_setting('rrze_faubox_settings', 'rrze_faubox_username', [
                 'sanitize_callback' => [$this, 'sanitizeUsername'],
         ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_folder', [
+                'sanitize_callback' => 'sanitize_text_field',
+        ]);
     }
 
     /**
@@ -105,15 +108,15 @@ class Settings
                         <th scope="row">
                             <label for="rrze_faubox_username">
                                 <?php
-                            echo esc_html__('FAUbox Username', 'rrze-faubox');
-                            ?>
+                                echo esc_html__('FAUbox Username', 'rrze-faubox');
+                                ?>
                             </label>
                         </th>
                         <td>
-                            <input type=" text" id="rrze_faubox_username" name="rrze_faubox_username"
-                            value="<?php echo esc_attr(get_option('rrze_faubox_username')); ?>"
-                            class="regular-text" autocomplete="off">
-                            </td>
+                            <input type="text" id="rrze_faubox_username" name="rrze_faubox_username"
+                                   value="<?php echo esc_attr(get_option('rrze_faubox_username')); ?>"
+                                   class="regular-text" autocomplete="off">
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row">
@@ -131,6 +134,24 @@ class Settings
                                 <?php echo esc_html__('Token validity: 1 year. Generate a new token before it expires.', 'rrze-faubox'); ?>
                             </p>
 
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="rrze_faubox_folder">
+                                <?php
+                                echo esc_html__('FAUbox Main Folder', 'rrze-faubox');
+                                ?>
+                            </label>
+                        </th>
+                        <td>
+                            <input type="text" id="rrze_faubox_folder" name="rrze_faubox_folder"
+                                   value="<?php echo esc_attr(get_option('rrze_faubox_folder')); ?>"
+                                   class="regular-text"
+                                   autocomplete="off">
+                            <p class="description">
+                                <?php echo esc_html__('The FAUbox folder whose subfolders are shown in the block editor (e.g.FAUbox Plugin Test).', 'rrze-faubox'); ?>
+                            </p>
                         </td>
                     </tr>
                 </table>

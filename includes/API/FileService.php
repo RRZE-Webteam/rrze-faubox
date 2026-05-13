@@ -100,17 +100,34 @@ final class FileService
      */
     public function getAccessibleRootFolders(): array
     {
-        $entries = $this->client->fetchRootFolders();
+        $mainFolder = get_option('rrze_faubox_folder', '');
+
+        if ($mainFolder !== '') {
+            $entries =
+                $this->client->fetchEntriesFromPath($mainFolder);
+        } else {
+            $entries = $this->client->fetchRootFolders();
+        }
 
         if (!is_array($entries)) {
             return [];
         }
 
+        // Filter: only subfolders (collections)
+        $folders = array_filter(
+            $entries,
+            static fn(array $entry): bool =>
+            $entry['is_collection']
+        );
+
         return array_map(static fn(array $entry): array => [
             'name' => $entry['displayname'],
-            'path' => $entry['path'],
-        ], $entries);
+            'path' =>
+                rawurldecode(trim(preg_replace('#^/webdav/?#', '',
+                    $entry['path']), '/')),
+        ], array_values($folders));
     }
+
 
 
     /**
@@ -196,7 +213,7 @@ final class FileService
         return array_map(
             function (array $file): array {
                 $name = (string)($file['displayname'] ?? '');
-                $path = (string)($file['path'] ?? '');
+                $path = rawurldecode((string)($file['path'] ?? ''));
                 $size = $file['contentlength'] ?? null;
 
                 $downloadUrl = add_query_arg(
@@ -210,7 +227,10 @@ final class FileService
                     'url' => $downloadUrl,
                     'size' => $size !== null ? size_format($size) : '—',
                     'type' => $this->deriveMimeType($name),
-                    'modified' => (string)($file['lastmodified'] ?? ''),
+                    'modified' => ($file['lastmodified'] ?? '') !== ''
+                        ? date('d.m.Y', strtotime((string)$file['lastmodified']))
+                        : '—',
+
 
                     // raw values for sorting
                     'name_raw' => strtolower($name),

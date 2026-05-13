@@ -106,9 +106,14 @@ final class Client
 
         libxml_use_internal_errors(true);
         $xml = simplexml_load_string($responseBody);
+        $xmlErrors = libxml_get_errors();
         libxml_clear_errors();
 
-        return $xml instanceof \SimpleXMLElement ? $xml : null;
+        if (!$xml instanceof \SimpleXMLElement) {
+            return null;
+        }
+
+        return $xml;
     }
 
     /**
@@ -148,25 +153,16 @@ final class Client
 
             $response->registerXPathNamespace('D', 'DAV:');
 
-            $href = (string)($response->xpath('D:href')[0] ??
-                '');
-            $displayName =
-                (string)($response->xpath('D:propstat/D:prop/D:displayname')[0] ?? '');
-            $contentLength =
-                (string)($response->xpath('D:propstat/D:prop/D:getcontentlength')[0] ??
-                    '');
-            $lastModified =
-                (string)($response->xpath('D:propstat/D:prop/D:getlastmodified')[0] ??
-                    '');
-            $etag =
-                (string)($response->xpath('D:propstat/D:prop/D:getetag')[0] ?? '');
-            $isCollection =
-                !empty($response->xpath('D:propstat/D:prop/D:resourcetype/D:collection'));
+            $href = (string)($response->xpath('D:href')[0] ?? '');
+            $displayName = (string)($response->xpath('D:propstat/D:prop/D:displayname')[0] ?? '');
+            $contentLength = (string)($response->xpath('D:propstat/D:prop/D:getcontentlength')[0] ?? '');
+            $lastModified = (string)($response->xpath('D:propstat/D:prop/D:getlastmodified')[0] ?? '');
+            $etag = (string)($response->xpath('D:propstat/D:prop/D:getetag')[0] ?? '');
+            $isCollection = !empty($response->xpath('D:propstat/D:prop/D:resourcetype/D:collection'));
 
             $entries[] = [
                 'displayname' => $displayName,
-                'contentlength' => $contentLength !== '' ?
-                    (int)$contentLength : null,
+                'contentlength' => $contentLength !== '' ? (int)$contentLength : null,
                 'lastmodified' => $lastModified,
                 'etag' => $etag,
                 'is_collection' => $isCollection,
@@ -188,7 +184,7 @@ final class Client
     {
         $xml = $this->sendPropfindRequest($path);
 
-        if (!$xml) {
+        if ($xml === null) {
             return null;
         }
 
@@ -208,7 +204,7 @@ final class Client
     {
         $xml = $this->sendPropfindRequest('');
 
-        if (!$xml) {
+        if ($xml === null) {
             return null;
         }
 
@@ -239,8 +235,7 @@ final class Client
             return null;
         }
 
-        $url = 'https://fauboxtest.rrze.uni-erlangen.de' .
-            $path;
+        $url = 'https://fauboxtest.rrze.uni-erlangen.de' . implode('/', array_map('rawurlencode', explode('/', $path)));
 
         $response = wp_remote_get($url, [
             'timeout' => 30,

@@ -27,9 +27,6 @@ class BlockRegistration
      */
     public function registerBlock(): void
     {
-
-        error_log(print_r('rrze-faubox', true));
-
         $block = register_block_type(
             dirname(__DIR__, 2) . '/build/block',
             [
