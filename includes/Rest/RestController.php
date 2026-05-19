@@ -164,7 +164,8 @@ final class RestController
         $contentType = $result['content_type'] ?: 'application/octet-stream';
 
         header('Content-Type: ' . $contentType);
-        header('Content-Disposition: inline;filename="' . $fileName . '"');
+        //open in new window: inline instead of attachment
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
         header('Content-Length: ' . strlen($result['body']));
         header('X-Content-Type-Options: nosniff');
 

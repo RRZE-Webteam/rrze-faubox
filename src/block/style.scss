@@ -1,2 +1,24 @@
+figure.wp-block-table table.faubox-filetable  {
+  width: 100%;
+  border-collapse: collapse;
+
+  td, th {
+    padding: 0.4em 0.6em;
+    vertical-align: top;
+  }
+
+  // File Name column: takes up all remaining space
+  td:first-child,
+  th:first-child {
+    width: 100%;
+  }
+
+  // Size, Changed, Type: only as wide as content
+  td:not(:first-child),
+  th:not(:first-child) {
+    white-space: nowrap;
+    width: 1%;
+  }
+}
 
 

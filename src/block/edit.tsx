@@ -115,17 +115,18 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                     icon={cloud}
                     isColumnLayout={true}
                 >
-                    <Spacer paddingBottom={'0.5rem'}/>
+
                     <FolderSelect/>
-                    <Spacer paddingTop={'1rem'}/>
-                    <Button
-                        variant="primary"
-                        disabled={!path}
-                        onClick={() => setAttributes({isInitialSetup: false})}
-                    >
-                        {__('Save', 'rrze-faubox')}
-                    </Button>
-                    <Spacer paddingBottom={'0.5rem'}/>
+                    <div style={{display: 'inline-block'}}>
+                        <Button
+                            variant="primary"
+                            disabled={!path}
+                            onClick={() =>
+                                setAttributes({isInitialSetup: false})}
+                        >
+                            {__('Save', 'rrze-faubox')}
+                        </Button>
+                    </div>
                 </Placeholder>
             ) : (
                 <>
@@ -160,7 +161,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 onChange={() => toggleShow('size')}
                             />
                             <CheckboxControl
-                                label={__('Date', 'rrze-faubox')}
+                                label={__('Last Modified', 'rrze-faubox')}
                                 checked={show.includes('modified')}
                                 onChange={() => toggleShow('modified')}
                             />

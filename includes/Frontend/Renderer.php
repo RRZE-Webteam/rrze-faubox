@@ -68,21 +68,23 @@ class Renderer
         $html .= '<ul class="wp-block-list wp-block-faubox-list">';
 
         foreach ($data as $file) {
-            $name = esc_html($file['name'] ?? '');
-            $url = esc_url($file['url'] ?? '');
+            $filename = $file['name'] ?? '';
+            $name     = esc_html(pathinfo($filename, PATHINFO_FILENAME));
+            $ext      = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
+            $url      = esc_url($file['url'] ?? '');
+
 
             $show = isset($atts['show']) && is_array($atts['show']) ? $atts['show'] : [];
             $suffix = '';
 
             if (in_array('type', $show, true)) {
-                $ext = strtoupper(pathinfo($name, PATHINFO_EXTENSION));
                 $suffix .= ' (' . esc_html($ext) . ')';
             }
             if (in_array('size', $show, true) && !empty($file['size'])) {
-                $suffix .= ' · ' . esc_html($file['size']);
+                $suffix .= ', ' . esc_html($file['size']);
             }
             if (in_array('modified', $show, true) && !empty($file['modified'])) {
-                $suffix .= ' · ' . esc_html($file['modified']);
+                $suffix .= ', ' . esc_html($file['modified']);
             }
 
             $html .= sprintf(

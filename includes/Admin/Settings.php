@@ -94,7 +94,7 @@ class Settings
         ?>
         <div class="wrap">
             <h1> <?php echo esc_html__('FAUbox Settings', 'rrze-faubox'); ?> </h1>
-            <p> <?php echo esc_html__('Enter your FAUbox WebDAV credentials. You can find them in your FAUbox account under "My Account" →
+            <p> <?php echo esc_html__('Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox account under "My Account" →
    "Devices" → "Add WebDAV connection".', 'rrze-faubox'); ?>
             </p>
 
@@ -150,7 +150,7 @@ class Settings
                                    class="regular-text"
                                    autocomplete="off">
                             <p class="description">
-                                <?php echo esc_html__('The FAUbox folder whose subfolders are shown in the block editor (e.g.FAUbox Plugin Test).', 'rrze-faubox'); ?>
+                                <?php echo esc_html__('The main folder whose subfolders are to be displayed in the block editor.', 'rrze-faubox'); ?>
                             </p>
                         </td>
                     </tr>

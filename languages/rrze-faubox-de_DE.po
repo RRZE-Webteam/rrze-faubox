@@ -4,15 +4,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2025-12-17T13:29:50+00:00\n"
-"PO-Revision-Date: 2025-12-17 14:31+0100\n"
+"POT-Creation-Date: 2026-05-19T10:08:42+00:00\n"
+"PO-Revision-Date: 2026-05-19 12:11+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Domain: rrze-faubox\n"
 
 #. Plugin Name of the plugin
@@ -40,124 +40,207 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Blocks/BlockRegistration.php:69
+#: includes/Admin/Settings.php:37 includes/Admin/Settings.php:96
+msgid "FAUbox Settings"
+msgstr "FAUbox Einstellungen"
+
+#: includes/Admin/Settings.php:97
+msgid ""
+"Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox "
+"account under \"My Account\" →\n"
+"   \"Devices\" → \"Add WebDAV connection\"."
+msgstr ""
+"Geben Sie Ihre FAUbox-WebDAV-Anmeldedaten ein. Diese generieren Sie in Ihrem "
+"FAUbox-Konto unter „Mein Konto“ →\n"
+"   „Geräte“ → „WebDAV-Verbindung hinzufügen“."
+
+#: includes/Admin/Settings.php:111
+msgid "FAUbox Username"
+msgstr "FAUbox Benutzername"
+
+#: includes/Admin/Settings.php:125
+msgid "FAUbox WebDAV Token"
+msgstr "FAUbox WebDAV Token"
+
+#: includes/Admin/Settings.php:134
+msgid "Token validity: 1 year. Generate a new token before it expires."
+msgstr ""
+"Gültigkeitsdauer des Tokens: 1 Jahr. Generieren Sie bitte vor Ablauf des "
+"Tokens einen neuen."
+
+#: includes/Admin/Settings.php:143
+msgid "FAUbox Main Folder"
+msgstr "FAUbox Hauptordner"
+
+#: includes/Admin/Settings.php:153
+msgid ""
+"The main folder whose subfolders are to be displayed in the block editor."
+msgstr ""
+"Der Hauptordner, dessen Unterordner im Block-Editor angezeigt werden sollen."
+
+#: includes/Blocks/BlockRegistration.php:62
 msgid "RRZE"
 msgstr "RRZE"
 
-#: includes/Renderer.php:61 includes/Renderer.php:104
+#: includes/Frontend/Renderer.php:65 includes/Frontend/Renderer.php:122
 msgid "No files found."
 msgstr "Keine Dateien gefunden."
 
-#: includes/Renderer.php:111
+#: includes/Helper.php:19
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Renderer.php:112
+#: includes/Helper.php:20 build/block/index.js:253
 msgid "Type"
 msgstr "Dateiformat"
 
-#: includes/Shortcode.php:194
-msgid "FAUbox share link missing."
-msgstr "Der FAUbox Teilen Link fehlt."
+#: includes/Helper.php:21 build/block/index.js:192
+msgid "File Size"
+msgstr "Dateigröße"
 
-#: includes/Shortcode.php:199 includes/Shortcode.php:204 build/block/index.js:1
-msgid "Invalid FAUbox public link."
-msgstr "Ungültiger FAUbox Link."
+#: includes/Helper.php:22
+msgid "Last modified"
+msgstr "Zuletzt geändert"
 
-#: build/block/index.js:1
+#: includes/Rest/RestController.php:153
+msgid "Invalid file path."
+msgstr "Ungültiger Dateipfad."
+
+#: includes/Rest/RestController.php:160
+msgid "File not found."
+msgstr "Keine Datei gefunden."
+
+#. translators: 1: Server PHP version number, 2: Required PHP version number.
+#: rrze-faubox.php:56
+#, php-format
+msgid ""
+"The server is running PHP version %1$s. The Plugin requires at least PHP "
+"version %2$s."
+msgstr ""
+"Auf dem Server läuft PHP-Version %1$s. Das Plugin erfordert mindestens PHP-"
+"Version %2$s."
+
+#. translators: 1: Server WordPress version number, 2: Required WordPress version number.
+#: rrze-faubox.php:63
+#, php-format
+msgid ""
+"The server is running WordPress version %1$s. The Plugin requires at least "
+"WordPress version %2$s."
+msgstr ""
+"Auf dem Server läuft WordPress Version %1$s. Das Plugin erfordert mindestens "
+"WordPress Version %2$s."
+
+#: build/block/index.js:115
+msgid "— Select folder —"
+msgstr "Ordner auswählen"
+
+#: build/block/index.js:126
+msgid ""
+"Folders could not be loaded. Please check your FAUbox credentials in the "
+"settings."
+msgstr ""
+"Die Ordner konnten nicht geladen werden. Bitte überprüfen Sie Ihre FAUbox-"
+"Anmeldedaten in den Einstellungen."
+
+#: build/block/index.js:128
+msgid "FAUbox Folder"
+msgstr "FAUbox Ordner"
+
+#: build/block/index.js:139
 msgid "FAUbox Block"
 msgstr "FAUbox Block"
 
-#: build/block/index.js:1
-msgid "Configure your FAUbox block."
-msgstr "Konfigurieren Sie Ihren FAUbox-Block."
+#: build/block/index.js:140
+msgid "Select a FAUbox folder to display its files."
+msgstr ""
+"Wählen Sie einen FAUbox-Ordner aus, um dessen Dateien anzeigen zu lassen."
 
-#: build/block/index.js:1
-msgid "FAUbox Link"
-msgstr "FAUbox Link"
-
-#: build/block/index.js:1
-msgid "Paste your FAUbox public link here (Root Folder)"
-msgstr "Fügen Sie Ihren FAUbox Link hier ein (Basisordner)"
-
-#: build/block/index.js:1
-msgid "Select Folders"
-msgstr "Ordner auswählen"
-
-#: build/block/index.js:1
-msgid "No folders found."
-msgstr "Keine Ordner gefunden."
-
-#: build/block/index.js:1
+#: build/block/index.js:153
 msgid "Save"
 msgstr "Speichern"
 
-#: build/block/index.js:1
-msgid "Data Choice"
-msgstr "Datenauswahl"
+#: build/block/index.js:159
+msgid "Data"
+msgstr "Dateien"
 
-#: build/block/index.js:1
-msgid "FAUbox Share Link"
-msgstr "FAUbox Teilen Link"
-
-#: build/block/index.js:1
+#: build/block/index.js:163
 msgid "Display Options"
 msgstr "Anzeigeoptionen"
 
-#: build/block/index.js:1
+#: build/block/index.js:166
 msgid "View"
 msgstr "Ansicht"
 
-#: build/block/index.js:1
+#: build/block/index.js:170
 msgid "Select an Option"
 msgstr "Wählen Sie eine Option"
 
-#: build/block/index.js:1
+#: build/block/index.js:173
 msgid "List"
 msgstr "Liste"
 
-#: build/block/index.js:1
+#: build/block/index.js:176
 msgid "Table"
 msgstr "Tabelle"
 
-#: build/block/index.js:1
+#: build/block/index.js:186
 msgid "Displayed file information"
 msgstr "Angezeigte Dateiinformationen"
 
-#: build/block/index.js:1
+#: build/block/index.js:188
 msgid "File Type"
 msgstr "Dateiformat"
 
-#: build/block/index.js:1
+#: build/block/index.js:196
+msgid "Last Modified"
+msgstr "Zuletzt geändert"
+
+#: build/block/index.js:200
 msgid "Folder Title"
 msgstr "Ordnername"
 
-#: build/block/index.js:1
+#: build/block/index.js:208
 msgid "Overwrite folder name"
 msgstr "Ordnername überschreiben"
 
-#: build/block/index.js:1
+#: build/block/index.js:209
 msgid "If left blank, the FAUbox folder name will be used automatically."
 msgstr "Wenn leer, wird automatisch der FAUbox-Ordnername verwendet."
 
-#: build/block/index.js:1
+#: build/block/index.js:218
 msgid "Permitted file formats"
 msgstr "Erlaubte Dateiformate"
 
-#: build/block/index.js:1
+#: build/block/index.js:231
 msgid "Sorting"
 msgstr "Sortierung"
 
-#: build/block/index.js:1
+#: build/block/index.js:234
 msgid "Ascending"
 msgstr "Aufsteigend"
 
-#: build/block/index.js:1
+#: build/block/index.js:237
 msgid "Descending"
 msgstr "Absteigend"
 
-#: build/block/index.js:1
-msgid "Folder selection is missing. Please select your folder in the sidebar."
+#: build/block/index.js:244
+msgid "Sort by"
+msgstr "Sortieren nach"
+
+#: build/block/index.js:247
+msgid "Name"
+msgstr "Dateiname"
+
+#: build/block/index.js:250
+msgid "Size"
+msgstr "Dateigröße"
+
+#: build/block/index.js:256
+msgid "Date"
+msgstr "Datum"
+
+#: build/block/index.js:268
+msgid "No folder selected. Please select a folder in the sidebar."
 msgstr ""
 "Ordnerauswahl fehlt. Bitte wählen Sie den darzustellenden Ordner in den "
 "Blockeinstellungen der Seitenleiste."
@@ -168,12 +251,30 @@ msgid "FAUbox"
 msgstr "FAUbox"
 
 #: build/block/block.json
-#, fuzzy
-#| msgctxt "block description"
-#| msgid "Integrates data files from FAUbox."
 msgctxt "block description"
-msgid "Integrates data from FAUbox."
+msgid "Integrates files from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "FAUbox share link missing."
+#~ msgstr "Der FAUbox Teilen Link fehlt."
+
+#~ msgid "Invalid FAUbox public link."
+#~ msgstr "Ungültiger FAUbox Link."
+
+#~ msgid "Configure your FAUbox block."
+#~ msgstr "Konfigurieren Sie Ihren FAUbox-Block."
+
+#~ msgid "Paste your FAUbox public link here (Root Folder)"
+#~ msgstr "Fügen Sie Ihren FAUbox Link hier ein (Basisordner)"
+
+#~ msgid "No folders found."
+#~ msgstr "Keine Ordner gefunden."
+
+#~ msgid "Data Choice"
+#~ msgstr "Datenauswahl"
+
+#~ msgid "FAUbox Share Link"
+#~ msgstr "FAUbox Teilen Link"
 
 #~ msgid "Preview"
 #~ msgstr "Vorschau"
@@ -209,9 +310,6 @@ msgstr "Integriert Daten aus der FAUbox."
 #~ "Für Zugriff auf den FAUbox Ordner, registrieren Sie sich bitte mit Ihrem "
 #~ "Token und Ihrer ID."
 
-#~ msgid "FAUbox API-Token"
-#~ msgstr "FAUbox API-Token"
-
 #~ msgid "File-ID"
 #~ msgstr "Ordner-ID"
 
@@ -243,9 +341,6 @@ msgstr "Integriert Daten aus der FAUbox."
 #~ msgid "Order"
 #~ msgstr "Reihenfolge"
 
-#~ msgid "File Size"
-#~ msgstr "Dateigröße"
-
 #~ msgid "File Changed Date"
 #~ msgstr "Geändert am"
 
@@ -254,9 +349,6 @@ msgstr "Integriert Daten aus der FAUbox."
 
 #~ msgid "Finish initial setup"
 #~ msgstr "Einrichtung beenden"
-
-#~ msgid "Faubox File Settings"
-#~ msgstr "FAUbox Ordner Einstellungen"
 
 #~ msgid "Show File Title"
 #~ msgstr "Ordnertitel anzeigen"
