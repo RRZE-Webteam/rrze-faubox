@@ -1,0 +1,264 @@
+# Copyright (C) 2026 RRZE Webteam
+# This file is distributed under the GNU General Public License Version 3.
+msgid ""
+msgstr ""
+"Project-Id-Version: RRZE FAUbox 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-20T08:24:22+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: rrze-faubox\n"
+
+#. Plugin Name of the plugin
+#: rrze-faubox.php
+msgid "RRZE FAUbox"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: rrze-faubox.php
+msgid "https://github.com/RRZE-Webteam/rrze-faubox"
+msgstr ""
+
+#. Description of the plugin
+#: rrze-faubox.php
+msgid "A Plugin for FAUbox data integration"
+msgstr ""
+
+#. Author of the plugin
+#: rrze-faubox.php
+msgid "RRZE Webteam"
+msgstr ""
+
+#. Author URI of the plugin
+#: rrze-faubox.php
+msgid "https://www.wp.rrze.fau.de/"
+msgstr ""
+
+#: includes/Admin/Settings.php:40
+#: includes/Admin/Settings.php:155
+msgid "FAUbox Settings"
+msgstr ""
+
+#: includes/Admin/Settings.php:132
+msgid "Your FAUbox WebDAV token has expired. Please generate a new one."
+msgstr ""
+
+#. translators: %d: number of days until token expiry
+#: includes/Admin/Settings.php:135
+#, php-format
+msgid "Your FAUbox WebDAV token expires in %d days. Please generate a new one soon."
+msgstr ""
+
+#: includes/Admin/Settings.php:156
+msgid ""
+"Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox account under \"My Account\" →\n"
+"   \"Devices\" → \"Add WebDAV connection\"."
+msgstr ""
+
+#: includes/Admin/Settings.php:170
+msgid "FAUbox Username"
+msgstr ""
+
+#: includes/Admin/Settings.php:184
+msgid "FAUbox WebDAV Token"
+msgstr ""
+
+#: includes/Admin/Settings.php:197
+msgid "Token created on"
+msgstr ""
+
+#: includes/Admin/Settings.php:212
+msgid "Token has expired!"
+msgstr ""
+
+#: includes/Admin/Settings.php:215
+#, php-format
+msgid "Expires in %d days — please renew soon."
+msgstr ""
+
+#: includes/Admin/Settings.php:218
+#, php-format
+msgid "Token validity: 1 year. Valid for %d more days (until %s)."
+msgstr ""
+
+#: includes/Admin/Settings.php:232
+msgid "FAUbox Main Folder"
+msgstr ""
+
+#: includes/Admin/Settings.php:242
+msgid "The main folder whose subfolders are to be displayed in the block editor."
+msgstr ""
+
+#: includes/Blocks/BlockRegistration.php:62
+msgid "RRZE"
+msgstr ""
+
+#: includes/Frontend/Renderer.php:73
+#: includes/Frontend/Renderer.php:130
+msgid "No files found."
+msgstr ""
+
+#: includes/Helper.php:19
+msgid "File Name"
+msgstr ""
+
+#: includes/Helper.php:20
+#: build/block/index.js:273
+msgid "Type"
+msgstr ""
+
+#: includes/Helper.php:21
+#: build/block/index.js:193
+msgid "File Size"
+msgstr ""
+
+#: includes/Helper.php:22
+msgid "Last modified"
+msgstr ""
+
+#: includes/Rest/RestController.php:153
+msgid "Invalid file path."
+msgstr ""
+
+#: includes/Rest/RestController.php:160
+msgid "File not found."
+msgstr ""
+
+#. translators: 1: Server PHP version number, 2: Required PHP version number.
+#: rrze-faubox.php:56
+#, php-format
+msgid "The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s."
+msgstr ""
+
+#. translators: 1: Server WordPress version number, 2: Required WordPress version number.
+#: rrze-faubox.php:63
+#, php-format
+msgid "The server is running WordPress version %1$s. The Plugin requires at least WordPress version %2$s."
+msgstr ""
+
+#: build/block/index.js:116
+msgid "— Select folder —"
+msgstr ""
+
+#: build/block/index.js:127
+msgid "Folders could not be loaded. Please check your FAUbox credentials in the settings."
+msgstr ""
+
+#: build/block/index.js:129
+msgid "FAUbox Folder"
+msgstr ""
+
+#: build/block/index.js:140
+msgid "FAUbox Block"
+msgstr ""
+
+#: build/block/index.js:141
+msgid "Select a FAUbox folder to display its files."
+msgstr ""
+
+#: build/block/index.js:154
+msgid "Save"
+msgstr ""
+
+#: build/block/index.js:160
+msgid "Data"
+msgstr ""
+
+#: build/block/index.js:164
+msgid "Display Options"
+msgstr ""
+
+#: build/block/index.js:167
+msgid "View"
+msgstr ""
+
+#: build/block/index.js:171
+msgid "Select an Option"
+msgstr ""
+
+#: build/block/index.js:174
+msgid "List"
+msgstr ""
+
+#: build/block/index.js:177
+msgid "Table"
+msgstr ""
+
+#: build/block/index.js:187
+msgid "Displayed file information"
+msgstr ""
+
+#: build/block/index.js:189
+msgid "File Type"
+msgstr ""
+
+#: build/block/index.js:197
+msgid "Last Modified"
+msgstr ""
+
+#: build/block/index.js:201
+msgid "Folder Title"
+msgstr ""
+
+#: build/block/index.js:209
+msgid "Overwrite folder name"
+msgstr ""
+
+#: build/block/index.js:210
+msgid "If left blank, the FAUbox folder name will be used automatically."
+msgstr ""
+
+#: build/block/index.js:216
+msgid "Heading level"
+msgstr ""
+
+#: build/block/index.js:238
+msgid "Permitted file formats"
+msgstr ""
+
+#: build/block/index.js:251
+msgid "Sorting"
+msgstr ""
+
+#: build/block/index.js:254
+msgid "Ascending"
+msgstr ""
+
+#: build/block/index.js:257
+msgid "Descending"
+msgstr ""
+
+#: build/block/index.js:264
+msgid "Sort by"
+msgstr ""
+
+#: build/block/index.js:267
+msgid "Name"
+msgstr ""
+
+#: build/block/index.js:270
+msgid "Size"
+msgstr ""
+
+#: build/block/index.js:276
+msgid "Date"
+msgstr ""
+
+#: build/block/index.js:288
+msgid "No folder selected. Please select a folder in the sidebar."
+msgstr ""
+
+#: build/block/block.json
+msgctxt "block title"
+msgid "FAUbox"
+msgstr ""
+
+#: build/block/block.json
+msgctxt "block description"
+msgid "Integrates files from FAUbox."
+msgstr ""
