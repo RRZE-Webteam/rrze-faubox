@@ -24,7 +24,10 @@ class Settings
     {
         add_action('admin_menu', [$this, 'addOptionsPage']);
         add_action('admin_init', [$this, 'registerSettings']);
+        add_action('admin_notices', [$this, 'tokenExpiryNotice']);
     }
+
+
 
     /**
      * Adds the FAUbox settings page to the WordPress admin menu.
@@ -59,6 +62,10 @@ class Settings
         register_setting('rrze_faubox_settings', 'rrze_faubox_folder', [
                 'sanitize_callback' => 'sanitize_text_field',
         ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
+                        'sanitize_callback' => [$this, 'sanitizeDate'],
+                ]);
+
     }
 
     /**
@@ -75,13 +82,69 @@ class Settings
     /**
      * Sanitize WebDAV token input
      *
-     * @param mixed $valeu Raw input value.
+     * @param mixed $value Raw input value.
      * @return string Sanitized token.
      */
     public function sanitizeToken(mixed $value): string
     {
         return sanitize_text_field((string)$value);
     }
+
+    /**
+     * Sanitize a date input value.
+     *
+     * Accepts only dates in YYYY-MM-DD format.
+     *
+     * @param mixed $value Raw input value.
+     * @return string Sanitized date string, or empty string if invalid.
+     */
+    public function sanitizeDate(mixed $value): string
+    {
+        $date = sanitize_text_field((string)$value);
+        return preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+                ? $date : '';
+    }
+
+
+    /**
+     * Displays an admin dashboard notice when the FAUbox WebDAV token is about to expire (within 7 days) or has already expired.
+     *
+     * Reads the token creation date from options and calculates the expiry
+     * date by adding one year. Shows an error notice if expired, or a
+     * warning notice if expiry is within 7 days.
+     *
+     * @return void
+     */
+    public function tokenExpiryNotice(): void
+    {
+        $screen = get_current_screen();
+        if (!$screen || !in_array($screen->id, ['dashboard', 'settings_page_rrze-faubox'], true)) {
+            return;
+        }
+        $createdAt = get_option('rrze_faubox_token_created_at', '');
+        if (empty($createdAt)) {
+            return;
+        }
+
+        $expiryDate = (new \DateTime($createdAt))->modify('+1year');
+        $today = new \DateTime('today');
+        $daysLeft = (int)$today->diff($expiryDate)->days;
+        $isPast = $today > $expiryDate;
+
+        if ($isPast || $daysLeft <= 7) {
+            $message = $isPast
+                    ? __('Your FAUbox WebDAV token has expired. Please generate a new one.', 'rrze-faubox')
+                    : sprintf(
+                    /* translators: %d: number of days until token expiry */
+                            __('Your FAUbox WebDAV token expires in %d days. Please generate a new one soon.', 'rrze-faubox'), $daysLeft);
+            $type = $isPast ? 'error' : 'warning';
+            printf('<div class="notice notice-%s is-dismissible"><p><strong>RRZE FAUbox:</strong> %s</p></div>',
+                    esc_attr($type),
+                    esc_html($message)
+            );
+        }
+    }
+
 
 
     /**
@@ -130,10 +193,40 @@ class Settings
                             <input type="password" id="rrze_faubox_token" name="rrze_faubox_token"
                                    value="<?php echo esc_attr(get_option('rrze_faubox_token')); ?>"
                                    class="regular-text" autocomplete="off">
-                            <p class="description">
-                                <?php echo esc_html__('Token validity: 1 year. Generate a new token before it expires.', 'rrze-faubox'); ?>
-                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="rrze_faubox_token_created_at">
+                                <?php echo esc_html__('Token created on','rrze-faubox'); ?>
+                            </label>
+                        </th>
+                        <td>
+                            <input type="date" id="rrze_faubox_token_created_at"
+                                   name="rrze_faubox_token_created_at"
+                                   value="<?php echo esc_attr(get_option('rrze_faubox_token_created_at')); ?>"><?php
+                            $createdAt = get_option('rrze_faubox_token_created_at', '');
+                            if (!empty($createdAt)) {
+                                $expiryDate = (new \DateTime($createdAt))->modify('+1 year');
+                                $today = new \DateTime('today');
+                                $daysLeft = (int)$today->diff($expiryDate)->days;
+                                $isPast = $today > $expiryDate;
 
+                                if ($isPast) {
+                                    $label = esc_html__('Token has expired!', 'rrze-faubox');
+                                    $class = 'notice-error';
+                                } elseif ($daysLeft <= 30) {
+                                    $label = sprintf(esc_html__('Expires in %d days — please renew soon.', 'rrze-faubox'), $daysLeft);
+                                    $class = 'notice-warning';
+                                } else {
+                                    $label = sprintf(esc_html__('Token validity: 1 year. Valid for %d more days (until %s).', 'rrze-faubox'), $daysLeft,
+                                            $expiryDate->format('d.m.Y'));
+                                    $class = '';
+                                }
+                                printf('<p class="description %s">%s</p>',
+                                        esc_attr($class), $label);
+                            }
+                            ?>
                         </td>
                     </tr>
                     <tr>

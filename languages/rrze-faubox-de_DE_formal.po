@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2026-05-19T10:08:42+00:00\n"
-"PO-Revision-Date: 2026-05-19 12:12+0200\n"
+"POT-Creation-Date: 2026-05-20T08:24:22+00:00\n"
+"PO-Revision-Date: 2026-05-20 11:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -40,11 +40,25 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Admin/Settings.php:37 includes/Admin/Settings.php:96
+#: includes/Admin/Settings.php:40 includes/Admin/Settings.php:155
 msgid "FAUbox Settings"
 msgstr "FAUbox Einstellungen"
 
-#: includes/Admin/Settings.php:97
+#: includes/Admin/Settings.php:132
+msgid "Your FAUbox WebDAV token has expired. Please generate a new one."
+msgstr ""
+"Ihr FAUbox-WebDAV-Token ist abgelaufen. Bitte generieren Sie ein neues Token."
+
+#. translators: %d: number of days until token expiry
+#: includes/Admin/Settings.php:135
+#, php-format
+msgid ""
+"Your FAUbox WebDAV token expires in %d days. Please generate a new one soon."
+msgstr ""
+"Ihr FAUbox-WebDAV-Token läuft in %d Tagen ab. Bitte generieren Sie bald ein "
+"neues."
+
+#: includes/Admin/Settings.php:156
 msgid ""
 "Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox "
 "account under \"My Account\" →\n"
@@ -54,35 +68,47 @@ msgstr ""
 "FAUbox-Konto unter „Mein Konto“ →\n"
 "   „Geräte“ → „WebDAV-Verbindung hinzufügen“."
 
-#: includes/Admin/Settings.php:111
+#: includes/Admin/Settings.php:170
 msgid "FAUbox Username"
 msgstr "FAUbox Benutzername"
 
-#: includes/Admin/Settings.php:125
+#: includes/Admin/Settings.php:184
 msgid "FAUbox WebDAV Token"
 msgstr "FAUbox WebDAV Token"
 
-#: includes/Admin/Settings.php:134
-msgid "Token validity: 1 year. Generate a new token before it expires."
-msgstr ""
-"Gültigkeitsdauer des Tokens: 1 Jahr. Generieren Sie bitte vor Ablauf des "
-"Tokens einen neuen."
+#: includes/Admin/Settings.php:197
+msgid "Token created on"
+msgstr "Token erstellt am"
 
-#: includes/Admin/Settings.php:143
+#: includes/Admin/Settings.php:212
+msgid "Token has expired!"
+msgstr "Das Token ist abgelaufen!"
+
+#: includes/Admin/Settings.php:215
+#, php-format
+msgid "Expires in %d days — please renew soon."
+msgstr "Läuft in %d Tagen ab – bitte bald verlängern."
+
+#: includes/Admin/Settings.php:218
+#, php-format
+msgid "Token validity: 1 year. Valid for %d more days (until %s)."
+msgstr "Gültigkeitsdauer des Tokens: 1 Jahr. Noch %d Tage gültig (bis %s)."
+
+#: includes/Admin/Settings.php:232
 msgid "FAUbox Main Folder"
-msgstr "FAUbox Hauptordner"
+msgstr "FAUbox Stammordner"
 
-#: includes/Admin/Settings.php:153
+#: includes/Admin/Settings.php:242
 msgid ""
 "The main folder whose subfolders are to be displayed in the block editor."
 msgstr ""
-"Der Hauptordner, dessen Unterordner im Block-Editor angezeigt werden sollen."
+"Der Stammordner, dessen Unterordner im Block-Editor angezeigt werden sollen."
 
 #: includes/Blocks/BlockRegistration.php:62
 msgid "RRZE"
 msgstr "RRZE"
 
-#: includes/Frontend/Renderer.php:65 includes/Frontend/Renderer.php:122
+#: includes/Frontend/Renderer.php:73 includes/Frontend/Renderer.php:130
 msgid "No files found."
 msgstr "Keine Dateien gefunden."
 
@@ -90,11 +116,11 @@ msgstr "Keine Dateien gefunden."
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Helper.php:20 build/block/index.js:253
+#: includes/Helper.php:20 build/block/index.js:273
 msgid "Type"
 msgstr "Dateiformat"
 
-#: includes/Helper.php:21 build/block/index.js:192
+#: includes/Helper.php:21 build/block/index.js:193
 msgid "File Size"
 msgstr "Dateigröße"
 
@@ -130,13 +156,11 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin erfordert mindestens "
 "WordPress Version %2$s."
 
-#: build/block/index.js:115
-#, fuzzy
-#| msgid "Select Folders"
+#: build/block/index.js:116
 msgid "— Select folder —"
 msgstr "Ordner auswählen"
 
-#: build/block/index.js:126
+#: build/block/index.js:127
 msgid ""
 "Folders could not be loaded. Please check your FAUbox credentials in the "
 "settings."
@@ -144,104 +168,108 @@ msgstr ""
 "Die Ordner konnten nicht geladen werden. Bitte überprüfen Sie Ihre FAUbox-"
 "Anmeldedaten in den Einstellungen."
 
-#: build/block/index.js:128
+#: build/block/index.js:129
 msgid "FAUbox Folder"
 msgstr "FAUbox Ordner"
 
-#: build/block/index.js:139
+#: build/block/index.js:140
 msgid "FAUbox Block"
 msgstr "FAUbox Block"
 
-#: build/block/index.js:140
+#: build/block/index.js:141
 msgid "Select a FAUbox folder to display its files."
 msgstr ""
 "Wählen Sie einen FAUbox-Ordner aus, um dessen Dateien anzeigen zu lassen."
 
-#: build/block/index.js:153
+#: build/block/index.js:154
 msgid "Save"
 msgstr "Speichern"
 
-#: build/block/index.js:159
+#: build/block/index.js:160
 msgid "Data"
 msgstr "Dateien"
 
-#: build/block/index.js:163
+#: build/block/index.js:164
 msgid "Display Options"
 msgstr "Anzeigeoptionen"
 
-#: build/block/index.js:166
+#: build/block/index.js:167
 msgid "View"
 msgstr "Ansicht"
 
-#: build/block/index.js:170
+#: build/block/index.js:171
 msgid "Select an Option"
 msgstr "Wählen Sie eine Option"
 
-#: build/block/index.js:173
+#: build/block/index.js:174
 msgid "List"
 msgstr "Liste"
 
-#: build/block/index.js:176
+#: build/block/index.js:177
 msgid "Table"
 msgstr "Tabelle"
 
-#: build/block/index.js:186
+#: build/block/index.js:187
 msgid "Displayed file information"
 msgstr "Angezeigte Dateiinformationen"
 
-#: build/block/index.js:188
+#: build/block/index.js:189
 msgid "File Type"
 msgstr "Dateiformat"
 
-#: build/block/index.js:196
+#: build/block/index.js:197
 msgid "Last Modified"
 msgstr "Zuletzt geändert"
 
-#: build/block/index.js:200
+#: build/block/index.js:201
 msgid "Folder Title"
 msgstr "Ordnername"
 
-#: build/block/index.js:208
+#: build/block/index.js:209
 msgid "Overwrite folder name"
 msgstr "Ordnername überschreiben"
 
-#: build/block/index.js:209
+#: build/block/index.js:210
 msgid "If left blank, the FAUbox folder name will be used automatically."
 msgstr "Wenn leer, wird automatisch der FAUbox-Ordnername verwendet."
 
-#: build/block/index.js:218
+#: build/block/index.js:216
+msgid "Heading level"
+msgstr "Überschriftenhierarchie"
+
+#: build/block/index.js:238
 msgid "Permitted file formats"
 msgstr "Erlaubte Dateiformate"
 
-#: build/block/index.js:231
+#: build/block/index.js:251
 msgid "Sorting"
 msgstr "Sortierung"
 
-#: build/block/index.js:234
+#: build/block/index.js:254
 msgid "Ascending"
 msgstr "Aufsteigend"
 
-#: build/block/index.js:237
+#: build/block/index.js:257
 msgid "Descending"
 msgstr "Absteigend"
 
-#: build/block/index.js:244
+#: build/block/index.js:264
 msgid "Sort by"
 msgstr "Sortieren nach"
 
-#: build/block/index.js:247
+#: build/block/index.js:267
 msgid "Name"
 msgstr "Dateiname"
 
-#: build/block/index.js:250
+#: build/block/index.js:270
 msgid "Size"
 msgstr "Dateigröße"
 
-#: build/block/index.js:256
+#: build/block/index.js:276
 msgid "Date"
 msgstr "Datum"
 
-#: build/block/index.js:268
+#: build/block/index.js:288
 msgid "No folder selected. Please select a folder in the sidebar."
 msgstr ""
 "Ordnerauswahl fehlt. Bitte wählen Sie den darzustellenden Ordner in den "
@@ -256,6 +284,11 @@ msgstr "FAUbox"
 msgctxt "block description"
 msgid "Integrates files from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "Token validity: 1 year. Generate a new token before it expires."
+#~ msgstr ""
+#~ "Gültigkeitsdauer des Tokens: 1 Jahr. Generieren Sie bitte vor Ablauf des "
+#~ "Tokens einen neuen."
 
 #~ msgid "FAUbox share link missing."
 #~ msgstr "Der FAUbox Teilen Link fehlt."

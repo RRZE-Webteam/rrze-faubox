@@ -31,7 +31,7 @@ var cloud_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODUL
   \******************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze/faubox","version":"0.0.1","title":"FAUbox","category":"rrze","icon":"cloud","description":"Integrates files from FAUbox.","supports":{"html":false},"attributes":{"isInitialSetup":{"type":"boolean","default":true},"path":{"type":"string","default":""},"view":{"type":"string","enum":["list","table"],"default":"list"},"show":{"type":"array","items":{"type":"string","enum":["name","type","size","modified"]},"default":["name"]},"sort":{"type":"string","enum":["asc","desc"],"default":"asc"},"orderby":{"type":"string","enum":["name","size","type","modified"],"default":"name"},"show_title":{"type":"boolean","default":false},"filetype":{"type":"array","default":[]},"changetitle":{"type":"string","default":""}},"textdomain":"rrze-faubox","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style.css","example":{"attributes":{"isInitialSetup":false}}}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze/faubox","version":"0.0.1","title":"FAUbox","category":"rrze","icon":"cloud","description":"Integrates files from FAUbox.","supports":{"html":false},"attributes":{"isInitialSetup":{"type":"boolean","default":true},"path":{"type":"string","default":""},"view":{"type":"string","enum":["list","table"],"default":"list"},"show":{"type":"array","items":{"type":"string","enum":["name","type","size","modified"]},"default":["name"]},"sort":{"type":"string","enum":["asc","desc"],"default":"asc"},"orderby":{"type":"string","enum":["name","size","type","modified"],"default":"name"},"show_title":{"type":"boolean","default":false},"heading_level":{"type":"string","enum":["h2","h3","h4","h5"],"default":"h3"},"filetype":{"type":"array","default":[]},"changetitle":{"type":"string","default":""}},"textdomain":"rrze-faubox","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style.css","example":{"attributes":{"isInitialSetup":false}}}');
 
 /***/ }),
 
@@ -83,7 +83,8 @@ function Edit({
     orderby,
     show_title,
     changetitle,
-    filetype
+    filetype,
+    heading_level
   } = attributes;
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)();
   const [folders, setFolders] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)([]);
@@ -210,6 +211,25 @@ function Edit({
             value: changetitle,
             onChange: val => setAttributes({
               changetitle: val
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Heading level', 'rrze-faubox'),
+            value: heading_level,
+            options: [{
+              label: 'H2',
+              value: 'h2'
+            }, {
+              label: 'H3',
+              value: 'h3'
+            }, {
+              label: 'H4',
+              value: 'h4'
+            }, {
+              label: 'H5',
+              value: 'h5'
+            }],
+            onChange: val => setAttributes({
+              heading_level: val
             })
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalDivider, {
             margin: "2"

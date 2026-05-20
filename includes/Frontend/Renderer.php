@@ -32,14 +32,22 @@ class Renderer
     }
 
     /**
-     * Renders title for folder block.
+     * Renders the folder title using the configured heading
+    level.
      *
-     * @param string $folderName
-     * @return string
+     * @param string $folderName The folder name to display.
+     * @param string $tag        The HTML heading tag (h2–h5).
+     * @return string Rendered heading HTML.
      */
-    public static function renderTitle(string $folderName): string
+    public static function renderTitle(string $folderName, string $tag = 'h3'): string
     {
-        return sprintf('<h3 class="wp-block-heading faubox-title">%s</h3>', esc_html($folderName));
+        $allowed = ['h2', 'h3', 'h4', 'h5'];
+        $tag = in_array($tag, $allowed, true) ? $tag : 'h3';
+        return sprintf('<%1$s class="wp-block-heading faubox-title">%2$s</%1$s>',
+            $tag,
+            esc_html($folderName)
+        );
+
     }
 
 
@@ -54,11 +62,11 @@ class Renderer
     {
         $html = '';
 
-        if (!empty($atts['show_title']) || !empty($atts['changetitle'])) {
+        if (!empty($atts['show_title'])) {
             $title = !empty($atts['changetitle'])
                 ? $atts['changetitle']
                 : basename((string)($atts['path'] ?? ''));
-            $html .= self::renderTitle($title);
+            $html .= self::renderTitle($title, $atts['heading_level'] ?? 'h3');
         }
 
         if (empty($data)) {
@@ -68,16 +76,15 @@ class Renderer
         $html .= '<ul class="wp-block-list wp-block-faubox-list">';
 
         foreach ($data as $file) {
-            $filename = $file['name'] ?? '';
-            $name     = esc_html(pathinfo($filename, PATHINFO_FILENAME));
-            $ext      = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
-            $url      = esc_url($file['url'] ?? '');
+            $name = esc_html($file['name'] ?? '');
+            $url = esc_url($file['url'] ?? '');
 
 
             $show = isset($atts['show']) && is_array($atts['show']) ? $atts['show'] : [];
             $suffix = '';
 
             if (in_array('type', $show, true)) {
+                $ext = strtoupper(pathinfo($name, PATHINFO_EXTENSION));
                 $suffix .= ' (' . esc_html($ext) . ')';
             }
             if (in_array('size', $show, true) && !empty($file['size'])) {
@@ -111,11 +118,12 @@ class Renderer
     {
         $html = '';
 
-        if (!empty($atts['show_title']) || !empty($atts['changetitle'])) {
+        if (!empty($atts['show_title'])) {
             $title = !empty($atts['changetitle'])
                 ? $atts['changetitle']
                 : basename((string)($atts['path'] ?? ''));
-            $html .= self::renderTitle($title);
+            $html .= self::renderTitle($title, $atts['heading_level'] ?? 'h3');
+
         }
 
         if (empty($data)) {

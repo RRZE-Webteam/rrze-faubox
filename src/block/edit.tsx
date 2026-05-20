@@ -34,6 +34,7 @@ interface EditProps {
         show_title: boolean;
         changetitle: string;
         filetype: string[];
+        heading_level: 'h2' | 'h3' | 'h4' | 'h5';
     };
     setAttributes: (attributes: Partial<EditProps['attributes']>) => void;
 }
@@ -49,6 +50,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         show_title,
         changetitle,
         filetype,
+        heading_level
     } = attributes;
 
     const blockProps = useBlockProps();
@@ -176,6 +178,19 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                                 help={__('If left blank, the FAUbox folder name will be used automatically.', 'rrze-faubox')}
                                 value={changetitle}
                                 onChange={(val) => setAttributes({changetitle: val})}
+                            />
+                            <SelectControl
+                                label={__('Heading level', 'rrze-faubox')}
+                                value={heading_level}
+                                options={[
+                                    {label: 'H2', value: 'h2'},
+                                    {label: 'H3', value: 'h3'},
+                                    {label: 'H4', value: 'h4'},
+                                    {label: 'H5', value: 'h5'},
+                                ]}
+                                onChange={(val: 'h2' | 'h3' | 'h4' | 'h5') =>
+                                    setAttributes({heading_level: val})
+                                }
                             />
                             <Divider margin="2"/>
                             <Heading color="#03316a">{__('Permitted file formats', 'rrze-faubox')}</Heading>
