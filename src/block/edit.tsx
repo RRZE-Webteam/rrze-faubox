@@ -27,6 +27,7 @@ interface EditProps {
     attributes: {
         isInitialSetup: boolean;
         path: string;
+        parentPath: string;
         view: 'list' | 'table';
         show: ('name' | 'type' | 'size' | 'modified')[];
         sort: 'asc' | 'desc';
@@ -43,6 +44,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     const {
         isInitialSetup,
         path,
+        parentPath,
         view,
         show,
         sort,
@@ -58,6 +60,8 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     const [folders, setFolders] = useState<FolderOption[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadError, setLoadError] = useState<boolean>(false);
+    const [subFolders, setSubFolders] = useState<FolderOption[]>([]);
+    const [subLoading, setSubLoading] = useState<boolean>(false);
 
     const filetypeOptions = ['pdf', 'docx', 'xlsx', 'txt', 'zip', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
 
@@ -84,6 +88,25 @@ export default function Edit({attributes, setAttributes}: EditProps) {
             });
     }, []);
 
+    useEffect(() => {
+        if (!parentPath) {
+            setSubFolders([]);
+            return;
+        }
+        setSubLoading(true);
+        apiFetch<FolderOption[]>({path:
+                `/rrze-faubox/v1/folders?path=${encodeURIComponent(parentPath)}`})
+            .then((data) => {
+                setSubFolders(Array.isArray(data) ? data : []);
+                setSubLoading(false);
+            })
+            .catch(() => {
+                setSubFolders([]);
+                setSubLoading(false);
+            });
+    }, [parentPath]);
+
+
     const folderSelectOptions = [
         {label: __('— Select folder —', 'rrze-faubox'), value: ''},
         ...folders.map((f) => ({label: f.name, value: f.path})),
@@ -100,13 +123,32 @@ export default function Edit({attributes, setAttributes}: EditProps) {
             {!loading && !loadError && (
                 <SelectControl
                     label={__('FAUbox Folder', 'rrze-faubox')}
+                    value={parentPath || path}
+                    options={[
+                        {label: __('— Select folder —', 'rrze-faubox'), value: ''},
+                        ...folders.map((f) => ({label: f.name, value: f.path})),
+                    ]}
+                    onChange={(val) => {
+                        setSubFolders([]);
+                        setAttributes({parentPath: val, path: val});
+                    }}
+                />
+            )}
+            {subLoading && <Spinner/>}
+            {!subLoading && subFolders.length > 0 && (
+                <SelectControl
+                    label={__('Subfolder', 'rrze-faubox')}
                     value={path}
-                    options={folderSelectOptions}
+                    options={[
+                        {label: __('— All files in this folder —', 'rrze-faubox'), value: parentPath},
+                        ...subFolders.map((f) => ({label: f.name, value: f.path})),
+                    ]}
                     onChange={(val) => setAttributes({path: val})}
                 />
             )}
         </>
     );
+
 
     return (
         <div {...blockProps}>

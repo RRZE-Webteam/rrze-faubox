@@ -128,6 +128,31 @@ final class FileService
         ], array_values($folders));
     }
 
+    /**
+     * Retrieve subfolders of a given WebDAV folder path.
+     *
+     * @param string $path WebDAV folder path.
+     * @return array List of subfolder entries with 'name' and 'path'.
+     */
+    public function getSubFolders(string $path): array
+    {
+        $entries = $this->client->fetchEntriesFromPath($path);
+
+        if (!is_array($entries)) {
+            return [];
+        }
+
+        $folders = array_filter(
+            $entries,
+            static fn(array $entry): bool => $entry['is_collection']
+        );
+
+        return array_map(static fn(array $entry): array => [
+            'name' => $entry['displayname'],
+            'path' => rawurldecode(trim(preg_replace('#^/webdav/?#', '',
+                $entry['path']), '/')),
+        ], array_values($folders));
+    }
 
 
     /**

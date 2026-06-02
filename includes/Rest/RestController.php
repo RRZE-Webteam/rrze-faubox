@@ -80,22 +80,29 @@ final class RestController
         ]);
 
         register_rest_route('rrze-faubox/v1', '/folders', [
-                'methods' => 'GET',
-                'callback' => [$this, 'getFolders'],
-                'permission_callback' => fn() => current_user_can('edit_posts'),
-            ]);
+            'methods' => 'GET',
+            'callback' => [$this, 'getFolders'],
+            'permission_callback' => fn() => current_user_can('edit_posts'),
+            'args' => [
+                'path' => [
+                    'required' => false,
+                    'default' => '',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+            ],
+        ]);
 
         register_rest_route('rrze-faubox/v1', '/download', [
-                'methods' => 'GET',
-                'callback' => [$this, 'downloadFile'],
-                'permission_callback' => '__return_true',
-                'args' => [
-                    'file' => [
-                        'required' => true,
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
+            'methods' => 'GET',
+            'callback' => [$this, 'downloadFile'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'file' => [
+                    'required' => true,
+                    'sanitize_callback' => 'sanitize_text_field',
                 ],
-            ]);
+            ],
+        ]);
     }
 
 
@@ -128,9 +135,16 @@ final class RestController
      *
      * @return array
      */
-    public function getFolders(): array
+    public function getFolders(WP_REST_Request $request): array
     {
+        $path = (string) $request->get_param('path');
+
+        if ($path !== '') {
+            return $this->fileService->getSubFolders($path);
+        }
+
         return $this->fileService->getAccessibleRootFolders();
+
     }
 
     /**
@@ -170,7 +184,7 @@ final class RestController
         header('X-Content-Type-Options: nosniff');
 
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-          echo $result['body'];
-          exit;
-      }
+        echo $result['body'];
+        exit;
+    }
 }
