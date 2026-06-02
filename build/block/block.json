@@ -19,6 +19,10 @@
       "type": "string",
       "default": ""
     },
+    "parentPath": {
+      "type": "string",
+      "default": ""
+    },
     "view": {
       "type": "string",
       "enum": [
