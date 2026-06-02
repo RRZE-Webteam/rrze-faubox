@@ -40,8 +40,7 @@ final class FileService
         'mp4' => 'video/mp4',
         'mp3' => 'audio/mpeg',
     ];
-
-
+    
     /**
      * Low-level WebDAV client.
      *
