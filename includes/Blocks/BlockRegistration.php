@@ -27,13 +27,7 @@ class BlockRegistration
      */
     public function registerBlock(): void
     {
-        $block = register_block_type(
-            dirname(__DIR__, 2) . '/build/block',
-            [
-                'render_callback' => [\RRZE\FAUbox\Blocks\BlockRender::class, 'output'],
-            ]
-        );
-
+        $block = register_block_type(dirname(__DIR__, 2) . '/build/block', ['render_callback' => [\RRZE\FAUbox\Blocks\BlockRender::class, 'output'],]);
 
         if ($block && !empty($block->editor_script)) {
             wp_set_script_translations(
@@ -41,6 +35,9 @@ class BlockRegistration
                 'rrze-faubox',
                 dirname(__DIR__, 2) .  '/languages'
             );
+            wp_localize_script($block->editor_script, 'rrze_faubox_data', [
+                'settings_url' => admin_url('options-general.php?page=rrze-faubox'),
+            ]);
         }
     }
 

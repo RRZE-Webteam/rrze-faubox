@@ -135,12 +135,17 @@ final class RestController
      *
      * @return array
      */
-    public function getFolders(WP_REST_Request $request): array
+    public function getFolders(WP_REST_Request $request): array|\WP_Error
     {
         $path = (string) $request->get_param('path');
 
         if ($path !== '') {
             return $this->fileService->getSubFolders($path);
+        }
+
+        $mainFolder = get_option('rrze_faubox_folder', '');
+        if (empty($mainFolder)) {
+            return new \WP_Error('no_folder_configured', __('No main folder configured. Please set it in the FAUbox settings.', 'rrze-faubox'), ['status' => 412]);
         }
 
         return $this->fileService->getAccessibleRootFolders();
@@ -167,6 +172,11 @@ final class RestController
             wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
         }
 
+        // Block path traversal attempts
+        if (str_contains($filePath, '..') || str_contains($filePath, './')) {
+            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
+        }
+
         $result =
             $this->client->fetchFileContent($filePath);
 
@@ -175,13 +185,14 @@ final class RestController
         }
 
         $fileName    = basename(urldecode($filePath));
-        $contentType = $result['content_type'] ?: 'application/octet-stream';
+        $fileName    = str_replace(['"', "'", "\r", "\n", '\\'], '', $fileName);
+        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '', $result['content_type'] ?: 'application/octet-stream');
 
         header('Content-Type: ' . $contentType);
-        //open in new window: inline instead of attachment
-        header('Content-Disposition: attachment;filename="' . $fileName . '"');
-        header('Content-Length: ' . strlen($result['body']));
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Length: ' . mb_strlen($result['body'], '8bit'));
         header('X-Content-Type-Options: nosniff');
+
 
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo $result['body'];

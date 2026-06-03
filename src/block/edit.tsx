@@ -60,6 +60,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     const [folders, setFolders] = useState<FolderOption[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadError, setLoadError] = useState<boolean>(false);
+    const [noFolderConfigured, setNoFolderConfigured] = useState<boolean>(false);
     const [subFolders, setSubFolders] = useState<FolderOption[]>([]);
     const [subLoading, setSubLoading] = useState<boolean>(false);
 
@@ -82,8 +83,12 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                 setFolders(Array.isArray(data) ? data : []);
                 setLoading(false);
             })
-            .catch(() => {
-                setLoadError(true);
+            .catch((error: {code?: string}) => {
+                if (error?.code === 'no_folder_configured') {
+                    setNoFolderConfigured(true);
+                } else {
+                    setLoadError(true);
+                }
                 setLoading(false);
             });
     }, []);
@@ -115,9 +120,14 @@ export default function Edit({attributes, setAttributes}: EditProps) {
     const FolderSelect = () => (
         <>
             {loading && <Spinner/>}
+            {noFolderConfigured && (
+                <p style={{color: 'red'}}>
+                    {__('No main folder configured. Please check your FAUbox settings!', 'rrze-faubox')}{' '}
+                </p>
+            )}
             {loadError && (
                 <p style={{color: 'red'}}>
-                    {__('Folders could not be loaded. Please check your FAUbox credentials in the settings.', 'rrze-faubox')}
+                    {__('Folders could not be loaded. Please check your FAUbox settings!', 'rrze-faubox')}
                 </p>
             )}
             {!loading && !loadError && (

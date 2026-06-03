@@ -17,7 +17,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "wp-scripts build && npm run build-style",
     "start": "wp-scripts start",
-    "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed",
+    "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed && sass src/admin/admin.scss build/admin/admin.css --no-source-map --style=compressed",
     "i18n:php": "wp i18n make-pot . languages/rrze-faubox-php.pot --exclude=node_modules --exclude=build --exclude=vendor --domain=rrze-faubox",
     "i18n:block": "wp-scripts i18n src --output-file=languages/rrze-faubox-block.pot",
     "i18n:merge": "wp i18n make-pot . languages/rrze-faubox.pot --exclude=node_modules,build,vendor --domain=rrze-faubox --merge=languages/rrze-faubox-block.pot",

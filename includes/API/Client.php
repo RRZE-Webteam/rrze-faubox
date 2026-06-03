@@ -16,8 +16,7 @@ defined('ABSPATH') || exit;
  */
 final class Client
 {
-    //TODO: URL auf faubox ändern!!!
-    private const BASE_URL = 'https://fauboxtest.rrze.uni-erlangen.de/webdav/';
+    private const BASE_URL = 'https://faubox.rrze.uni-erlangen.de/webdav/';
 
     /**
      * Get stored WEBDAV username.
@@ -98,6 +97,11 @@ final class Client
             return null;
         }
 
+        $statusCode = wp_remote_retrieve_response_code($response);
+        if ($statusCode !== 207) {
+            return null;
+        }
+
         $responseBody = wp_remote_retrieve_body($response);
 
         if (!$responseBody) {
@@ -106,7 +110,7 @@ final class Client
 
         libxml_use_internal_errors(true);
         $xml = simplexml_load_string($responseBody);
-        $xmlErrors = libxml_get_errors();
+        libxml_get_errors();
         libxml_clear_errors();
 
         if (!$xml instanceof \SimpleXMLElement) {
@@ -235,7 +239,8 @@ final class Client
             return null;
         }
 
-        $url = 'https://fauboxtest.rrze.uni-erlangen.de' . implode('/', array_map('rawurlencode', explode('/', $path)));
+        $baseHost = rtrim(self::BASE_URL, '/webdav/');
+        $url = $baseHost . implode('/', array_map('rawurlencode', explode('/', $path)));
 
         $response = wp_remote_get($url, [
             'timeout' => 30,

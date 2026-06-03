@@ -24,6 +24,7 @@ defined('ABSPATH') || exit;
 const FAUBOX_PHP_VERSION = '8.2';
 const FAUBOX_WP_VERSION = '6.8';
 
+define('RRZE_FAUBOX_URL', plugin_dir_url(__FILE__));
 
 spl_autoload_register(function ($class) {
     $prefix = __NAMESPACE__ . '\\';

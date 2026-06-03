@@ -40,7 +40,7 @@ final class FileService
         'mp4' => 'video/mp4',
         'mp3' => 'audio/mpeg',
     ];
-    
+
     /**
      * Low-level WebDAV client.
      *
@@ -102,10 +102,9 @@ final class FileService
         $mainFolder = get_option('rrze_faubox_folder', '');
 
         if ($mainFolder !== '') {
-            $entries =
-                $this->client->fetchEntriesFromPath($mainFolder);
+            $entries = $this->client->fetchEntriesFromPath($mainFolder);
         } else {
-            $entries = $this->client->fetchRootFolders();
+            return [];
         }
 
         if (!is_array($entries)) {
@@ -282,11 +281,10 @@ final class FileService
 
     private function sortFiles(array $files, string $sort, string $orderby): array
     {
-        $sort = strtolower($sort) === 'desc' ? 'desc' : 'asc';
+        $sort    = strtolower($sort) === 'desc' ? 'desc' : 'asc';
+        $orderby = in_array($orderby, ['name', 'size', 'type', 'modified'], true) ? $orderby : 'name';
 
-        usort(
-            $files,
-            static function (array $a, array $b) use ($sort, $orderby): int {
+        usort($files, static function (array $a, array $b) use ($sort, $orderby): int {
 
                 $valueA = $a[$orderby . '_raw']
                     ?? $a[$orderby]

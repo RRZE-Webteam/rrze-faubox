@@ -25,8 +25,8 @@ class Settings
         add_action('admin_menu', [$this, 'addOptionsPage']);
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
     }
-
 
 
     /**
@@ -63,8 +63,8 @@ class Settings
                 'sanitize_callback' => 'sanitize_text_field',
         ]);
         register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
-                        'sanitize_callback' => [$this, 'sanitizeDate'],
-                ]);
+                'sanitize_callback' => [$this, 'sanitizeDate'],
+        ]);
 
     }
 
@@ -126,7 +126,12 @@ class Settings
             return;
         }
 
-        $expiryDate = (new \DateTime($createdAt))->modify('+1year');
+        try {
+            $expiryDate = (new \DateTime($createdAt))->modify('+1 year');
+        } catch (\Exception $e) {
+            return;
+        }
+
         $today = new \DateTime('today');
         $daysLeft = (int)$today->diff($expiryDate)->days;
         $isPast = $today > $expiryDate;
@@ -144,7 +149,6 @@ class Settings
             );
         }
     }
-
 
 
     /**
@@ -198,7 +202,7 @@ class Settings
                     <tr>
                         <th scope="row">
                             <label for="rrze_faubox_token_created_at">
-                                <?php echo esc_html__('Token created on','rrze-faubox'); ?>
+                                <?php echo esc_html__('Token created on', 'rrze-faubox'); ?>
                             </label>
                         </th>
                         <td>
@@ -207,24 +211,30 @@ class Settings
                                    value="<?php echo esc_attr(get_option('rrze_faubox_token_created_at')); ?>"><?php
                             $createdAt = get_option('rrze_faubox_token_created_at', '');
                             if (!empty($createdAt)) {
-                                $expiryDate = (new \DateTime($createdAt))->modify('+1 year');
-                                $today = new \DateTime('today');
-                                $daysLeft = (int)$today->diff($expiryDate)->days;
-                                $isPast = $today > $expiryDate;
-
-                                if ($isPast) {
-                                    $label = esc_html__('Token has expired!', 'rrze-faubox');
-                                    $class = 'notice-error';
-                                } elseif ($daysLeft <= 30) {
-                                    $label = sprintf(esc_html__('Expires in %d days — please renew soon.', 'rrze-faubox'), $daysLeft);
-                                    $class = 'notice-warning';
-                                } else {
-                                    $label = sprintf(esc_html__('Token validity: 1 year. Valid for %d more days (until %s).', 'rrze-faubox'), $daysLeft,
-                                            $expiryDate->format('d.m.Y'));
-                                    $class = '';
+                                try {
+                                    $expiryDate = (new \DateTime($createdAt))->modify('+1 year');
+                                } catch (\Exception $e) {
+                                    $expiryDate = null;
                                 }
-                                printf('<p class="description %s">%s</p>',
-                                        esc_attr($class), $label);
+                                if ($expiryDate) {
+                                    $today = new \DateTime('today');
+                                    $daysLeft = (int)$today->diff($expiryDate)->days;
+                                    $isPast = $today > $expiryDate;
+
+                                    if ($isPast) {
+                                        $label = esc_html__('Token has expired!', 'rrze-faubox');
+                                        $class = 'notice-error';
+                                    } elseif ($daysLeft <= 30) {
+                                        $label = sprintf(esc_html__('Expires in %d days — please renew soon.', 'rrze-faubox'), $daysLeft);
+                                        $class = 'notice-warning';
+                                    } else {
+                                        $label = sprintf(esc_html__('Token validity: 1 year. Valid for %d more days (until %s).', 'rrze-faubox'), $daysLeft,
+                                                $expiryDate->format('d.m.Y'));
+                                        $class = '';
+                                    }
+                                    printf('<p class="description %s">%s</p>',
+                                            esc_attr($class), $label);
+                                }
                             }
                             ?>
                         </td>
@@ -245,6 +255,11 @@ class Settings
                             <p class="description">
                                 <?php echo esc_html__('The main folder whose subfolders are to be displayed in the block editor.', 'rrze-faubox'); ?>
                             </p>
+                            <?php if (empty(get_option('rrze_faubox_folder', ''))) : ?>
+                                <p class="description rrze-faubox-warning" >
+                                    <strong><?php esc_html_e('No main folder configured — the plugin will not display any files.', 'rrze-faubox'); ?></strong>
+                                </p>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 </table>
@@ -252,5 +267,18 @@ class Settings
             </form>
         </div>
         <?php
+    }
+
+    public function enqueueAdminStyles(string $hookSuffix): void
+    {
+        if ($hookSuffix !== 'settings_page_rrze-faubox') {
+            return;
+        }
+        wp_enqueue_style(
+                'rrze-faubox-admin',
+                RRZE_FAUBOX_URL . 'build/admin/admin.css',
+                [],
+                '1.0.0'
+        );
     }
 }
