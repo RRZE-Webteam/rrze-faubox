@@ -239,7 +239,8 @@ final class Client
             return null;
         }
 
-        $baseHost = rtrim(self::BASE_URL, '/webdav/');
+        $parsed = parse_url(self::BASE_URL);
+        $baseHost = $parsed['scheme'] . '://' . $parsed['host'];
         $url = $baseHost . implode('/', array_map('rawurlencode', explode('/', $path)));
 
         $response = wp_remote_get($url, [

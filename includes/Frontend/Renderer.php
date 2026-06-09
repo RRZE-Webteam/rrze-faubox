@@ -137,12 +137,15 @@ class Renderer
         // Load column labels from Helper class
         $columnLabels = Helper::getColumnLabels();
 
+        $folderName = !empty($atts['changetitle']) ? $atts['changetitle'] : basename((string)($atts['path'] ?? ''));
         $html .= '<figure class="wp-block-table"><table class="faubox-filetable">';
+        $html .= '<caption class="screen-reader-text">' . esc_html($folderName) . '</caption>';
         $html .= '<thead><tr>';
+
 
         foreach ($columns as $col) {
             $label = $columnLabels[$col] ?? $col;
-            $html .= '<th>' . esc_html($label) . '</th>';
+            $html .= '<th scope="col">' . esc_html($label) . '</th>';
         }
 
         $html .= '</tr></thead><tbody>';
@@ -156,7 +159,7 @@ class Renderer
             foreach ($columns as $col) {
                 if ($col === 'name') {
                     $html .= sprintf(
-                        '<td><a href="%s" target="_blank" rel="noopener">%s</a></td>',
+                        '<td><a href="%s">%s</a></td>',
                         $url,
                         $name
                     );
