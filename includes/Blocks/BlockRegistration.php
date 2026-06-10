@@ -37,6 +37,7 @@ class BlockRegistration
             );
             wp_localize_script($block->editor_script, 'rrze_faubox_data', [
                 'settings_url' => admin_url('options-general.php?page=rrze-faubox'),
+                'folder'       => get_option('rrze_faubox_folder', ''),
             ]);
         }
     }

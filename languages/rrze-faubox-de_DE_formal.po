@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2026-06-03T12:18:11+00:00\n"
-"PO-Revision-Date: 2026-06-03 14:29+0200\n"
+"POT-Creation-Date: 2026-06-10T09:53:27+00:00\n"
+"PO-Revision-Date: 2026-06-10 11:57+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -109,7 +109,7 @@ msgid "No main folder configured — the plugin will not display any files."
 msgstr ""
 "Es wurde kein Stammordner konfiguriert – das Plugin zeigt keine Dateien an."
 
-#: includes/Blocks/BlockRegistration.php:59
+#: includes/Blocks/BlockRegistration.php:60
 msgid "RRZE"
 msgstr "RRZE"
 
@@ -121,11 +121,11 @@ msgstr "Keine Dateien gefunden."
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Helper.php:20 build/block/index.js:325
+#: includes/Helper.php:20 build/block/index.js:512
 msgid "Type"
 msgstr "Dateiformat"
 
-#: includes/Helper.php:21 build/block/index.js:245
+#: includes/Helper.php:21 build/block/index.js:432
 msgid "File Size"
 msgstr "Dateigröße"
 
@@ -167,132 +167,136 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin erfordert mindestens "
 "WordPress Version %2$s."
 
-#: build/block/index.js:140 build/block/index.js:161
-msgid "— Select folder —"
-msgstr "Ordner auswählen"
+#: build/block/index.js:164
+msgid "Root"
+msgstr "Stammordner"
 
-#: build/block/index.js:151
+#: build/block/index.js:206
+msgid "back"
+msgstr "zurück"
+
+#: build/block/index.js:212
 msgid "No main folder configured. Please check your FAUbox settings!"
 msgstr ""
 "Es ist kein Stammordner konfiguriert. Bitte überprüfen Sie Ihre FAUbox-"
 "Einstellungen!"
 
-#: build/block/index.js:156
+#: build/block/index.js:218
 msgid "Folders could not be loaded. Please check your FAUbox settings!"
 msgstr ""
 "Die Ordner konnten nicht geladen werden. Bitte überprüfen Sie Ihre FAUbox "
 "Einstellungen!"
 
-#: build/block/index.js:158
-msgid "FAUbox Folder"
-msgstr "FAUbox Ordner"
-
-#: build/block/index.js:175
-msgid "Subfolder"
-msgstr "Unterordner"
-
-#: build/block/index.js:178
-msgid "— All files in this folder —"
+#: build/block/index.js:267
+msgid "Select this folder"
 msgstr "Ordner auswählen"
 
-#: build/block/index.js:192
+#: build/block/index.js:291
+msgid "This folder has no subfolders. Use ✓ to select it."
+msgstr "Dieser Ordner enthält keine Unterordner. Mit ✓ auswählen."
+
+#: build/block/index.js:301
+msgid "Selected Folder"
+msgstr "Ausgewählter Ordner"
+
+#: build/block/index.js:374
 msgid "FAUbox Block"
 msgstr "FAUbox Block"
 
-#: build/block/index.js:193
+#: build/block/index.js:375
 msgid "Select a FAUbox folder to display its files."
 msgstr ""
 "Wählen Sie einen FAUbox-Ordner aus, um dessen Dateien anzeigen zu lassen."
 
-#: build/block/index.js:206
+#: build/block/index.js:391
 msgid "Save"
 msgstr "Speichern"
 
-#: build/block/index.js:212
+#: build/block/index.js:397
 msgid "Data"
 msgstr "Dateien"
 
-#: build/block/index.js:216
+#: build/block/index.js:403
 msgid "Display Options"
 msgstr "Anzeigeoptionen"
 
-#: build/block/index.js:219
+#: build/block/index.js:406
 msgid "View"
 msgstr "Ansicht"
 
-#: build/block/index.js:223
+#: build/block/index.js:410
 msgid "Select an Option"
 msgstr "Wählen Sie eine Option"
 
-#: build/block/index.js:226
+#: build/block/index.js:413
 msgid "List"
 msgstr "Liste"
 
-#: build/block/index.js:229
+#: build/block/index.js:416
 msgid "Table"
 msgstr "Tabelle"
 
-#: build/block/index.js:239
+#: build/block/index.js:426
 msgid "Displayed file information"
 msgstr "Angezeigte Dateiinformationen"
 
-#: build/block/index.js:241
+#: build/block/index.js:428
 msgid "File Type"
 msgstr "Dateiformat"
 
-#: build/block/index.js:249
+#: build/block/index.js:436
 msgid "Last Modified"
 msgstr "Zuletzt geändert"
 
-#: build/block/index.js:253
+#: build/block/index.js:440
 msgid "Folder Title"
 msgstr "Ordnername"
 
-#: build/block/index.js:261
+#: build/block/index.js:448
 msgid "Overwrite folder name"
 msgstr "Ordnername überschreiben"
 
-#: build/block/index.js:262
+#: build/block/index.js:449
 msgid "If left blank, the FAUbox folder name will be used automatically."
 msgstr "Wenn leer, wird automatisch der FAUbox-Ordnername verwendet."
 
-#: build/block/index.js:268
+#: build/block/index.js:455
 msgid "Heading level"
 msgstr "Überschriftenhierarchie"
 
-#: build/block/index.js:290
+#: build/block/index.js:477
 msgid "Permitted file formats"
 msgstr "Erlaubte Dateiformate"
 
-#: build/block/index.js:303
+#: build/block/index.js:490
 msgid "Sorting"
 msgstr "Sortierung"
 
-#: build/block/index.js:306
+#: build/block/index.js:493
 msgid "Ascending"
 msgstr "Aufsteigend"
 
-#: build/block/index.js:309
+#: build/block/index.js:496
 msgid "Descending"
 msgstr "Absteigend"
 
-#: build/block/index.js:316
+#: build/block/index.js:503
 msgid "Sort by"
 msgstr "Sortieren nach"
 
-#: build/block/index.js:319
+#: build/block/index.js:506
 msgid "Name"
 msgstr "Dateiname"
 
-#: build/block/index.js:322
+#: build/block/index.js:509
 msgid "Size"
 msgstr "Dateigröße"
 
-#: build/block/index.js:328
+#: build/block/index.js:515
 msgid "Date"
 msgstr "Datum"
 
-#: build/block/index.js:340
+#: build/block/index.js:527
 msgid "No folder selected. Please select a folder in the sidebar."
 msgstr ""
 "Ordnerauswahl fehlt. Bitte wählen Sie den darzustellenden Ordner in den "
@@ -307,6 +311,15 @@ msgstr "FAUbox"
 msgctxt "block description"
 msgid "Integrates files from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "FAUbox Folder"
+#~ msgstr "FAUbox Ordner"
+
+#~ msgid "Subfolder"
+#~ msgstr "Unterordner"
+
+#~ msgid "— All files in this folder —"
+#~ msgstr "Ordner auswählen"
 
 #~ msgid ""
 #~ "The main folder whose subfolders are to be displayed in the block editor. "
