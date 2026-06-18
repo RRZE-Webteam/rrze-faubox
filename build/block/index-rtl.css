@@ -14,3 +14,18 @@
 .block-font-size {
   font-size: 0.8rem;
 }
+/* Scroll bar */
+.rrze-faubox-folder-list::-webkit-scrollbar {
+  width: 6px;
+}
+.rrze-faubox-folder-list::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px 0 0 4px;
+}
+.rrze-faubox-folder-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+.rrze-faubox-folder-list::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

@@ -66,8 +66,34 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
     };
 
     useEffect(() => {
-        fetchFolders('');
+        if (!selectedPath) {
+            fetchFolders('');
+            return;
+        }
+
+        const parts = selectedPath.split('/');
+        const rootFolder = rrze_faubox_data?.folder || '';
+        const rootParts = rootFolder.split('/').filter(Boolean);
+        const parentParts = parts.slice(0, -1);
+
+        if (parentParts.length <= rootParts.length) {
+            // Selected folder is a direct child of root — show root level
+            fetchFolders('');
+            return;
+        }
+
+        // Reconstruct breadcrumbs from path segments between root and parent
+        const crumbs: Breadcrumb[] = [];
+        for (let i = rootParts.length; i < parentParts.length; i++) {
+            crumbs.push({
+                name: parentParts[i],
+                path: parentParts.slice(0, i + 1).join('/'),
+            });
+        }
+        setBreadcrumbs(crumbs);
+        fetchFolders(parentParts.join('/'));
     }, []);
+
 
     const handleRefreshIndex = () => {
         setRefreshing(true);
@@ -84,8 +110,6 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
             .catch((err: { data?: { status?: number } }) => {
                 if (err?.data?.status === 429) {
                     setRefreshError(__('Please wait before refreshing again.', 'rrze-faubox'));
-                } else if (err?.data?.status === 403) {
-                    setRefreshError(__('Insufficient permissions. Only admins can refresh the index.', 'rrze-faubox'));
                 } else {
                     setRefreshError(__('Index refresh failed. Please try again.', 'rrze-faubox'));
                 }
@@ -167,10 +191,14 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                     {rrze_faubox_data?.folder || __('Root', 'rrze-faubox')}
                 </button>
                 {breadcrumbs.map((crumb, index) => (
-                    <span key={crumb.path} style={{display: 'flex', alignItems:
-                            'center'}}>
-                          <Icon icon={chevronRight} size={14} style={{color: '#ccc',
-                              flexShrink: 0}}/>
+                    <span key={crumb.path} style={{
+                        display: 'flex', alignItems:
+                            'center'
+                    }}>
+                          <span style={{color: '#888', flexShrink: 0, display: 'flex', alignItems: 'center'
+                          }}>
+                          <Icon icon={chevronRight} size={18}/>
+                          </span>
                           <button
                               onClick={() => handleBreadcrumbClick(index)}
                               style={{
@@ -178,10 +206,8 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                                   border: 'none',
                                   cursor: 'pointer',
                                   padding: '2px 4px',
-                                  color: index === breadcrumbs.length - 1 ? '#1e1e1e'
-                                      : '#007cba',
-                                  fontWeight: index === breadcrumbs.length - 1 ? '600'
-                                      : 'normal',
+                                  color: index === breadcrumbs.length - 1 ? '#1e1e1e' : '#007cba',
+                                  fontWeight: index === breadcrumbs.length - 1 ? '600' : 'normal',
                                   fontSize: '12px',
                               }}
                           >
@@ -197,7 +223,8 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                     variant="tertiary"
                     icon={chevronLeft}
                     onClick={handleBack}
-                    style={{marginBottom: '8px', height: '28px', fontSize: '12px'}}
+                    style={{marginBottom: '8px', marginLeft: '2px', marginTop: '8px', height: '25px', fontSize: '13px', border: '1px solid #e0e0e0',
+                        borderRadius: '2px',}}
                 >
                     {__('Back', 'rrze-faubox')}
                 </Button>
@@ -208,151 +235,149 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
             {noFolderConfigured && (
                 <p style={{color: '#cc1818', fontSize: '13px'}}>
                     {__('No main folder configured. Please check your FAUbox settings!', 'rrze-faubox')}
-                        </p>
-                        )}
-                    {error && (
-                        <p style={{color: '#cc1818', fontSize: '13px'}}>
-                            {__('Folders could not be loaded. Please check your FAUbox settings!', 'rrze-faubox')}
-                                </p>
-                                )}
+                </p>
+            )}
+            {error && (
+                <p style={{color: '#cc1818', fontSize: '13px'}}>
+                    {__('Folders could not be loaded. Please check your FAUbox settings!', 'rrze-faubox')}
+                </p>
+            )}
 
-                            {/* Index not built yet */}
-                            {indexNotBuilt && (
-                                <div style={{fontSize: '13px', marginBottom: '8px'}}>
-                                    <p style={{color: '#996800', marginBottom: '8px'}}>
-                                        {__('Folder index not built yet. Please save your FAUbox settings or refresh the index manually.', 'rrze-faubox')}
-                                            </p>
-                                            <Button
-                                            variant="secondary"
-                                            icon={rotateRight}
-                                       isBusy={refreshing}
-                                       disabled={refreshing}
-                                       onClick={handleRefreshIndex}
-                                    >
-                                        {refreshing ? __('Refreshing…', 'rrze-faubox') : __('Refresh index', 'rrze-faubox')}
-                                            </Button>
-                                        {refreshError && (
-                                            <p style={{color: '#cc1818', marginTop: '6px', fontSize:
-                                            '12px'}}>{refreshError}</p>
-                                    )}
-                                </div>
-                            )}
-
-                            {!loading && !error && !noFolderConfigured && currentFolders.length > 0
-                                && (
-                                    <>
-                                    <div style={{
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '4px',
-                                        maxHeight: '260px',
-                                        overflowY: 'auto',
-                                        background: '#fff',
-                                        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                                    }}>
-                                        {currentFolders.map((folder) => {
-                                            const isSelected = selectedPath === folder.path;
-                                            return (
-                                                <Fragment key={folder.path}>
-                                                    <div style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        borderBottom: '1px solid #f0f0f0',
-                                                        background: isSelected ? '#f0f7fd' :
-                                                            'transparent',
-                                                    }}>
-                                                        {/* Navigate into folder */}
-                                                        <button
-                                                            onClick={() => folder.hasChildren !== false && handleNavigate(folder)}
-                                                            style={{
-                                                                flex: 1,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '8px',
-                                                                padding: '10px 10px',
-                                                                background: 'none',
-                                                                border: 'none',
-                                                                cursor: folder.hasChildren !== false ? 'pointer' : 'default',
-                                                                textAlign: 'left',
-                                                                fontSize: '13px',
-                                                                color: isSelected ? '#007cba' : '#1e1e1e',
-                                                                fontWeight: isSelected ? '600' : 'normal',
-                                                            }}
-                                                        >
-                                                            <span>📁</span>
-                                                            <span style={{flex: 1}}>{folder.name}</span>
-                                                            {folder.hasChildren !== false && (
-                                                                <Icon
-                                                                    icon={chevronRight}
-                                                                    size={16}
-                                                                    style={{color: '#ccc', flexShrink: 0}}
-                                                                />
-                                                            )}
-                                                        </button>
-
-                                                        {/* Select this folder */}
-                                                        <button
-                                                            onClick={() => onSelect(folder.path)}
-                                                            title={__('Select this folder',
-                                                                'rrze-faubox')}
-                                                            style={{
-                                                                flexShrink: 0,
-                                                                background: isSelected ? '#007cba' :
-                                                                    'transparent',
-                                                                border: 'none',
-                                                                borderLeft: '1px solid #e0e0e0',
-                                                                cursor: 'pointer',
-                                                                padding: '8px 12px',
-                                                                color: isSelected ? '#fff' :
-                                                                    '#007cba',
-                                                                fontSize: '16px',
-                                                                lineHeight: 1,
-                                                            }}
-                                                        >
-                                                            ✓
-                                                        </button>
-                                                    </div>
-                                                        </Fragment>
-                                                    );
-                                                    })}
-                                                </div>
-
-                                            {/* Refresh button below folder list */}
-                                            <div style={{marginTop: '8px'}}>
-                                                <Button
-                                                    variant="link"
-                                                    icon={rotateRight}
-                                                    isBusy={refreshing}
-                                                    disabled={refreshing}
-                                                    onClick={handleRefreshIndex}
-                                                    style={{fontSize: '12px'}}
-                                                >
-                                                    {refreshing ? __('Refreshing…', 'rrze-faubox') :
-                                                        __('Refresh index', 'rrze-faubox')}
-                                                </Button>
-                                                {refreshError && (
-                                                    <p style={{color: '#cc1818', fontSize: '12px',
-                                                        marginTop: '4px'}}>
-                                                        {refreshError}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </>
-                                        )}
-
-                                        {/* Selected folder indicator */}
-                                        {selectedPath && (
-                                            <p style={{
-                                            marginTop: '10px',
-                                            fontSize: '13px',
-                                            color: '#007cba',
-                                            borderTop: '1px solid #f0f0f0',
-                                            paddingTop: '8px',
+            {/* Index not built yet */}
+            {indexNotBuilt && (
+                <div style={{fontSize: '13px', marginBottom: '8px'}}>
+                    <p style={{color: '#996800', marginBottom: '8px'}}>
+                        {__('Folder index not built yet. Please save your FAUbox settings or refresh the index manually.', 'rrze-faubox')}
+                    </p>
+                    <Button
+                        variant="secondary"
+                        icon={rotateRight}
+                        isBusy={refreshing}
+                        disabled={refreshing}
+                        onClick={handleRefreshIndex}
+                    >
+                        {refreshing ? __('Refreshing…', 'rrze-faubox') : __('Refresh index', 'rrze-faubox')}
+                    </Button>
+                    {refreshError && (
+                        <p style={{
+                            color: '#cc1818', marginTop: '6px', fontSize:
+                                '12px'
+                        }}>{refreshError}</p>
+                    )}
+                </div>
+            )}
+            {/* Folder list */}
+            {!loading && !error && !noFolderConfigured && currentFolders.length > 0
+                && (
+                    <>
+                        <div className="rrze-faubox-folder-list" style={{
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '2px',
+                            maxHeight: '260px',
+                            overflowY: 'scroll',
+                            background: '#fff',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                            maxWidth: '550px',
+                        }}>
+                            {currentFolders.map((folder) => {
+                                const isSelected = selectedPath === folder.path;
+                                return (
+                                    <Fragment key={folder.path}>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            borderBottom: '1px solid #f0f0f0',
+                                            background: isSelected ? '#f0f7fd' : 'transparent',
                                         }}>
-                                        {__('Selected Folder', 'rrze-faubox')}:{' '}
-                                        <strong>{selectedLabel}</strong>
-                                    </p>
-                                    )}
-                                    </div>
+                                            {/* Navigate into folder */}
+                                            <button
+                                                onClick={() => folder.hasChildren !== false && handleNavigate(folder)}
+                                                style={{
+                                                    flex: 1,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    padding: '10px 10px',
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: folder.hasChildren !== false ? 'pointer' : 'default',
+                                                    textAlign: 'left',
+                                                    fontSize: '13px',
+                                                    color: isSelected ? '#007cba' : '#1e1e1e',
+                                                    fontWeight: isSelected ? '600' : 'normal',
+                                                }}
+                                            >
+                                                <span>📁</span>
+                                                <span style={{flex: 1}}>{folder.name}</span>
+                                                {folder.hasChildren !== false && (
+                                                    <span style={{color: '#888', flexShrink: 0, display: 'flex', alignItems: 'center'
+                                                    }}>
+                                                     <Icon icon={chevronRight} size={18}/>
+                                                        </span>
+                                                )}
+                                            </button>
+
+                                            {/* Select this folder */}
+                                            <button
+                                                onClick={() => onSelect(folder.path)}
+                                                title={__('Select this folder',
+                                                    'rrze-faubox')}
+                                                style={{
+                                                    flexShrink: 0,
+                                                    background: isSelected ? '#007cba' : 'transparent',
+                                                    border: 'none',
+                                                    borderRadius: '2px',
+                                                    borderLeft: '1px solid #e0e0e0',
+                                                    cursor: 'pointer',
+                                                    padding: '8px 12px',
+                                                    color: isSelected ? '#fff' : '#007cba',
+                                                    fontSize: '16px',
+                                                    lineHeight: 1,
+                                                }}
+                                            >
+                                                ✓
+                                            </button>
+                                        </div>
+                                    </Fragment>
                                 );
-                            }
+                            })}
+                        </div>
+
+                        {/* Refresh button below folder list */}
+                        <div style={{marginTop: '8px'}}>
+                            <Button
+                                variant="link"
+                                icon={rotateRight}
+                                isBusy={refreshing}
+                                disabled={refreshing}
+                                onClick={handleRefreshIndex}
+                                style={{fontSize: '12px'}}
+                            >
+                                {refreshing ? __('Refreshing…', 'rrze-faubox') : __('Refresh index', 'rrze-faubox')}
+                            </Button>
+                            {refreshError && (
+                                <p style={{color: '#cc1818', fontSize: '12px', marginTop: '4px'}}>
+                                    {refreshError}
+                                </p>
+                            )}
+                        </div>
+                    </>
+                )}
+
+            {/* Selected folder indicator */}
+            {selectedPath && (
+                <p style={{
+                    marginTop: '10px',
+                    fontSize: '13px',
+                    color: '#007cba',
+                    borderTop: '1px solid #f0f0f0',
+                    paddingTop: '10px',
+                }}>
+                    {__('Selected Folder', 'rrze-faubox')}:{' '}
+                    <strong>{selectedLabel}</strong>
+                </p>
+            )}
+        </div>
+    );
+}
 

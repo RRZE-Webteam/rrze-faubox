@@ -32,7 +32,6 @@ class Settings
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
-        add_action('admin_post_rrze_faubox_refresh_index', [$this, 'handleManualRefresh']);
     }
 
 
@@ -174,20 +173,6 @@ class Settings
         }
     }
 
-    public function handleManualRefresh(): void
-    {
-        check_admin_referer('rrze_faubox_refresh_index');
-
-        if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Insufficient permissions.', 'rrze-faubox'));
-        }
-
-        $this->indexService->buildIndex();
-
-        wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_refreshed=1'));
-        exit;
-    }
-
 
     /**
      * Renders the settings page HTML form.
@@ -199,12 +184,6 @@ class Settings
         ?>
         <div class="wrap">
             <h1> <?php echo esc_html__('FAUbox Settings', 'rrze-faubox'); ?> </h1>
-            <?php if (isset($_GET['index_refreshed'])) : ?>
-                <div class="notice notice-success is-dismissible">
-                    <p><?php esc_html_e('Folder index has been refreshed.', 'rrze-faubox'); ?></p>
-                </div>
-            <?php endif; ?>
-
             <p> <?php echo esc_html__('Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox account under "My Account" →
    "Devices" → "Add WebDAV connection".', 'rrze-faubox'); ?>
             </p>
@@ -323,26 +302,13 @@ class Settings
                                 <?php endforeach; ?>
                             </select>
                             <p class="description">
-                                <?php esc_html_e('How long the folder index is cached. Use the refresh button or save settings to rebuild immediately.', 'rrze-faubox'); ?>
+                                <?php esc_html_e('Cache duration of the folder index. The index is rebuilt automatically when credentials or folder settings change. ', 'rrze-faubox'); ?>
                             </p>
                         </td>
                     </tr>
 
                 </table>
                 <?php submit_button(); ?>
-            </form>
-
-            <h2><?php esc_html_e('Folder Index', 'rrze-faubox'); ?></h2>
-            <p><?php esc_html_e('The folder index is built automatically when
-  settings are saved. Use this button to refresh it manually.',
-                        'rrze-faubox'); ?></p>
-            <form method="post" action="<?php echo
-            esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action"
-                       value="rrze_faubox_refresh_index">
-                <?php wp_nonce_field('rrze_faubox_refresh_index'); ?>
-                <?php submit_button(esc_html__('Refresh index now', 'rrze-faubox'),
-                        'secondary'); ?>
             </form>
         </div>
         <?php

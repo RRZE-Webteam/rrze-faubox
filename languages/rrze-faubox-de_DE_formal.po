@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2026-06-10T09:53:27+00:00\n"
-"PO-Revision-Date: 2026-06-10 11:57+0200\n"
+"POT-Creation-Date: 2026-06-18T12:58:50+00:00\n"
+"PO-Revision-Date: 2026-06-18 15:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -40,17 +40,17 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Admin/Settings.php:40 includes/Admin/Settings.php:163
+#: includes/Admin/Settings.php:46 includes/Admin/Settings.php:186
 msgid "FAUbox Settings"
 msgstr "FAUbox Einstellungen"
 
-#: includes/Admin/Settings.php:141
+#: includes/Admin/Settings.php:164
 msgid "Your FAUbox WebDAV token has expired. Please generate a new one."
 msgstr ""
 "Ihr FAUbox-WebDAV-Token ist abgelaufen. Bitte generieren Sie ein neues Token."
 
 #. translators: %d: number of days until token expiry
-#: includes/Admin/Settings.php:144
+#: includes/Admin/Settings.php:167
 #, php-format
 msgid ""
 "Your FAUbox WebDAV token expires in %d days. Please generate a new one soon."
@@ -58,7 +58,7 @@ msgstr ""
 "Ihr FAUbox-WebDAV-Token läuft in %d Tagen ab. Bitte generieren Sie bald ein "
 "neues."
 
-#: includes/Admin/Settings.php:164
+#: includes/Admin/Settings.php:187
 msgid ""
 "Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox "
 "account under \"My Account\" →\n"
@@ -68,46 +68,58 @@ msgstr ""
 "FAUbox-Konto unter „Mein Konto“ →\n"
 "   „Geräte“ → „WebDAV-Verbindung hinzufügen“."
 
-#: includes/Admin/Settings.php:178
+#: includes/Admin/Settings.php:201
 msgid "FAUbox Username"
 msgstr "FAUbox Benutzername"
 
-#: includes/Admin/Settings.php:192
+#: includes/Admin/Settings.php:215
 msgid "FAUbox WebDAV Token"
 msgstr "FAUbox WebDAV Token"
 
-#: includes/Admin/Settings.php:205
+#: includes/Admin/Settings.php:228
 msgid "Token created on"
 msgstr "Token erstellt am"
 
-#: includes/Admin/Settings.php:225
+#: includes/Admin/Settings.php:248
 msgid "Token has expired!"
 msgstr "Das Token ist abgelaufen!"
 
-#: includes/Admin/Settings.php:228
+#: includes/Admin/Settings.php:251
 #, php-format
 msgid "Expires in %d days — please renew soon."
 msgstr "Läuft in %d Tagen ab – bitte bald verlängern."
 
-#: includes/Admin/Settings.php:231
+#: includes/Admin/Settings.php:254
 #, php-format
 msgid "Token validity: 1 year. Valid for %d more days (until %s)."
 msgstr "Gültigkeitsdauer des Tokens: 1 Jahr. Noch %d Tage gültig (bis %s)."
 
-#: includes/Admin/Settings.php:246
+#: includes/Admin/Settings.php:269
 msgid "FAUbox Main Folder"
 msgstr "FAUbox Stammordner"
 
-#: includes/Admin/Settings.php:256
+#: includes/Admin/Settings.php:279
 msgid ""
 "The main folder whose subfolders are to be displayed in the block editor."
 msgstr ""
 "Der Stammordner, dessen Unterordner im Block-Editor angezeigt werden sollen."
 
-#: includes/Admin/Settings.php:260
+#: includes/Admin/Settings.php:283
 msgid "No main folder configured — the plugin will not display any files."
 msgstr ""
 "Es wurde kein Stammordner konfiguriert – das Plugin zeigt keine Dateien an."
+
+#: includes/Admin/Settings.php:291
+msgid "Index cache duration"
+msgstr "Dauer des Index-Caches"
+
+#: includes/Admin/Settings.php:305
+msgid ""
+"Cache duration of the folder index. The index is rebuilt automatically when "
+"credentials or folder settings change. "
+msgstr ""
+"Cache-Dauer des Ordnerindexes. Der Index wird automatisch neu erstellt, wenn "
+"sich Anmeldedaten oder Ordnereinstellungen ändern. "
 
 #: includes/Blocks/BlockRegistration.php:60
 msgid "RRZE"
@@ -121,11 +133,11 @@ msgstr "Keine Dateien gefunden."
 msgid "File Name"
 msgstr "Dateiname"
 
-#: includes/Helper.php:20 build/block/index.js:512
+#: includes/Helper.php:20 build/block/index.js:688
 msgid "Type"
 msgstr "Dateiformat"
 
-#: includes/Helper.php:21 build/block/index.js:432
+#: includes/Helper.php:21 build/block/index.js:608
 msgid "File Size"
 msgstr "Dateigröße"
 
@@ -133,22 +145,34 @@ msgstr "Dateigröße"
 msgid "Last modified"
 msgstr "Zuletzt geändert"
 
-#: includes/Rest/RestController.php:148
+#: includes/Rest/RestController.php:122
 msgid "No main folder configured. Please set it in the FAUbox settings."
 msgstr ""
 "Ordnerauswahl fehlt. Bitte wählen Sie den darzustellenden Ordner in den "
 "Blockeinstellungen der Seitenleiste."
 
-#: includes/Rest/RestController.php:172 includes/Rest/RestController.php:177
+#: includes/Rest/RestController.php:131
+msgid ""
+"The folder index has not been built yet. Please save the FAUbox settings or "
+"refresh the index manually."
+msgstr ""
+"Der Ordnerindex wurde noch nicht erstellt. Bitte speichern Sie die FAUbox-"
+"Einstellungen oder aktualisieren Sie den Index manuell."
+
+#: includes/Rest/RestController.php:152 build/block/index.js:210
+msgid "Please wait before refreshing again."
+msgstr "Bitte warten Sie, bevor Sie die Seite erneut aktualisieren."
+
+#: includes/Rest/RestController.php:170 includes/Rest/RestController.php:176
 msgid "Invalid file path."
 msgstr "Ungültiger Dateipfad."
 
-#: includes/Rest/RestController.php:184
+#: includes/Rest/RestController.php:183
 msgid "File not found."
 msgstr "Keine Datei gefunden."
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-faubox.php:57
+#: rrze-faubox.php:75
 #, php-format
 msgid ""
 "The server is running PHP version %1$s. The Plugin requires at least PHP "
@@ -158,7 +182,7 @@ msgstr ""
 "Version %2$s."
 
 #. translators: 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-faubox.php:64
+#: rrze-faubox.php:82
 #, php-format
 msgid ""
 "The server is running WordPress version %1$s. The Plugin requires at least "
@@ -167,136 +191,153 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin erfordert mindestens "
 "WordPress Version %2$s."
 
-#: build/block/index.js:164
+#: build/block/index.js:212
+msgid "Index refresh failed. Please try again."
+msgstr ""
+"Die Indexaktualisierung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+
+#: build/block/index.js:281
 msgid "Root"
 msgstr "Stammordner"
 
-#: build/block/index.js:206
-msgid "back"
-msgstr "zurück"
+#: build/block/index.js:325
+msgid "Back"
+msgstr "Zurück"
 
-#: build/block/index.js:212
+#: build/block/index.js:331
 msgid "No main folder configured. Please check your FAUbox settings!"
 msgstr ""
 "Es ist kein Stammordner konfiguriert. Bitte überprüfen Sie Ihre FAUbox-"
 "Einstellungen!"
 
-#: build/block/index.js:218
+#: build/block/index.js:337
 msgid "Folders could not be loaded. Please check your FAUbox settings!"
 msgstr ""
 "Die Ordner konnten nicht geladen werden. Bitte überprüfen Sie Ihre FAUbox "
 "Einstellungen!"
 
-#: build/block/index.js:267
+#: build/block/index.js:348
+msgid ""
+"Folder index not built yet. Please save your FAUbox settings or refresh the "
+"index manually."
+msgstr ""
+"Die Ordner konnten nicht geladen werden. Bitte überprüfen Sie Ihre FAUbox "
+"Einstellungen."
+
+#: build/block/index.js:355 build/block/index.js:453
+msgid "Refreshing…"
+msgstr "Aktualisierung…"
+
+#: build/block/index.js:355 build/block/index.js:453
+msgid "Refresh index"
+msgstr "Index aktualisieren"
+
+#: build/block/index.js:423
 msgid "Select this folder"
 msgstr "Ordner auswählen"
 
-#: build/block/index.js:291
-msgid "This folder has no subfolders. Use ✓ to select it."
-msgstr "Dieser Ordner enthält keine Unterordner. Mit ✓ auswählen."
-
-#: build/block/index.js:301
+#: build/block/index.js:471
 msgid "Selected Folder"
 msgstr "Ausgewählter Ordner"
 
-#: build/block/index.js:374
+#: build/block/index.js:544
 msgid "FAUbox Block"
 msgstr "FAUbox Block"
 
-#: build/block/index.js:375
+#: build/block/index.js:545
 msgid "Select a FAUbox folder to display its files."
 msgstr ""
 "Wählen Sie einen FAUbox-Ordner aus, um dessen Dateien anzeigen zu lassen."
 
-#: build/block/index.js:391
+#: build/block/index.js:561
 msgid "Save"
 msgstr "Speichern"
 
-#: build/block/index.js:397
+#: build/block/index.js:567
 msgid "Data"
 msgstr "Dateien"
 
-#: build/block/index.js:403
+#: build/block/index.js:579
 msgid "Display Options"
 msgstr "Anzeigeoptionen"
 
-#: build/block/index.js:406
+#: build/block/index.js:582
 msgid "View"
 msgstr "Ansicht"
 
-#: build/block/index.js:410
+#: build/block/index.js:586
 msgid "Select an Option"
 msgstr "Wählen Sie eine Option"
 
-#: build/block/index.js:413
+#: build/block/index.js:589
 msgid "List"
 msgstr "Liste"
 
-#: build/block/index.js:416
+#: build/block/index.js:592
 msgid "Table"
 msgstr "Tabelle"
 
-#: build/block/index.js:426
+#: build/block/index.js:602
 msgid "Displayed file information"
 msgstr "Angezeigte Dateiinformationen"
 
-#: build/block/index.js:428
+#: build/block/index.js:604
 msgid "File Type"
 msgstr "Dateiformat"
 
-#: build/block/index.js:436
+#: build/block/index.js:612
 msgid "Last Modified"
 msgstr "Zuletzt geändert"
 
-#: build/block/index.js:440
+#: build/block/index.js:616
 msgid "Folder Title"
 msgstr "Ordnername"
 
-#: build/block/index.js:448
+#: build/block/index.js:624
 msgid "Overwrite folder name"
 msgstr "Ordnername überschreiben"
 
-#: build/block/index.js:449
+#: build/block/index.js:625
 msgid "If left blank, the FAUbox folder name will be used automatically."
 msgstr "Wenn leer, wird automatisch der FAUbox-Ordnername verwendet."
 
-#: build/block/index.js:455
+#: build/block/index.js:631
 msgid "Heading level"
 msgstr "Überschriftenhierarchie"
 
-#: build/block/index.js:477
+#: build/block/index.js:653
 msgid "Permitted file formats"
 msgstr "Erlaubte Dateiformate"
 
-#: build/block/index.js:490
+#: build/block/index.js:666
 msgid "Sorting"
 msgstr "Sortierung"
 
-#: build/block/index.js:493
+#: build/block/index.js:669
 msgid "Ascending"
 msgstr "Aufsteigend"
 
-#: build/block/index.js:496
+#: build/block/index.js:672
 msgid "Descending"
 msgstr "Absteigend"
 
-#: build/block/index.js:503
+#: build/block/index.js:679
 msgid "Sort by"
 msgstr "Sortieren nach"
 
-#: build/block/index.js:506
+#: build/block/index.js:682
 msgid "Name"
 msgstr "Dateiname"
 
-#: build/block/index.js:509
+#: build/block/index.js:685
 msgid "Size"
 msgstr "Dateigröße"
 
-#: build/block/index.js:515
+#: build/block/index.js:691
 msgid "Date"
 msgstr "Datum"
 
-#: build/block/index.js:527
+#: build/block/index.js:703
 msgid "No folder selected. Please select a folder in the sidebar."
 msgstr ""
 "Ordnerauswahl fehlt. Bitte wählen Sie den darzustellenden Ordner in den "
@@ -311,6 +352,12 @@ msgstr "FAUbox"
 msgctxt "block description"
 msgid "Integrates files from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "back"
+#~ msgstr "zurück"
+
+#~ msgid "This folder has no subfolders. Use ✓ to select it."
+#~ msgstr "Dieser Ordner enthält keine Unterordner. Mit ✓ auswählen."
 
 #~ msgid "FAUbox Folder"
 #~ msgstr "FAUbox Ordner"

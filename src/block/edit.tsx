@@ -1,4 +1,5 @@
 import {__} from '@wordpress/i18n';
+import {cloud} from '@wordpress/icons';
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
 import {
     __experimentalHeading as Heading,
@@ -10,7 +11,6 @@ import {
     TextControl,
     Placeholder,
 } from '@wordpress/components';
-import {cloud} from '@wordpress/icons';
 import ServerSideRender from '@wordpress/server-side-render';
 import FolderTree from './components/FolderTree';
 import './editor.scss';
@@ -92,7 +92,9 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                     <InspectorControls>
                         <PanelBody title={__('Data', 'rrze-faubox')}
                                    initialOpen={true}>
-                            <FolderTree {...treeProps} />
+                            <div style={{maxHeight: '380px', overflowY: 'auto'}}>
+                                <FolderTree {...treeProps} />
+                            </div>
                         </PanelBody>
                         <PanelBody title={__('Display Options',
                             'rrze-faubox')} initialOpen={false}>

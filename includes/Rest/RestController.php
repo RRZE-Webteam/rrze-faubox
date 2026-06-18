@@ -62,7 +62,7 @@ final class RestController
         register_rest_route('rrze-faubox/v1', '/index/refresh', [
             'methods' => 'POST',
             'callback' => [$this, 'refreshIndex'],
-            'permission_callback' => fn() => current_user_can('manage_options'),
+            'permission_callback' => fn() => current_user_can('edit_posts'),
         ]);
 
         register_rest_route('rrze-faubox/v1', '/download', [
@@ -134,17 +134,11 @@ final class RestController
         }
 
         // Only return direct children of the root folder
-        $prefix = rtrim($mainFolder, '/') . '/';
-        return array_values(array_filter($index, function (array $entry) use
-        ($prefix): bool {
-            if (!str_starts_with($entry['path'], $prefix)) {
-                return false;
-            }
-            $remainder = substr($entry['path'], strlen($prefix));
-            return !str_contains($remainder, '/');
+        $rootDepth = substr_count(rtrim($mainFolder, '/'), '/') + 1;
+        return array_values(array_filter($index, function (array
+                                                           $entry) use ($rootDepth): bool {
+            return substr_count($entry['path'], '/') === $rootDepth;
         }));
-
-        return $index;
     }
 
     /**
