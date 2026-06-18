@@ -2,6 +2,8 @@
 
 namespace RRZE\FAUbox\Admin;
 
+use RRZE\FAUbox\API\IndexService;
+
 defined('ABSPATH') || exit;
 
 
@@ -15,17 +17,22 @@ defined('ABSPATH') || exit;
  */
 class Settings
 {
+    private IndexService $indexService;
+
     /**
      * Constructor.
      *
      * Hooks the settings page and option registration into the appropriate WordPress admin actions.
      */
-    public function __construct()
+    public function __construct(IndexService $indexService)
     {
+        $this->indexService = $indexService;
+
         add_action('admin_menu', [$this, 'addOptionsPage']);
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
+        add_action('admin_post_rrze_faubox_refresh_index', [$this, 'handleManualRefresh']);
     }
 
 
@@ -65,6 +72,10 @@ class Settings
         register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
                 'sanitize_callback' => [$this, 'sanitizeDate'],
         ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_index_ttl', [
+                'sanitize_callback' => [$this, 'sanitizeIndexTtl'],
+        ]);
+
 
     }
 
@@ -103,6 +114,19 @@ class Settings
         $date = sanitize_text_field((string)$value);
         return preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
                 ? $date : '';
+    }
+
+    /**
+     * Sanitize index TTL input.
+     *
+     * @param mixed $value Raw input value.
+     * @return int Sanitized TTL in hours.
+     */
+    public function sanitizeIndexTtl(mixed $value): int
+    {
+        $allowed = [1, 6, 12, 24];
+        $value   = (int) $value;
+        return in_array($value, $allowed, true) ? $value : 12;
     }
 
 
@@ -150,6 +174,20 @@ class Settings
         }
     }
 
+    public function handleManualRefresh(): void
+    {
+        check_admin_referer('rrze_faubox_refresh_index');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Insufficient permissions.', 'rrze-faubox'));
+        }
+
+        $this->indexService->buildIndex();
+
+        wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_refreshed=1'));
+        exit;
+    }
+
 
     /**
      * Renders the settings page HTML form.
@@ -161,6 +199,12 @@ class Settings
         ?>
         <div class="wrap">
             <h1> <?php echo esc_html__('FAUbox Settings', 'rrze-faubox'); ?> </h1>
+            <?php if (isset($_GET['index_refreshed'])) : ?>
+                <div class="notice notice-success is-dismissible">
+                    <p><?php esc_html_e('Folder index has been refreshed.', 'rrze-faubox'); ?></p>
+                </div>
+            <?php endif; ?>
+
             <p> <?php echo esc_html__('Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox account under "My Account" →
    "Devices" → "Add WebDAV connection".', 'rrze-faubox'); ?>
             </p>
@@ -256,14 +300,49 @@ class Settings
                                 <?php echo esc_html__('The main folder whose subfolders are to be displayed in the block editor.', 'rrze-faubox'); ?>
                             </p>
                             <?php if (empty(get_option('rrze_faubox_folder', ''))) : ?>
-                                <p class="description rrze-faubox-warning" >
+                                <p class="description rrze-faubox-warning">
                                     <strong><?php esc_html_e('No main folder configured — the plugin will not display any files.', 'rrze-faubox'); ?></strong>
                                 </p>
                             <?php endif; ?>
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="rrze_faubox_index_ttl">
+                                <?php esc_html_e('Index cache duration', 'rrze-faubox'); ?>
+                            </label>
+                        </th>
+                        <td>
+                            <select id="rrze_faubox_index_ttl" name="rrze_faubox_index_ttl">
+                                <?php foreach ([1 => '1h', 6 => '6h', 12 => '12h', 24 =>
+                                        '24h'] as $hours => $label) : ?>
+                                    <option value="<?php echo esc_attr($hours); ?>" <?php
+                                    selected((int)get_option('rrze_faubox_index_ttl', 12), $hours); ?>>
+                                        <?php echo esc_html($label); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description">
+                                <?php esc_html_e('How long the folder index is cached. Use the refresh button or save settings to rebuild immediately.', 'rrze-faubox'); ?>
+                            </p>
+                        </td>
+                    </tr>
+
                 </table>
                 <?php submit_button(); ?>
+            </form>
+
+            <h2><?php esc_html_e('Folder Index', 'rrze-faubox'); ?></h2>
+            <p><?php esc_html_e('The folder index is built automatically when
+  settings are saved. Use this button to refresh it manually.',
+                        'rrze-faubox'); ?></p>
+            <form method="post" action="<?php echo
+            esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action"
+                       value="rrze_faubox_refresh_index">
+                <?php wp_nonce_field('rrze_faubox_refresh_index'); ?>
+                <?php submit_button(esc_html__('Refresh index now', 'rrze-faubox'),
+                        'secondary'); ?>
             </form>
         </div>
         <?php

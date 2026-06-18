@@ -5,77 +5,47 @@ declare(strict_types=1);
 namespace RRZE\FAUbox\Rest;
 
 use WP_REST_Request;
+use WP_REST_Response;
 use RRZE\FAUbox\API\FileService;
 use RRZE\FAUbox\API\Client;
+use RRZE\FAUbox\API\IndexService;
 
 defined('ABSPATH') || exit;
 
 /**
  * Registers and handles REST API endpoints for the FAUbox block.
- *
- * This controller exposes endpoints used by the Gutenberg block
- * to fetch prepared file data from the FAUbox API.
- *
- * The controller depends on the FileService to retrieve
- * and transform file data.
  */
 final class RestController
 {
-    /**
-     * @var FileService
-     */
     private FileService $fileService;
-
-    /**
-     * @var Client
-     */
     private Client $client;
+    private IndexService $indexService;
 
-    /**
-     * Constructor.
-     *
-     * @param FileService $fileService
-     * @param Client $client
-     */
-    public function __construct(FileService $fileService, Client $client)
+    public function __construct(FileService $fileService, Client $client, IndexService $indexService)
     {
         $this->fileService = $fileService;
         $this->client = $client;
+        $this->indexService = $indexService;
 
         add_action('rest_api_init', [$this, 'registerRoutes']);
     }
 
-    /**
-     * Registers all REST routes.
-     *
-     * @return void
-     */
     public function registerRoutes(): void
     {
-        //ToDo:current_user_can checken
-
         register_rest_route('rrze-faubox/v1', '/files', [
             'methods' => 'GET',
             'callback' => [$this, 'getFiles'],
             'permission_callback' => fn() => current_user_can('edit_posts'),
             'args' => [
-                'path' => [
-                    'required' => true,
-                    'sanitize_callback' => 'sanitize_text_field',
-                ],
-                'extensions' => [
-                    'default' => [],
-                    'sanitize_callback' => fn($val) => is_array($val)
-                        ? array_map('sanitize_text_field', $val) : [],
-                ],
-                'sort' => [
-                    'default' => 'asc',
-                    'sanitize_callback' => 'sanitize_text_field',
-                ],
-                'orderby' => [
-                    'default' => 'name',
-                    'sanitize_callback' => 'sanitize_text_field',
-                ],
+                'path' => ['required' => true,
+                    'sanitize_callback' => 'sanitize_text_field'],
+                'extensions' => ['default' => [],
+                    'sanitize_callback' => fn($val) => is_array($val) ?
+                        array_map('sanitize_text_field', $val) : []],
+                'sort' => ['default' => 'asc',
+                    'sanitize_callback' => 'sanitize_text_field'],
+                'orderby' => ['default' => 'name',
+                    'sanitize_callback' => 'sanitize_text_field'],
             ],
         ]);
 
@@ -84,12 +54,15 @@ final class RestController
             'callback' => [$this, 'getFolders'],
             'permission_callback' => fn() => current_user_can('edit_posts'),
             'args' => [
-                'path' => [
-                    'required' => false,
-                    'default' => '',
-                    'sanitize_callback' => 'sanitize_text_field',
-                ],
+                'path' => ['required' => false, 'default' => '',
+                    'sanitize_callback' => 'sanitize_text_field'],
             ],
+        ]);
+
+        register_rest_route('rrze-faubox/v1', '/index/refresh', [
+            'methods' => 'POST',
+            'callback' => [$this, 'refreshIndex'],
+            'permission_callback' => fn() => current_user_can('manage_options'),
         ]);
 
         register_rest_route('rrze-faubox/v1', '/download', [
@@ -97,105 +70,142 @@ final class RestController
             'callback' => [$this, 'downloadFile'],
             'permission_callback' => '__return_true',
             'args' => [
-                'file' => [
-                    'required' => true,
-                    'sanitize_callback' => 'sanitize_text_field',
-                ],
+                'file' => ['required' => true, 'sanitize_callback'
+                => 'sanitize_text_field'],
             ],
         ]);
     }
 
-
     /**
      * GET /files
-     *
-     * Returns a prepared file list for the given WebDAV
-    path.
-     *
-     * @param WP_REST_Request $request
-     * @return array
      */
-    public function getFiles(WP_REST_Request $request):
-    array
+    public function getFiles(WP_REST_Request $request): array
     {
-        return
-            $this->fileService->getPreparedFilesFromFolder(
-                (string)$request->get_param('path'),
-                (array)$request->get_param('extensions'),
-                (string)$request->get_param('sort'),
-                (string)$request->get_param('orderby')
-            );
+        return $this->fileService->getPreparedFilesFromFolder(
+            (string)$request->get_param('path'),
+            (array)$request->get_param('extensions'),
+            (string)$request->get_param('sort'),
+            (string)$request->get_param('orderby')
+        );
     }
 
     /**
      * GET /folders
      *
-     * Returns all root folders accessible to the
-    authenticated user.
-     *
-     * @return array
+     * Without path: returns the cached index.
+     * With path: returns live subfolders for in-editor navigation.
      */
-    public function getFolders(WP_REST_Request $request): array|\WP_Error
+    public function getFolders(WP_REST_Request $request):
+    array|\WP_Error
     {
-        $path = (string) $request->get_param('path');
+        $path = (string)$request->get_param('path');
 
         if ($path !== '') {
-            return $this->fileService->getSubFolders($path);
+            $subFolders = $this->fileService->getSubFolders($path);
+            $index      = $this->indexService->getIndex();
+
+            // Enrich live results with hasChildren from the index
+            $indexByPath = array_column($index, null, 'path');
+            return array_map(function (array $folder) use ($indexByPath):
+            array {
+                $folder['hasChildren'] = isset($indexByPath[$folder['path']])
+                    ? (bool) $indexByPath[$folder['path']]['hasChildren']
+                    : false;
+                return $folder;
+            }, $subFolders);
         }
 
         $mainFolder = get_option('rrze_faubox_folder', '');
         if (empty($mainFolder)) {
-            return new \WP_Error('no_folder_configured', __('No main folder configured. Please set it in the FAUbox settings.', 'rrze-faubox'), ['status' => 412]);
+            return new \WP_Error(
+                'no_folder_configured',
+                __('No main folder configured. Please set it in the FAUbox settings.', 'rrze-faubox'),
+                ['status' => 412]
+            );
         }
 
-        return $this->fileService->getAccessibleRootFolders();
+        $index = $this->indexService->getIndex();
+        if (empty($index)) {
+            return new \WP_Error(
+                'index_not_built',
+                __('The folder index has not been built yet. Please save the FAUbox settings or refresh the index manually.', 'rrze-faubox'),
+                ['status' => 503]
+            );
+        }
 
+        // Only return direct children of the root folder
+        $prefix = rtrim($mainFolder, '/') . '/';
+        return array_values(array_filter($index, function (array $entry) use
+        ($prefix): bool {
+            if (!str_starts_with($entry['path'], $prefix)) {
+                return false;
+            }
+            $remainder = substr($entry['path'], strlen($prefix));
+            return !str_contains($remainder, '/');
+        }));
+
+        return $index;
+    }
+
+    /**
+     * POST /index/refresh
+     */
+    public function refreshIndex(WP_REST_Request $request):
+    WP_REST_Response
+    {
+        if ($this->indexService->isOnCooldown()) {
+            return new WP_REST_Response(
+                ['success' => false, 'message' => __('Please wait before refreshing again.', 'rrze-faubox')],
+                429
+            );
+        }
+
+        $this->indexService->buildIndex();
+
+        return new WP_REST_Response(['success' => true], 200);
     }
 
     /**
      * GET /download
-     *
-     * Proxy endpoint: fetches a file from FAUbox using
-    stored credentials
-     * and streams it to the visitor. The token is never
-    exposed to the client.
-     *
-     * @param WP_REST_Request $request
-     * @return void
      */
     public function downloadFile(WP_REST_Request $request): void
     {
         $filePath = (string)$request->get_param('file');
 
-        // Only allow paths starting with /webdav/
         if (!str_starts_with($filePath, '/webdav/')) {
-            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
+            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'),
+                400);
         }
 
-        // Block path traversal attempts
-        if (str_contains($filePath, '..') || str_contains($filePath, './')) {
-            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
+        if (str_contains($filePath, '..') || str_contains($filePath,
+                './')) {
+            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'),
+                400);
         }
 
-        $result =
-            $this->client->fetchFileContent($filePath);
+        $result = $this->client->fetchFileContent($filePath);
 
         if (!$result) {
-            wp_die(esc_html__('File not found.', 'rrze-faubox'), 404);
+            wp_die(esc_html__('File not found.', 'rrze-faubox'),
+                404);
         }
 
-        $fileName    = basename(urldecode($filePath));
-        $fileName    = str_replace(['"', "'", "\r", "\n", '\\'], '', $fileName);
-        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '', $result['content_type'] ?: 'application/octet-stream');
+        $fileName = basename(urldecode($filePath));
+        $fileName = str_replace(['"', "'", "\r", "\n", '\\'], '',
+            $fileName);
+        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '',
+            $result['content_type'] ?: 'application/octet-stream');
 
         header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
-        header('Content-Length: ' . mb_strlen($result['body'], '8bit'));
+        header('Content-Disposition: attachment; filename="' .
+            $fileName . '"');
+        header('Content-Length: ' . mb_strlen($result['body'],
+                '8bit'));
         header('X-Content-Type-Options: nosniff');
 
-
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+// phpcs:ignore WordPress . Security . EscapeOutput . OutputNotEscaped
         echo $result['body'];
         exit;
     }
 }
+

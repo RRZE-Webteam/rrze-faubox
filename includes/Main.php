@@ -8,13 +8,13 @@ use RRZE\FAUbox\Blocks\BlockRegistration;
 use RRZE\FAUbox\Rest\RestController;
 use RRZE\FAUbox\API\Client;
 use RRZE\FAUbox\API\FileService;
+use RRZE\FAUbox\API\IndexService;
 use RRZE\FAUbox\Admin\Settings;
 
 /**
  * Main class
  *
- * This class serves as the entry point for the plugin.
- * It initializes shortcodes, settings and other components.
+ * Main plugin class. Bootstraps all services and hooks.
  *
  * @package RRZE\FAUbox
  */
@@ -32,12 +32,21 @@ class Main
     {
         $client = new Client();
         $fileService = new FileService($client);
+        $indexService = new IndexService($fileService);
 
         new BlockRegistration();
-        new RestController($fileService, $client);
+        new RestController($fileService, $client, $indexService);
+        // Rebuild index whenever credentials or root folder change.
+        add_action('update_option_rrze_faubox_folder',   [$indexService, 'buildIndex']);
+        add_action('update_option_rrze_faubox_token',    [$indexService, 'buildIndex']);
+        add_action('update_option_rrze_faubox_username', [$indexService, 'buildIndex']);
+
+        // Cron hook.
+        add_action('rrze_faubox_rebuild_index', [$indexService, 'buildIndex']);
+
 
         if (is_admin()) {
-            new Settings();
+            new Settings($indexService);
         }
     }
 }
