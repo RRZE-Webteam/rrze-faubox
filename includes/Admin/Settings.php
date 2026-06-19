@@ -245,18 +245,16 @@ class Settings
                                     $isPast = $today > $expiryDate;
 
                                     if ($isPast) {
-                                        $label = esc_html__('Token has expired!', 'rrze-faubox');
-                                        $class = 'notice-error';
+                                        $label = esc_html__('Your token has expired - please renew!', 'rrze-faubox');
                                     } elseif ($daysLeft <= 30) {
-                                        $label = sprintf(esc_html__('Expires in %d days — please renew soon.', 'rrze-faubox'), $daysLeft);
-                                        $class = 'notice-warning';
+                                        $label = sprintf(esc_html__('Your token expires in %d days — please renew soon.', 'rrze-faubox'), $daysLeft);
                                     } else {
                                         $label = sprintf(esc_html__('Token validity: 1 year. Valid for %d more days (until %s).', 'rrze-faubox'), $daysLeft,
                                                 $expiryDate->format('d.m.Y'));
-                                        $class = '';
                                     }
-                                    printf('<p class="description %s">%s</p>',
-                                            esc_attr($class), $label);
+                                    $style = $isPast ? 'color:#cc1818;font-weight:600;' : ($daysLeft <= 30 ? 'color:#996800;font-weight:600;' : '');
+                                    printf('<p class="description" style="%s">%s</p>',
+                                            esc_attr($style), $label);
                                 }
                             }
                             ?>

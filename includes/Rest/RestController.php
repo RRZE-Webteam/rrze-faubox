@@ -144,13 +144,13 @@ final class RestController
     /**
      * POST /index/refresh
      */
-    public function refreshIndex(WP_REST_Request $request):
-    WP_REST_Response
+    public function refreshIndex(WP_REST_Request $request): \WP_REST_Response|\WP_Error
     {
         if ($this->indexService->isOnCooldown()) {
-            return new WP_REST_Response(
-                ['success' => false, 'message' => __('Please wait before refreshing again.', 'rrze-faubox')],
-                429
+            return new \WP_Error (
+                'cooldown',
+                __('Please wait before refreshing again.', 'rrze-faubox'),
+                ['status' => 429]
             );
         }
 

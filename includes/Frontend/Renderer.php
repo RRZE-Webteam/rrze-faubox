@@ -10,7 +10,6 @@ defined('ABSPATH') || exit;
 
 class Renderer
 {
-
     /**
      * Render file list as HTML output based on view type.
      *
@@ -33,10 +32,10 @@ class Renderer
 
     /**
      * Renders the folder title using the configured heading
-    level.
+     * level.
      *
      * @param string $folderName The folder name to display.
-     * @param string $tag        The HTML heading tag (h2–h5).
+     * @param string $tag The HTML heading tag (h2–h5).
      * @return string Rendered heading HTML.
      */
     public static function renderTitle(string $folderName, string $tag = 'h3'): string
@@ -47,9 +46,7 @@ class Renderer
             $tag,
             esc_html($folderName)
         );
-
     }
-
 
     /**
      * Renders a simple list.
@@ -78,8 +75,6 @@ class Renderer
         foreach ($data as $file) {
             $name = esc_html($file['name'] ?? '');
             $url = esc_url($file['url'] ?? '');
-
-
             $show = isset($atts['show']) && is_array($atts['show']) ? $atts['show'] : [];
             $suffix = '';
 
@@ -94,12 +89,12 @@ class Renderer
                 $suffix .= ', ' . esc_html($file['modified']);
             }
 
-            $html .= sprintf(
-                '<li><a href="%s" target="_blank" rel="noopener">%s</a>%s</li>',
+            $html .= sprintf('<li><a href="%s" target="_blank" rel="noopener">%s<span class="screen-reader-text"> ' . __('(opens in new tab)', 'rrze-faubox') . '</span></a>%s</li>',
                 $url,
                 $name,
                 $suffix
             );
+
         }
 
         $html .= '</ul>';
@@ -133,7 +128,6 @@ class Renderer
         $columnOrder = ['name', 'size', 'modified', 'type'];
         $columns = array_values(array_intersect($columnOrder, $atts['show'] ?? ['name']));
 
-
         // Load column labels from Helper class
         $columnLabels = Helper::getColumnLabels();
 
@@ -142,10 +136,10 @@ class Renderer
         $html .= '<caption class="screen-reader-text">' . esc_html($folderName) . '</caption>';
         $html .= '<thead><tr>';
 
-
         foreach ($columns as $col) {
             $label = $columnLabels[$col] ?? $col;
-            $html .= '<th scope="col">' . esc_html($label) . '</th>';
+            $style = $col === 'name' ? ' style="width:100%"' : ' style="white-space:nowrap"';
+            $html .= '<th scope="col"' . $style . '>' . esc_html($label) . '</th>';
         }
 
         $html .= '</tr></thead><tbody>';
@@ -155,7 +149,6 @@ class Renderer
             $url = esc_url($file['url']);
 
             $html .= '<tr>';
-
             foreach ($columns as $col) {
                 if ($col === 'name') {
                     $html .= sprintf(
@@ -172,7 +165,6 @@ class Renderer
                     $html .= '<td>' . esc_html($file['modified'] ?? '—') . '</td>';
                 }
             }
-
             $html .= '</tr>';
         }
 

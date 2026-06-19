@@ -35,13 +35,11 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [refreshError, setRefreshError] = useState<string | null>(null);
 
-
     const fetchFolders = (path: string) => {
         setLoading(true);
         setError(false);
         setIndexNotBuilt(false);
         setRefreshError(null);
-
 
         // Bug fix: backticks instead of single quotes for template literal
         const endpoint = path
@@ -109,7 +107,7 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
             })
             .catch((err: { data?: { status?: number } }) => {
                 if (err?.data?.status === 429) {
-                    setRefreshError(__('Please wait before refreshing again.', 'rrze-faubox'));
+                    setRefreshError(__('Please wait 1 minute before refreshing again.', 'rrze-faubox'));
                 } else {
                     setRefreshError(__('Index refresh failed. Please try again.', 'rrze-faubox'));
                 }
@@ -195,7 +193,8 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                         display: 'flex', alignItems:
                             'center'
                     }}>
-                          <span style={{color: '#888', flexShrink: 0, display: 'flex', alignItems: 'center'
+                          <span style={{
+                              color: '#888', flexShrink: 0, display: 'flex', alignItems: 'center'
                           }}>
                           <Icon icon={chevronRight} size={18}/>
                           </span>
@@ -319,7 +318,11 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                                                 <span>📁</span>
                                                 <span style={{flex: 1}}>{folder.name}</span>
                                                 {folder.hasChildren !== false && (
-                                                    <span style={{color: '#888', flexShrink: 0, display: 'flex', alignItems: 'center'
+                                                    <span style={{
+                                                        color: '#888',
+                                                        flexShrink: 0,
+                                                        display: 'flex',
+                                                        alignItems: 'center'
                                                     }}>
                                                      <Icon icon={chevronRight} size={18}/>
                                                         </span>
