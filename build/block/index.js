@@ -312,15 +312,17 @@ function FolderTree({
     }), breadcrumbs.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
       variant: "tertiary",
       icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
+      iconSize: 15,
       onClick: handleBack,
       style: {
-        marginBottom: '8px',
+        marginBottom: '5px',
         marginLeft: '2px',
         marginTop: '8px',
         height: '25px',
-        fontSize: '13px',
-        border: '1px solid #e0e0e0',
-        borderRadius: '2px'
+        fontSize: '12px',
+        padding: '4px 4px'
+        //border: '1px solid #e0e0e0',
+        //borderRadius: '2px',
       },
       children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Back', 'rrze-faubox')
     }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}), noFolderConfigured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {

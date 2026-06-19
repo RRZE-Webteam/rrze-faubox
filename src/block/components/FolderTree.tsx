@@ -222,9 +222,18 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                 <Button
                     variant="tertiary"
                     icon={chevronLeft}
+                    iconSize={15}
                     onClick={handleBack}
-                    style={{marginBottom: '8px', marginLeft: '2px', marginTop: '8px', height: '25px', fontSize: '13px', border: '1px solid #e0e0e0',
-                        borderRadius: '2px',}}
+                    style={{
+                        marginBottom: '5px',
+                        marginLeft: '2px',
+                        marginTop: '8px',
+                        height: '25px',
+                        fontSize: '12px',
+                        padding: '4px 4px',
+                        //border: '1px solid #e0e0e0',
+                        //borderRadius: '2px',
+                    }}
                 >
                     {__('Back', 'rrze-faubox')}
                 </Button>
@@ -320,8 +329,7 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
                                             {/* Select this folder */}
                                             <button
                                                 onClick={() => onSelect(folder.path)}
-                                                title={__('Select this folder',
-                                                    'rrze-faubox')}
+                                                title={__('Select this folder', 'rrze-faubox')}
                                                 style={{
                                                     flexShrink: 0,
                                                     background: isSelected ? '#007cba' : 'transparent',
