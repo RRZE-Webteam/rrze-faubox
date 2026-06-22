@@ -15,13 +15,14 @@ defined('ABSPATH') || exit;
 final class IndexService
 {
     private const TRANSIENT_KEY = 'rrze_faubox_folder_index';
-    private const COOLDOWN_KEY  = 'rrze_faubox_index_cooldown';
-    private const COOLDOWN_TTL  = 60;
+    private const COOLDOWN_KEY = 'rrze_faubox_index_cooldown';
+    private const COOLDOWN_TTL = 60;
 
 
     /** Prevents multiple builds within the same request. */
     private static bool $buildScheduled = false;
     private FileService $fileService;
+
     public function __construct(FileService $fileService)
     {
         $this->fileService = $fileService;
@@ -47,8 +48,10 @@ final class IndexService
         }
 
         $index = $this->collectFolders($rootFolder);
-        set_transient(self::TRANSIENT_KEY, $index, $this->getTtl());
-        set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
+        if (!empty($index)) {
+            set_transient(self::TRANSIENT_KEY, $index, 0);
+            set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
+        }
     }
 
     /**
@@ -61,14 +64,6 @@ final class IndexService
     {
         $cached = get_transient(self::TRANSIENT_KEY);
         return is_array($cached) ? $cached : [];
-    }
-
-    /**
-     * Delete the cached folder index.
-     */
-    public function clearIndex(): void
-    {
-        delete_transient(self::TRANSIENT_KEY);
     }
 
     /**
@@ -109,18 +104,4 @@ final class IndexService
         return $result;
     }
 
-    /**
-     * Retrieve the configured TTL in seconds.
-     *
-     * Reads 'rrze_faubox_index_ttl' (hours). Defaults to 12h.
-     */
-    private function getTtl(): int
-    {
-        $ttlHours = (int)get_option('rrze_faubox_index_ttl', 12);
-        $allowed = [1, 6, 12, 24];
-        if (!in_array($ttlHours, $allowed, true)) {
-            $ttlHours = 12;
-        }
-        return $ttlHours * HOUR_IN_SECONDS;
-    }
 }
