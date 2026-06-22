@@ -32,6 +32,7 @@ class Settings
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
+        add_action('admin_init', [$this, 'maybeBuildIndexAfterSave']);
     }
 
 
@@ -173,6 +174,16 @@ class Settings
         }
     }
 
+    public function maybeBuildIndexAfterSave(): void
+    {
+        if (
+                ($_GET['settings-updated'] ?? '') !== '1' ||
+                ($_GET['page'] ?? '') !== 'rrze-faubox'
+        ) {
+            return;
+        }
+        $this->indexService->buildIndex();
+    }
 
     /**
      * Renders the settings page HTML form.

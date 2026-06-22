@@ -41,6 +41,8 @@ final class IndexService
         }
         self::$buildScheduled = true;
 
+        @set_time_limit(120);
+
         $rootFolder = get_option('rrze_faubox_folder', '');
         if (empty($rootFolder)) {
             delete_transient(self::TRANSIENT_KEY);
@@ -83,8 +85,12 @@ final class IndexService
      * @param string $path WebDAV folder path to traverse.
      * @return array Flat list of folder entries.
      */
-    private function collectFolders(string $path): array
+    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 3): array
     {
+        if ($depth >= $maxDepth) {
+            return [];
+        }
+
         $subFolders = $this->fileService->getSubFolders($path);
         if (empty($subFolders)) {
             return [];
@@ -92,10 +98,11 @@ final class IndexService
 
         $result = [];
         foreach ($subFolders as $folder) {
-            $children = $this->collectFolders($folder['path']);
+            $children = $this->collectFolders($folder['path'], $depth + 1,
+                $maxDepth);
             $result[] = [
-                'name' => $folder['name'],
-                'path' => $folder['path'],
+                'name'        => $folder['name'],
+                'path'        => $folder['path'],
                 'hasChildren' => !empty($children),
             ];
             $result = array_merge($result, $children);
@@ -103,5 +110,6 @@ final class IndexService
 
         return $result;
     }
+
 
 }
