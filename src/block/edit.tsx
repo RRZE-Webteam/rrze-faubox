@@ -61,11 +61,13 @@ export default function Edit({attributes, setAttributes}: EditProps) {
         setAttributes({show: updated});
     };
 
+    const [indexVersion, setIndexVersion] = useState(0);
+
     const treeProps = {
         selectedPath: path,
         onSelect: (folderPath: string) => setAttributes({path: folderPath}),
+        onIndexRefreshed: () => setIndexVersion(v => v + 1), indexVersion,
     };
-
 
     return (
         <div {...blockProps}>

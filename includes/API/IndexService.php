@@ -52,8 +52,8 @@ final class IndexService
         $index = $this->collectFolders($rootFolder);
         if (!empty($index)) {
             set_transient(self::TRANSIENT_KEY, $index, 0);
-            set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
         }
+        set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
     }
 
     /**

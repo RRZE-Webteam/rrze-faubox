@@ -70,8 +70,7 @@ final class RestController
             'callback' => [$this, 'downloadFile'],
             'permission_callback' => '__return_true',
             'args' => [
-                'file' => ['required' => true, 'sanitize_callback'
-                => 'sanitize_text_field'],
+                'file' => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
             ],
         ]);
     }
@@ -134,11 +133,20 @@ final class RestController
         }
 
         // Only return direct children of the root folder
-        $rootDepth = substr_count(rtrim($mainFolder, '/'), '/') + 1;
-        return array_values(array_filter($index, function (array
-                                                           $entry) use ($rootDepth): bool {
-            return substr_count($entry['path'], '/') === $rootDepth;
-        }));
+        $minDepth = min(array_map(
+            fn(array $entry): int => substr_count($entry['path'], '/'),
+            $index
+        ));
+
+        $filtered = array_values(array_filter(
+            $index,
+            fn(array $entry): bool => substr_count($entry['path'], '/') ===
+                $minDepth
+        ));
+        usort($filtered, fn(array $a, array $b): int => strcasecmp($a['name'],
+            $b['name']));
+        return $filtered;
+
     }
 
     /**

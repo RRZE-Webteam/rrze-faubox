@@ -23,9 +23,12 @@ interface Breadcrumb {
 export interface FolderTreeProps {
     selectedPath: string;
     onSelect: (path: string) => void;
+    indexVersion?: number;
+    onIndexRefreshed?: () => void;
 }
 
-export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
+
+export default function FolderTree({selectedPath, onSelect, indexVersion, onIndexRefreshed}: FolderTreeProps) {
     const [currentFolders, setCurrentFolders] = useState<FolderOption[]>([]);
     const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -90,7 +93,7 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
         }
         setBreadcrumbs(crumbs);
         fetchFolders(parentParts.join('/'));
-    }, []);
+    }, [indexVersion]);
 
 
     const handleRefreshIndex = () => {
@@ -104,6 +107,7 @@ export default function FolderTree({selectedPath, onSelect}: FolderTreeProps) {
             .then(() => {
                 setIndexNotBuilt(false);
                 fetchFolders('');
+                onIndexRefreshed?.();
             })
             .catch((err: { data?: { status?: number } }) => {
                 if (err?.data?.status === 429) {
