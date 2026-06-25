@@ -89,7 +89,7 @@ class Renderer
                 $suffix .= ', ' . esc_html($file['modified']);
             }
 
-            $html .= sprintf('<li><a href="%s" target="_blank" rel="noopener">%s<span class="screen-reader-text"> ' . __('(opens in new tab)', 'rrze-faubox') . '</span></a>%s</li>',
+            $html .= sprintf('<li><a href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> ' . esc_html__('(opens in new tab)', 'rrze-faubox')   . '</span></a>%s</li>',
                 $url,
                 $name,
                 $suffix
@@ -133,7 +133,9 @@ class Renderer
 
         $folderName = !empty($atts['changetitle']) ? $atts['changetitle'] : basename((string)($atts['path'] ?? ''));
         $html .= '<figure class="wp-block-table"><table class="faubox-filetable">';
-        $html .= '<caption class="screen-reader-text">' . esc_html($folderName) . '</caption>';
+        $caption = !empty($folderName) ? $folderName : __('FAUbox files', 'rrze-faubox');
+        $html .= '<caption class="screen-reader-text">' . esc_html($caption) . '</caption>';
+
         $html .= '<thead><tr>';
 
         foreach ($columns as $col) {
@@ -152,12 +154,12 @@ class Renderer
             foreach ($columns as $col) {
                 if ($col === 'name') {
                     $html .= sprintf(
-                        '<td><a href="%s">%s</a></td>',
+                        '<td><a href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> ' . __('(opens in new tab)', 'rrze-faubox') . '</span></a></td>',
                         $url,
                         $name
                     );
                 } elseif ($col === 'type') {
-                    $ext = strtoupper(pathinfo($url, PATHINFO_EXTENSION));
+                    $ext = strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION));
                     $html .= '<td>' . esc_html($ext) . '</td>';
                 } elseif ($col === 'size') {
                     $html .= '<td>' . esc_html($file['size'] ?? '—') . '</td>';

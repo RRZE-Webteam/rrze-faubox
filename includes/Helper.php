@@ -65,13 +65,9 @@ class Helper
         );
     }
 
-    public static function isDebug()
+    public static function isDebug(): bool
     {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            return true; // Debug ON
-        } else {
-            return false; // Debug OFF
-        }
+        return defined('WP_DEBUG') && WP_DEBUG;
     }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RRZE\FAUbox;
 
 defined('ABSPATH') || exit;
@@ -36,11 +38,11 @@ class Main
 
         new BlockRegistration();
         new RestController($fileService, $client, $indexService);
+
         // Rebuild index whenever credentials or root folder change.
         add_action('update_option_rrze_faubox_folder',   [$indexService, 'buildIndex']);
         add_action('update_option_rrze_faubox_token',    [$indexService, 'buildIndex']);
         add_action('update_option_rrze_faubox_username', [$indexService, 'buildIndex']);
-
         // Cron hook.
         add_action('rrze_faubox_rebuild_index', [$indexService, 'buildIndex']);
 

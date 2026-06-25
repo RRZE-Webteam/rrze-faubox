@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RRZE\FAUbox\Admin;
 
 use RRZE\FAUbox\API\IndexService;
+use RRZE\FAUbox\Encryption;
 
 defined('ABSPATH') || exit;
 
@@ -32,7 +35,6 @@ class Settings
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
-        add_action('admin_init', [$this, 'maybeBuildIndexAfterSave']);
     }
 
 
@@ -60,46 +62,49 @@ class Settings
      */
     public function registerSettings(): void
     {
-        register_setting('rrze_faubox_settings', 'rrze_faubox_token', [
-                'sanitize_callback' => [$this, 'sanitizeToken'],
-        ]);
-        register_setting('rrze_faubox_settings', 'rrze_faubox_username', [
-                'sanitize_callback' => [$this, 'sanitizeUsername'],
-        ]);
         register_setting('rrze_faubox_settings', 'rrze_faubox_folder', [
                 'sanitize_callback' => 'sanitize_text_field',
         ]);
-        register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
-                'sanitize_callback' => [$this, 'sanitizeDate'],
-        ]);
-        register_setting('rrze_faubox_settings', 'rrze_faubox_index_ttl', [
-                'sanitize_callback' => [$this, 'sanitizeIndexTtl'],
-        ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_username', [
+                'sanitize_callback' => [$this, 'sanitizeApiUsername'],
+      ]);
+      register_setting('rrze_faubox_settings', 'rrze_faubox_token', [
+          'sanitize_callback' => [$this, 'sanitizeApiKey'],
+      ]);
+      register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
+              'sanitize_callback' => [$this, 'sanitizeDate'],
+      ]);
+      register_setting('rrze_faubox_settings', 'rrze_faubox_index_ttl', [
+              'sanitize_callback' => [$this, 'sanitizeIndexTtl'],
+      ]);
 
 
     }
 
     /**
-     * Sanitize WebDAV username input.
-     *
-     * @param mixed $value Raw input value.
-     * @return string Sanitized username.
+     * Sanitize & encrypt the API key/username/password before saving to DB.
      */
-    public function sanitizeUsername(mixed $value): string
+    public function sanitizeApiKey(mixed $input): string
     {
-        return sanitize_text_field((string)$value);
+        $clean = sanitize_text_field((string)$input);
+
+        // Placeholder — keep existing value
+        if ($clean === str_repeat('*', 16)) {
+            return get_option('rrze_faubox_token', '');
+        }
+
+        if ($clean === '') return '';
+
+        return (new Encryption())->encrypt($clean);
+
     }
 
-    /**
-     * Sanitize WebDAV token input
-     *
-     * @param mixed $value Raw input value.
-     * @return string Sanitized token.
-     */
-    public function sanitizeToken(mixed $value): string
+    public function sanitizeApiUsername(mixed $input): string
     {
-        return sanitize_text_field((string)$value);
+        return sanitize_text_field((string)$input);
     }
+
+
 
     /**
      * Sanitize a date input value.
@@ -125,7 +130,7 @@ class Settings
     public function sanitizeIndexTtl(mixed $value): int
     {
         $allowed = [1, 6, 12, 24];
-        $value   = (int) $value;
+        $value = (int)$value;
         return in_array($value, $allowed, true) ? $value : 12;
     }
 
@@ -174,17 +179,6 @@ class Settings
         }
     }
 
-    public function maybeBuildIndexAfterSave(): void
-    {
-        if (
-                ($_GET['settings-updated'] ?? '') !== '1' ||
-                ($_GET['page'] ?? '') !== 'rrze-faubox'
-        ) {
-            return;
-        }
-        $this->indexService->buildIndex();
-    }
-
     /**
      * Renders the settings page HTML form.
      *
@@ -215,7 +209,7 @@ class Settings
                         </th>
                         <td>
                             <input type="text" id="rrze_faubox_username" name="rrze_faubox_username"
-                                   value="<?php echo esc_attr(get_option('rrze_faubox_username')); ?>"
+                                   value="<?php echo esc_attr(get_option('rrze_faubox_username', '')); ?>"
                                    class="regular-text" autocomplete="off">
                         </td>
                     </tr>
@@ -229,7 +223,7 @@ class Settings
                         </th>
                         <td>
                             <input type="password" id="rrze_faubox_token" name="rrze_faubox_token"
-                                   value="<?php echo esc_attr(get_option('rrze_faubox_token')); ?>"
+                                   value="<?php echo esc_attr(get_option('rrze_faubox_token') ? str_repeat('*', 16) : ''); ?>"
                                    class="regular-text" autocomplete="off">
                         </td>
                     </tr>
@@ -263,9 +257,10 @@ class Settings
                                         $label = sprintf(esc_html__('Token validity: 1 year. Valid for %d more days (until %s).', 'rrze-faubox'), $daysLeft,
                                                 $expiryDate->format('d.m.Y'));
                                     }
-                                    $style = $isPast ? 'color:#cc1818;font-weight:600;' : ($daysLeft <= 30 ? 'color:#996800;font-weight:600;' : '');
-                                    printf('<p class="description" style="%s">%s</p>',
-                                            esc_attr($style), $label);
+                                    $class = $isPast ? 'rrze-faubox-token-expired' : ($daysLeft <= 30 ?
+                                            'rrze-faubox-token-expiring' : '');
+                                    printf('<p class="description %s">%s</p>', esc_attr($class), $label);
+
                                 }
                             }
                             ?>

@@ -6,6 +6,8 @@ namespace RRZE\FAUbox\API;
 
 defined('ABSPATH') || exit;
 
+use RRZE\FAUbox\Helper;
+
 /**
  * Provides file-related business logic for FAUbox WebDAV data.
  *
@@ -120,9 +122,7 @@ final class FileService
 
         return array_map(static fn(array $entry): array => [
             'name' => $entry['displayname'],
-            'path' =>
-                rawurldecode(trim(preg_replace('#^/webdav/?#', '',
-                    $entry['path']), '/')),
+            'path' => Helper::stripWebdavPrefix($entry['path'])
         ], array_values($folders));
     }
 
@@ -132,12 +132,12 @@ final class FileService
      * @param string $path WebDAV folder path.
      * @return array List of subfolder entries with 'name' and 'path'.
      */
-    public function getSubFolders(string $path): array
+    public function getSubFolders(string $path): ?array
     {
         $entries = $this->client->fetchEntriesFromPath($path);
 
         if (!is_array($entries)) {
-            return [];
+            return null;
         }
 
         $folders = array_filter(
@@ -147,9 +147,10 @@ final class FileService
 
         $result = array_map(static fn(array $entry): array => [
             'name' => $entry['displayname'],
-            'path' => rawurldecode(trim(preg_replace('#^/webdav/?#', '', $entry['path']), '/')),], array_values($folders));
-        usort($result, static fn(array $a, array $b): int =>
-        strcasecmp($a['name'], $b['name'])
+            'path' => Helper::stripWebdavPrefix($entry['path'])
+            ], array_values($folders));
+
+        usort($result, static fn(array $a, array $b): int => strcasecmp($a['name'], $b['name'])
         );
 
         return $result;
@@ -241,10 +242,9 @@ final class FileService
                 $name = (string)($file['displayname'] ?? '');
                 $path = rawurldecode((string)($file['path'] ?? ''));
                 $size = $file['contentlength'] ?? null;
-
+                $sig = hash_hmac('sha256', $path, wp_salt('auth'));
                 $downloadUrl = add_query_arg(
-                    'file',
-                    rawurlencode($path),
+                    ['file' => rawurlencode($path), 'sig' => $sig],
                     rest_url('rrze-faubox/v1/download')
                 );
 
@@ -254,7 +254,7 @@ final class FileService
                     'size' => $size !== null ? size_format($size) : '—',
                     'type' => $this->deriveMimeType($name),
                     'modified' => ($file['lastmodified'] ?? '') !== ''
-                        ? date('d.m.Y', strtotime((string)$file['lastmodified']))
+                        ? wp_date('d.m.Y', strtotime((string)$file['lastmodified']))
                         : '—',
 
 

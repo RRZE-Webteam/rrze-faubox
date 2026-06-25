@@ -34,7 +34,6 @@ class BlockRender
             (string)($attributes['orderby'] ?? 'name')
         );
 
-
         return Renderer::render($files, $attributes);
     }
 }

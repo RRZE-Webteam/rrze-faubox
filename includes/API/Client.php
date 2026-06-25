@@ -6,6 +6,9 @@ namespace RRZE\FAUbox\API;
 
 defined('ABSPATH') || exit;
 
+use RRZE\FAUbox\Encryption;
+use RRZE\FAUbox\Helper;
+
 /**
  * Handles low-level communication with the FAUbox WebDAV server.
  *
@@ -25,6 +28,7 @@ final class Client
     {
         $value = get_option('rrze_faubox_username', '');
         return $value !== '' ? $value : null;
+
     }
 
     /**
@@ -33,8 +37,12 @@ final class Client
     private function getToken(): ?string
     {
         $value = get_option('rrze_faubox_token', '');
-        return $value !== '' ? $value : null;
+        if ($value === '') return null;
+        if (base64_decode($value, true) === false) return null;
+      $decrypted = (new Encryption())->decrypt($value);
+      return $decrypted ?: null;
     }
+
 
     /**
      * Build the HTTP Basic Auth header value.
@@ -110,7 +118,10 @@ final class Client
 
         libxml_use_internal_errors(true);
         $xml = simplexml_load_string($responseBody);
-        libxml_get_errors();
+
+        if (libxml_get_errors()) {
+            Helper::debug('WebDAV XML parse error for path: ' . $path, 'error');
+        }
         libxml_clear_errors();
 
         if (!$xml instanceof \SimpleXMLElement) {
@@ -221,52 +232,51 @@ final class Client
     }
 
     /**
-     * Fetch the raw content of a file from the FAUbox
-     * WebDAV server.
+     * Download a file from FAUbox to a local temp file using WP streaming.
+     * Returns the temp file path and content type, or null on failure.
      *
-     * Used by the download proxy endpoint.
-     *
-     * @param string $path Full WebDAV path (e.g.
-     * '/webdav/My Folder/file.pdf').
-     * @return array{body: string, content_type:
-     * string}|null File content and type, or null on failure.
+     * @param string $path Full WebDAV path (e.g. '/webdav/MyFolder/file.pdf')
+     * @return array{tmpfile: string, content_type: string}|null
      */
-    public function fetchFileContent(string $path): ?array
+    public function streamFileToDisk(string $path): array|null
     {
         $authHeader = $this->buildAuthHeader();
-
         if (!$authHeader) {
             return null;
         }
 
         $parsed = parse_url(self::BASE_URL);
         $baseHost = $parsed['scheme'] . '://' . $parsed['host'];
-        $url = $baseHost . implode('/', array_map('rawurlencode', explode('/', $path)));
+        $url = $baseHost . implode('/', array_map('rawurlencode',
+                explode('/', $path)));
+
+        $tmpFile = wp_tempnam('faubox_download_');
 
         $response = wp_remote_get($url, [
-            'timeout' => 30,
+            'timeout' => 60,
+            'stream' => true,      //  WordPress writes in file
+            'filename' => $tmpFile,
             'headers' => [
                 'Authorization' => $authHeader,
             ],
         ]);
 
         if (is_wp_error($response)) {
+            @unlink($tmpFile);
             return null;
         }
 
-        $statusCode =
-            wp_remote_retrieve_response_code($response);
-
-        if ($statusCode !== 200) {
+        if (wp_remote_retrieve_response_code($response) !== 200) {
+            @unlink($tmpFile);
             return null;
         }
 
         return [
-            'body' =>
-                wp_remote_retrieve_body($response),
-            'content_type' =>
-                wp_remote_retrieve_header($response, 'content-type'),
+            'tmpfile' => $tmpFile,
+            'content_type' => wp_remote_retrieve_header($response,
+                'content-type'),
         ];
     }
+
 }
 

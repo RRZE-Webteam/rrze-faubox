@@ -15,6 +15,7 @@ defined('ABSPATH') || exit;
 final class IndexService
 {
     private const TRANSIENT_KEY = 'rrze_faubox_folder_index';
+    private const STATUS_KEY     = 'rrze_faubox_index_status';
     private const COOLDOWN_KEY = 'rrze_faubox_index_cooldown';
     private const COOLDOWN_TTL = 60;
 
@@ -50,9 +51,18 @@ final class IndexService
         }
 
         $index = $this->collectFolders($rootFolder);
-        if (!empty($index)) {
-            set_transient(self::TRANSIENT_KEY, $index, 0);
+        $ttl   = (int)get_option('rrze_faubox_index_ttl', 12) * HOUR_IN_SECONDS;
+
+        if ($index === null) {
+            set_transient(self::STATUS_KEY, 'error', $ttl);
+        } elseif (empty($index)) {
+            delete_transient(self::TRANSIENT_KEY);
+            set_transient(self::STATUS_KEY, 'empty', $ttl);
+        } else {
+            set_transient(self::TRANSIENT_KEY, $index, $ttl);
+            set_transient(self::STATUS_KEY, 'ok', $ttl);
         }
+
         set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
     }
 
@@ -85,21 +95,28 @@ final class IndexService
      * @param string $path WebDAV folder path to traverse.
      * @return array Flat list of folder entries.
      */
-    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 3): array
+    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 3): ?array
     {
         if ($depth >= $maxDepth) {
             return [];
         }
 
         $subFolders = $this->fileService->getSubFolders($path);
-        if (empty($subFolders)) {
-            return [];
+
+        if ($subFolders === null) {
+            return null; // WebDAV-Fehler
         }
+        if (empty($subFolders)) {
+            return []; // Kein Fehler, aber keine Unterordner
+        }
+
 
         $result = [];
         foreach ($subFolders as $folder) {
-            $children = $this->collectFolders($folder['path'], $depth + 1,
-                $maxDepth);
+            $children = $this->collectFolders($folder['path'], $depth + 1, $maxDepth);
+            if ($children === null) {
+                return null;
+            }
             $result[] = [
                 'name'        => $folder['name'],
                 'path'        => $folder['path'],
@@ -108,8 +125,15 @@ final class IndexService
             $result = array_merge($result, $children);
         }
 
+
         return $result;
     }
+
+    public function getIndexStatus(): string
+    {
+        return (string)(get_transient(self::STATUS_KEY) ?: 'unknown');
+    }
+
 
 
 }

@@ -71,6 +71,7 @@ final class RestController
             'permission_callback' => '__return_true',
             'args' => [
                 'file' => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
+                'sig' => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
             ],
         ]);
     }
@@ -94,60 +95,72 @@ final class RestController
      * Without path: returns the cached index.
      * With path: returns live subfolders for in-editor navigation.
      */
-    public function getFolders(WP_REST_Request $request):
-    array|\WP_Error
+    public function getFolders(WP_REST_Request $request): array|\WP_Error
     {
         $path = (string)$request->get_param('path');
 
-        if ($path !== '') {
-            $subFolders = $this->fileService->getSubFolders($path);
-            $index      = $this->indexService->getIndex();
+        if ($path === '') {
+            // No path → return cached index (direct children of root only)
+            $mainFolder = get_option('rrze_faubox_folder', '');
+            if (empty($mainFolder)) {
+                return new \WP_Error(
+                    'no_folder_configured',
+                    __('No main folder configured. Please set it in the FAUbox settings.',
+                        'rrze-faubox'),
+                    ['status' => 412]
+                );
+            }
 
-            // Enrich live results with hasChildren from the index
-            $indexByPath = array_column($index, null, 'path');
-            return array_map(function (array $folder) use ($indexByPath):
-            array {
-                $folder['hasChildren'] = isset($indexByPath[$folder['path']])
-                    ? (bool) $indexByPath[$folder['path']]['hasChildren']
-                    : false;
-                return $folder;
-            }, $subFolders);
+            $index = $this->indexService->getIndex();
+            if (empty($index)) {
+                return new \WP_Error(
+                    'index_not_built',
+                    __('The folder index has not been built yet. Please save the FAUbox 
+  settings or refresh the index manually.', 'rrze-faubox'),
+                    ['status' => 503]
+                );
+            }
+
+            // Only return direct children of the root folder
+            $minDepth = min(array_map(
+                fn(array $entry): int => substr_count($entry['path'], '/'),
+                $index
+            ));
+
+            $filtered = array_values(array_filter(
+                $index,
+                fn(array $entry): bool => substr_count($entry['path'], '/') === $minDepth
+            ));
+
+            usort($filtered, fn(array $a, array $b): int => strcasecmp($a['name'],
+                $b['name']));
+
+            return $filtered;
         }
 
-        $mainFolder = get_option('rrze_faubox_folder', '');
-        if (empty($mainFolder)) {
+        // Path given → live subfolders, enriched with hasChildren from index
+        $subFolders = $this->fileService->getSubFolders($path);
+
+        if ($subFolders === null) {
             return new \WP_Error(
-                'no_folder_configured',
-                __('No main folder configured. Please set it in the FAUbox settings.', 'rrze-faubox'),
-                ['status' => 412]
+                'webdav_error',
+                __('Could not retrieve folders. Please check your FAUbox credentials.',
+                    'rrze-faubox'),
+                ['status' => 502]
             );
         }
 
         $index = $this->indexService->getIndex();
-        if (empty($index)) {
-            return new \WP_Error(
-                'index_not_built',
-                __('The folder index has not been built yet. Please save the FAUbox settings or refresh the index manually.', 'rrze-faubox'),
-                ['status' => 503]
-            );
-        }
+        $indexByPath = array_column($index, null, 'path');
 
-        // Only return direct children of the root folder
-        $minDepth = min(array_map(
-            fn(array $entry): int => substr_count($entry['path'], '/'),
-            $index
-        ));
-
-        $filtered = array_values(array_filter(
-            $index,
-            fn(array $entry): bool => substr_count($entry['path'], '/') ===
-                $minDepth
-        ));
-        usort($filtered, fn(array $a, array $b): int => strcasecmp($a['name'],
-            $b['name']));
-        return $filtered;
-
+        return array_map(function (array $folder) use ($indexByPath): array {
+            $folder['hasChildren'] = isset($indexByPath[$folder['path']])
+                ? (bool)$indexByPath[$folder['path']]['hasChildren']
+                : false;
+            return $folder;
+        }, $subFolders);
     }
+
 
     /**
      * POST /index/refresh
@@ -174,39 +187,56 @@ final class RestController
     {
         $filePath = (string)$request->get_param('file');
 
+        // c) Normalisieren — ZUERST, vor allen Prüfungen
+        $filePath = rawurldecode($filePath);
+
+        // Grundlegende Pfad-Prüfungen (nach Dekodierung)
         if (!str_starts_with($filePath, '/webdav/')) {
-            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'),
-                400);
+            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
+        }
+        if (str_contains($filePath, '..') || str_contains($filePath, './')) {
+            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
         }
 
-        if (str_contains($filePath, '..') || str_contains($filePath,
-                './')) {
-            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'),
-                400);
+        // a) Auf konfigurierten Hauptordner begrenzen
+        $rootFolder = get_option('rrze_faubox_folder', '');
+        if (empty($rootFolder)) {
+            wp_die(esc_html__('No folder configured.', 'rrze-faubox'), 403);
+        }
+        $normalizedRoot = '/webdav/' . trim($rootFolder, '/') . '/';
+        if (!str_starts_with($filePath, $normalizedRoot)) {
+            wp_die(esc_html__('Access denied.', 'rrze-faubox'), 403);
         }
 
-        $result = $this->client->fetchFileContent($filePath);
+        // b) HMAC-Signatur prüfen
+        $sig = (string)$request->get_param('sig');
+        $expected = hash_hmac('sha256', $filePath, wp_salt('auth'));
+        if (!hash_equals($expected, $sig)) {
+            wp_die(esc_html__('Invalid request.', 'rrze-faubox'), 403);
+        }
 
+        // Datei von FAUbox streamen
+        $result = $this->client->streamFileToDisk($filePath);
         if (!$result) {
-            wp_die(esc_html__('File not found.', 'rrze-faubox'),
-                404);
+            wp_die(esc_html__('File not found.', 'rrze-faubox'), 404);
         }
 
-        $fileName = basename(urldecode($filePath));
-        $fileName = str_replace(['"', "'", "\r", "\n", '\\'], '',
-            $fileName);
-        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '',
-            $result['content_type'] ?: 'application/octet-stream');
+        $fileName = basename($filePath);
+        $fileName = str_replace(['"', "'", "\r", "\n", '\\', ';'], '', $fileName);
+        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '', $result['content_type'] ?:
+            'application/octet-stream');
 
         header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment; filename="' .
-            $fileName . '"');
-        header('Content-Length: ' . mb_strlen($result['body'],
-                '8bit'));
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Length: ' . filesize($result['tmpfile'])); // ← Bug-Fix
         header('X-Content-Type-Options: nosniff');
 
-// phpcs:ignore WordPress . Security . EscapeOutput . OutputNotEscaped
-        echo $result['body'];
+        try {
+            readfile($result['tmpfile']);
+        } finally {
+            @unlink($result['tmpfile']);
+        }
+
         exit;
     }
 }

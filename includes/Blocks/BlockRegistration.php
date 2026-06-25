@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RRZE\FAUbox\Blocks;
 
 use RRZE\FAUbox\Helper;
