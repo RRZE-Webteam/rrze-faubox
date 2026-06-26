@@ -6,12 +6,15 @@ namespace RRZE\FAUbox;
 
 defined('ABSPATH') || exit;
 
+use RRZE\FAUbox\API\DownloadService;
 use RRZE\FAUbox\Blocks\BlockRegistration;
 use RRZE\FAUbox\Rest\RestController;
 use RRZE\FAUbox\API\Client;
 use RRZE\FAUbox\API\FileService;
 use RRZE\FAUbox\API\IndexService;
 use RRZE\FAUbox\Admin\Settings;
+use RRZE\FAUbox\Blocks\BlockRender;
+use RRZE\FAUbox\Frontend\Renderer;
 
 /**
  * Main class
@@ -35,13 +38,16 @@ class Main
         $client = new Client();
         $fileService = new FileService($client);
         $indexService = new IndexService($fileService);
+        $downloadService = new DownloadService($client);
+        $renderer = new Renderer();
+        $blockRender = new BlockRender ($fileService, $renderer);
 
-        new BlockRegistration();
-        new RestController($fileService, $client, $indexService);
+        new BlockRegistration($blockRender);
+        new RestController($fileService, $indexService, $downloadService);
 
         // Rebuild index whenever credentials or root folder change.
-        add_action('update_option_rrze_faubox_folder',   [$indexService, 'buildIndex']);
-        add_action('update_option_rrze_faubox_token',    [$indexService, 'buildIndex']);
+        add_action('update_option_rrze_faubox_folder', [$indexService, 'buildIndex']);
+        add_action('update_option_rrze_faubox_token', [$indexService, 'buildIndex']);
         add_action('update_option_rrze_faubox_username', [$indexService, 'buildIndex']);
         // Cron hook.
         add_action('rrze_faubox_rebuild_index', [$indexService, 'buildIndex']);

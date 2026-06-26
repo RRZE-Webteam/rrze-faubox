@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace RRZE\FAUbox\Blocks;
 
-use RRZE\FAUbox\Helper;
 
 defined('ABSPATH') || exit;
 
@@ -13,11 +12,15 @@ defined('ABSPATH') || exit;
  */
 class BlockRegistration
 {
+    private BlockRender $blockRender;
+
     /**
      * Bootstraps hooks for this component.
      */
-    public function __construct()
+    public function __construct(BlockRender $blockRender)
     {
+        $this->blockRender = $blockRender;
+
         add_filter('block_categories_all', [$this, 'addRrzeCategory'], 10, 2);
         add_action('init', [$this, 'registerBlock']);
     }
@@ -28,7 +31,9 @@ class BlockRegistration
      */
     public function registerBlock(): void
     {
-        $block = register_block_type(dirname(__DIR__, 2) . '/build/block', ['render_callback' => [\RRZE\FAUbox\Blocks\BlockRender::class, 'output'],]);
+        $block = register_block_type(
+            dirname(__DIR__, 2) . '/build/block', ['render_callback' => [$this->blockRender, 'output']]
+        );
 
         if ($block && !empty($block->editor_script)) {
             wp_set_script_translations(

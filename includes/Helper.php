@@ -31,7 +31,7 @@ class Helper
      * @param mixed  $input Log message or array/object to print.
      * @param string $level Log level: 'i' (info), 'e' (error), 'd' (debug).
      */
-    public static function debug($input, string $level = 'i')
+    public static function debug($input, string $level = 'i'): void
     {
         if (!WP_DEBUG) {
             return;
@@ -43,17 +43,15 @@ class Helper
         } else {
             return;
         }
+
         if (is_array($input) || is_object($input)) {
             $input = print_r($input, true);
         }
+
         switch (strtolower($level)) {
             case 'e':
             case 'error':
                 $level = 'Error';
-                break;
-            case 'i':
-            case 'info':
-                $level = 'Info';
                 break;
             case 'd':
             case 'debug':
@@ -62,10 +60,17 @@ class Helper
             default:
                 $level = 'Info';
         }
+
+        $trace  = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $caller = isset($trace[1])
+            ? basename((string)($trace[1]['file'] ?? '')) . ':' . ($trace[1]['line'] ??
+                '?')
+            : 'unknown';
+
         error_log(
             date("[d-M-Y H:i:s \U\T\C]")
             . " WP $level: "
-            . basename(__FILE__) . ' '
+            . $caller . ' '
             . $input
             . PHP_EOL,
             3,

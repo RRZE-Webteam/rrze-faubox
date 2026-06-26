@@ -7,8 +7,8 @@ namespace RRZE\FAUbox\Rest;
 use WP_REST_Request;
 use WP_REST_Response;
 use RRZE\FAUbox\API\FileService;
-use RRZE\FAUbox\API\Client;
 use RRZE\FAUbox\API\IndexService;
+use RRZE\FAUbox\API\DownloadService;
 
 defined('ABSPATH') || exit;
 
@@ -18,18 +18,17 @@ defined('ABSPATH') || exit;
 final class RestController
 {
     private FileService $fileService;
-    private Client $client;
     private IndexService $indexService;
-
+    private DownloadService $downloadService;
 
     /**
      * Constructor.
      */
-    public function __construct(FileService $fileService, Client $client, IndexService $indexService)
+    public function __construct(FileService $fileService, IndexService $indexService, DownloadService $downloadService)
     {
         $this->fileService = $fileService;
-        $this->client = $client;
         $this->indexService = $indexService;
+        $this->downloadService = $downloadService;
 
         add_action('rest_api_init', [$this, 'registerRoutes']);
     }
@@ -99,27 +98,24 @@ final class RestController
     /**
      * GET /folders
      *
-     * Without path: returns the cached index.
-     * With path: returns live subfolders for in-editor navigation.
+     * Without path: returns direct children from the cached index.
+     * With path: returns live subfolders enriched with hasChildren from the index.
      */
     public function getFolders(WP_REST_Request $request): array|\WP_Error
     {
         $path = (string)$request->get_param('path');
 
         if ($path === '') {
-            // No path → return cached index (direct children of root only)
-            $mainFolder = get_option('rrze_faubox_folder', '');
-            if (empty($mainFolder)) {
+            if (empty(get_option('rrze_faubox_folder', ''))) {
                 return new \WP_Error(
                     'no_folder_configured',
-                    __('No main folder configured. Please set it in the FAUbox settings.',
-                        'rrze-faubox'),
+                    __('No main folder configured. Please set it in the FAUbox settings.', 'rrze-faubox'),
                     ['status' => 412]
                 );
             }
 
-            $index = $this->indexService->getIndex();
-            if (empty($index)) {
+            $children = $this->indexService->getDirectChildren();
+            if (empty($children)) {
                 return new \WP_Error(
                     'index_not_built',
                     __('The folder index has not been built yet. Please save the FAUbox settings or refresh the index manually.', 'rrze-faubox'),
@@ -127,41 +123,20 @@ final class RestController
                 );
             }
 
-            // Only return direct children of the root folder
-            $minDepth = min(array_map(
-                fn(array $entry): int => substr_count($entry['path'], '/'),
-                $index
-            ));
-
-            $filtered = array_values(array_filter(
-                $index,
-                fn(array $entry): bool => substr_count($entry['path'], '/') === $minDepth
-            ));
-
-            usort($filtered, fn(array $a, array $b): int => strcasecmp($a['name'], $b['name']));
-
-            return $filtered;
+            return $children;
         }
 
-        // Path given → live subfolders, enriched with hasChildren from index
         $subFolders = $this->fileService->getSubFolders($path);
-
         if ($subFolders === null) {
             return new \WP_Error(
-                'webdav_error', __('Could not retrieve folders. Please check your FAUbox credentials.', 'rrze-faubox'),
+                'webdav_error',
+                __('Could not retrieve folders. Please check your FAUbox credentials.',
+                    'rrze-faubox'),
                 ['status' => 502]
             );
         }
 
-        $index = $this->indexService->getIndex();
-        $indexByPath = array_column($index, null, 'path');
-
-        return array_map(function (array $folder) use ($indexByPath): array {
-            $folder['hasChildren'] = isset($indexByPath[$folder['path']])
-                ? (bool)$indexByPath[$folder['path']]['hasChildren']
-                : false;
-            return $folder;
-        }, $subFolders);
+        return $this->indexService->enrichWithHasChildren($subFolders);
     }
 
 
@@ -187,67 +162,14 @@ final class RestController
 
 
     /**
-     * Streams a FAUbox file to the browser via WordPress as a proxy.
-     *
-     * Validates path, root folder scope and HMAC signature before streaming.
-     * Deletes the temporary file after delivery.
+     * Delegates the file download request to DownloadService.
      *
      * @param WP_REST_Request $request Requires: file (WebDAV path), sig (HMAC signature).
      */
     public function downloadFile(WP_REST_Request $request): void
     {
-        $filePath = (string)$request->get_param('file');
-
-        $filePath = rawurldecode($filePath);
-
-        // Basic path checks (after decoding)
-        if (!str_starts_with($filePath, '/webdav/')) {
-            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
-        }
-        if (str_contains($filePath, '..') || str_contains($filePath, './')) {
-            wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
-        }
-
-        // Restrict to configured root folder
-        $rootFolder = get_option('rrze_faubox_folder', '');
-        if (empty($rootFolder)) {
-            wp_die(esc_html__('No folder configured.', 'rrze-faubox'), 403);
-        }
-        $normalizedRoot = '/webdav/' . trim($rootFolder, '/') . '/';
-        if (!str_starts_with($filePath, $normalizedRoot)) {
-            wp_die(esc_html__('Access denied.', 'rrze-faubox'), 403);
-        }
-
-        // Verify HMAC signature
-        $sig = (string)$request->get_param('sig');
-        $expected = hash_hmac('sha256', $filePath, wp_salt('auth'));
-        if (!hash_equals($expected, $sig)) {
-            wp_die(esc_html__('Invalid request.', 'rrze-faubox'), 403);
-        }
-
-        // Stream file from FAUbox to local temp file
-        $result = $this->client->streamFileToDisk($filePath);
-        if (!$result) {
-            wp_die(esc_html__('File not found.', 'rrze-faubox'), 404);
-        }
-
-        $fileName = basename($filePath);
-        $fileName = str_replace(['"', "'", "\r", "\n", '\\', ';'], '', $fileName);
-        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '', $result['content_type'] ?:
-            'application/octet-stream');
-
-        header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
-        header('Content-Length: ' . filesize($result['tmpfile'])); // ← Bug-Fix
-        header('X-Content-Type-Options: nosniff');
-
-        try {
-            readfile($result['tmpfile']);
-        } finally {
-            @unlink($result['tmpfile']);
-        }
-
-        exit;
+        $this->downloadService->handle($request);
     }
+
 }
 

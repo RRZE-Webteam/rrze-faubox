@@ -15,7 +15,7 @@ defined('ABSPATH') || exit;
 final class IndexService
 {
     private const TRANSIENT_KEY = 'rrze_faubox_folder_index';
-    private const STATUS_KEY     = 'rrze_faubox_index_status';
+    private const STATUS_KEY = 'rrze_faubox_index_status';
     private const COOLDOWN_KEY = 'rrze_faubox_index_cooldown';
     private const COOLDOWN_TTL = 60;
 
@@ -51,7 +51,7 @@ final class IndexService
         }
 
         $index = $this->collectFolders($rootFolder);
-        $ttl   = (int)get_option('rrze_faubox_index_ttl', 12) * HOUR_IN_SECONDS;
+        $ttl = (int)get_option('rrze_faubox_index_ttl', 12) * HOUR_IN_SECONDS;
 
         if ($index === null) {
             set_transient(self::STATUS_KEY, 'error', $ttl);
@@ -78,6 +78,7 @@ final class IndexService
         return is_array($cached) ? $cached : [];
     }
 
+
     /**
      * Check whether a refresh cooldown is active.
      */
@@ -85,6 +86,53 @@ final class IndexService
     {
         return (bool)get_transient(self::COOLDOWN_KEY);
     }
+
+
+    /**
+     * Return only the direct children of the root folder from the index, sorted by name.
+     *
+     * @return array Filtered and sorted folder entries.
+     */
+    public function getDirectChildren(): array
+    {
+        $index = $this->getIndex();
+        if (empty($index)) {
+            return [];
+        }
+
+        $minDepth = min(array_map(
+            fn(array $entry): int => substr_count($entry['path'], '/'),
+            $index
+        ));
+
+        $filtered = array_values(array_filter(
+            $index,
+            fn(array $entry): bool => substr_count($entry['path'], '/') === $minDepth
+        ));
+
+        usort($filtered, fn(array $a, array $b): int => strcasecmp($a['name'], $b['name']));
+
+        return $filtered;
+    }
+
+    /**
+     * Enrich a list of live folders with 'hasChildren' data from the cached index.
+     *
+     * @param array $folders Live subfolder entries from FileService::getSubFolders().
+     * @return array Same folders, each with an added 'hasChildren' key.
+     */
+    public function enrichWithHasChildren(array $folders): array
+    {
+        $indexByPath = array_column($this->getIndex(), null, 'path');
+
+        return array_map(function (array $folder) use ($indexByPath): array {
+            $folder['hasChildren'] = isset($indexByPath[$folder['path']])
+                ? (bool)$indexByPath[$folder['path']]['hasChildren']
+                : false;
+            return $folder;
+        }, $folders);
+    }
+
 
     /**
      * Recursively collect all subfolders under a given path.
@@ -104,10 +152,10 @@ final class IndexService
         $subFolders = $this->fileService->getSubFolders($path);
 
         if ($subFolders === null) {
-            return null; // WebDAV-Fehler
+            return null;
         }
         if (empty($subFolders)) {
-            return []; // Kein Fehler, aber keine Unterordner
+            return [];
         }
 
         $result = [];
@@ -117,8 +165,8 @@ final class IndexService
                 return null;
             }
             $result[] = [
-                'name'        => $folder['name'],
-                'path'        => $folder['path'],
+                'name' => $folder['name'],
+                'path' => $folder['path'],
                 'hasChildren' => !empty($children),
             ];
             $result = array_merge($result, $children);

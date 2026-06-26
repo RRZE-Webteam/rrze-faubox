@@ -17,16 +17,16 @@ class Renderer
      * @param array $atts Attributes from shortcode or block.
      * @return string Rendered HTML.
      */
-    public static function render(array $data, array $atts): string
+    public function render(array $data, array $atts): string
     {
         $view = $atts['view'] ?? 'list';
 
         switch ($view) {
             case 'table':
-                return self::renderTable($data, $atts);
+                return $this->renderTable($data, $atts);
             case 'list':
             default:
-                return self::renderList($data, $atts);
+                return $this->renderList($data, $atts);
         }
     }
 
@@ -37,7 +37,7 @@ class Renderer
      * @param string $tag The HTML heading tag (h2–h5).
      * @return string Rendered heading HTML.
      */
-    public static function renderTitle(string $folderName, string $tag = 'h3'): string
+    public function renderTitle(string $folderName, string $tag = 'h3'): string
     {
         $allowed = ['h2', 'h3', 'h4', 'h5'];
         $tag = in_array($tag, $allowed, true) ? $tag : 'h3';
@@ -54,7 +54,7 @@ class Renderer
      * @param array $atts
      * @return string
      */
-    private static function renderList(array $data, array $atts = []): string
+    private function renderList(array $data, array $atts = []): string
     {
         $html = '';
 
@@ -62,7 +62,7 @@ class Renderer
             $title = !empty($atts['changetitle'])
                 ? $atts['changetitle']
                 : basename((string)($atts['path'] ?? ''));
-            $html .= self::renderTitle($title, $atts['heading_level'] ?? 'h3');
+            $html .= $this->renderTitle($title, $atts['heading_level'] ?? 'h3');
         }
 
         if (empty($data)) {
@@ -108,7 +108,7 @@ class Renderer
      * @param array $atts
      * @return string
      */
-    private static function renderTable(array $data, array $atts): string
+    private function renderTable(array $data, array $atts): string
     {
         $html = '';
 
@@ -116,7 +116,7 @@ class Renderer
             $title = !empty($atts['changetitle'])
                 ? $atts['changetitle']
                 : basename((string)($atts['path'] ?? ''));
-            $html .= self::renderTitle($title, $atts['heading_level'] ?? 'h3');
+            $html .= $this->renderTitle($title, $atts['heading_level'] ?? 'h3');
 
         }
 

@@ -102,27 +102,16 @@ final class FileService
     public function getAccessibleRootFolders(): array
     {
         $mainFolder = get_option('rrze_faubox_folder', '');
-
-        if ($mainFolder !== '') {
-            $entries = $this->client->fetchEntriesFromPath($mainFolder);
-        } else {
+        if ($mainFolder === '') {
             return [];
         }
 
+        $entries = $this->client->fetchEntriesFromPath($mainFolder);
         if (!is_array($entries)) {
             return [];
         }
 
-        // Filter: only subfolders (collections)
-        $folders = array_filter(
-            $entries,
-            static fn(array $entry): bool => $entry['is_collection']
-        );
-
-        return array_map(static fn(array $entry): array => [
-            'name' => $entry['displayname'],
-            'path' => Helper::stripWebdavPrefix($entry['path'])
-        ], array_values($folders));
+        return $this->mapFoldersFromEntries($entries);
     }
 
 
@@ -135,26 +124,37 @@ final class FileService
     public function getSubFolders(string $path): ?array
     {
         $entries = $this->client->fetchEntriesFromPath($path);
-
         if (!is_array($entries)) {
             return null;
         }
 
+        $result = $this->mapFoldersFromEntries($entries);
+        usort($result, static fn(array $a, array $b): int => strcasecmp($a['name'],
+            $b['name']));
+
+        return $result;
+    }
+
+
+    /**
+     * Filter collection entries and map them to ['name', 'path'] structure.
+     *
+     * @param array $entries Raw WebDAV entries.
+     * @return array Mapped folder entries.
+     */
+    private function mapFoldersFromEntries(array $entries): array
+    {
         $folders = array_filter(
             $entries,
             static fn(array $entry): bool => $entry['is_collection']
         );
 
-        $result = array_map(static fn(array $entry): array => [
+        return array_map(static fn(array $entry): array => [
             'name' => $entry['displayname'],
-            'path' => Helper::stripWebdavPrefix($entry['path'])
+            'path' => Helper::stripWebdavPrefix($entry['path']),
         ], array_values($folders));
-
-        usort($result, static fn(array $a, array $b): int => strcasecmp($a['name'], $b['name'])
-        );
-
-        return $result;
     }
+
 
 
     /**

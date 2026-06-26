@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace RRZE\FAUbox\Blocks;
 
-use RRZE\FAUbox\API\Client;
 use RRZE\FAUbox\API\FileService;
 use RRZE\FAUbox\Frontend\Renderer;
 
@@ -16,24 +15,30 @@ defined('ABSPATH') || exit;
  */
 class BlockRender
 {
+    private FileService $fileService;
+    private Renderer $renderer;
+
+    public function __construct(FileService $fileService, Renderer $renderer)
+    {
+        $this->fileService = $fileService;
+        $this->renderer = $renderer;
+    }
+
     /**
      * Server-side render callback for the block.
      *
      * @param array $attributes Block attributes from the editor.
      * @return string HTML output.
      */
-    public static function output(array $attributes = []): string
+    public function output(array $attributes = []): string
     {
-        $client = new Client();
-        $service = new FileService($client);
-
-        $files = $service->getPreparedFilesFromFolder(
+        $files = $this->fileService->getPreparedFilesFromFolder(
             (string)($attributes['path'] ?? ''),
             (array)($attributes['filetype'] ?? []),
             (string)($attributes['sort'] ?? 'asc'),
             (string)($attributes['orderby'] ?? 'name')
         );
 
-        return Renderer::render($files, $attributes);
+        return $this->renderer->render($files, $attributes);
     }
 }
