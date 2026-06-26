@@ -11,6 +11,7 @@ use RRZE\FAUbox\Helper;
 
 /**
  * Handles low-level communication with the FAUbox WebDAV server.
+ * WebDAV client for the FAUbox server.
  *
  * Responsibilities:
  * - HTTP Basic Authentication (username + token)
@@ -28,8 +29,8 @@ final class Client
     {
         $value = get_option('rrze_faubox_username', '');
         return $value !== '' ? $value : null;
-
     }
+
 
     /**
      * Get stored WEBDAV token.
@@ -39,8 +40,10 @@ final class Client
         $value = get_option('rrze_faubox_token', '');
         if ($value === '') return null;
         if (base64_decode($value, true) === false) return null;
-      $decrypted = (new Encryption())->decrypt($value);
-      return $decrypted ?: null;
+
+        $decrypted = (new Encryption())->decrypt($value);
+
+        return $decrypted ?: null;
     }
 
 
@@ -131,12 +134,11 @@ final class Client
         return $xml;
     }
 
+
     /**
-     * Parse a WebDAV multistatus XML response into a flat array of
-     * entries.
+     * Parse a WebDAV multistatus XML response into a flat array of entries.
      *
-     * The first response element (the requested folder itself) is always
-     * skipped.
+     * The first response element (the requested folder itself) is always skipped.
      * Each entry contains:
      * - displayname:   string
      * - contentlength: int|null  (null for folders)
@@ -148,8 +150,7 @@ final class Client
      * @param \SimpleXMLElement $xml Parsed XML response.
      * @return array Parsed entries.
      */
-    private function parseMultistatusResponse(\SimpleXMLElement $xml):
-    array
+    private function parseMultistatusResponse(\SimpleXMLElement $xml): array
     {
         $entries = [];
 
@@ -188,9 +189,9 @@ final class Client
         return $entries;
     }
 
+
     /**
-     * Fetch all entries (files and subfolders) from a given WebDAV folder
-     * path.
+     * Fetch all entries (files and subfolders) from a given WebDAV folder path.
      *
      * @param string $path Folder path relative to the WebDAV root.
      * @return array|null Array of entries, or null if the request failed.
@@ -206,11 +207,11 @@ final class Client
         return $this->parseMultistatusResponse($xml);
     }
 
+
     /**
      * Fetch all top-level folders accessible to the authenticated user.
      *
-     * Sends a PROPFIND to the WebDAV root with Depth: 1
-     * and returns only collection entries.
+     * Sends a PROPFIND to the WebDAV root with Depth: 1 and returns only collection entries.
      *
      * @return array|null Array of folder entries, or null if the request
      * failed.
@@ -231,6 +232,7 @@ final class Client
         ));
     }
 
+
     /**
      * Download a file from FAUbox to a local temp file using WP streaming.
      * Returns the temp file path and content type, or null on failure.
@@ -247,11 +249,8 @@ final class Client
 
         $parsed = parse_url(self::BASE_URL);
         $baseHost = $parsed['scheme'] . '://' . $parsed['host'];
-        $url = $baseHost . implode('/', array_map('rawurlencode',
-                explode('/', $path)));
-
-        $tmpFile = wp_tempnam('faubox_download_');
-
+        $url = $baseHost . implode('/', array_map('rawurlencode', explode('/', $path)));
+        $tmpFile = tempnam(\get_temp_dir(), 'faubox_download_');
         $response = wp_remote_get($url, [
             'timeout' => 60,
             'stream' => true,      //  WordPress writes in file
@@ -273,10 +272,8 @@ final class Client
 
         return [
             'tmpfile' => $tmpFile,
-            'content_type' => wp_remote_retrieve_header($response,
-                'content-type'),
+            'content_type' => wp_remote_retrieve_header($response, 'content-type'),
         ];
     }
-
 }
 

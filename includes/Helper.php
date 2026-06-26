@@ -23,12 +23,20 @@ class Helper
         ];
     }
 
+    /**
+     * Writes a message to the WordPress debug log.
+     *
+     * Only active when WP_DEBUG and WP_DEBUG_LOG are enabled.
+     *
+     * @param mixed  $input Log message or array/object to print.
+     * @param string $level Log level: 'i' (info), 'e' (error), 'd' (debug).
+     */
     public static function debug($input, string $level = 'i')
     {
         if (!WP_DEBUG) {
             return;
         }
-        if (in_array(strtolower((string) WP_DEBUG_LOG), ['true', '1'], true)) {
+        if (in_array(strtolower((string)WP_DEBUG_LOG), ['true', '1'], true)) {
             $logPath = WP_CONTENT_DIR . '/debug.log';
         } elseif (is_string(WP_DEBUG_LOG)) {
             $logPath = WP_DEBUG_LOG;
@@ -65,9 +73,37 @@ class Helper
         );
     }
 
+
+    /**
+     * Check whether WordPress debug mode is active.
+     *
+     * @return bool True if WP_DEBUG is defined and enabled.
+     */
     public static function isDebug(): bool
     {
         return defined('WP_DEBUG') && WP_DEBUG;
     }
+
+
+    /**
+     * Strip the WebDAV prefix from a server-returned href and URL-decode it.
+     * '/webdav/My%20Folder/Sub/' → 'My Folder/Sub'
+     */
+    public static function stripWebdavPrefix(string $href): string
+    {
+        return trim(preg_replace('#^/webdav/?#', '',
+            rawurldecode($href)), '/');
+    }
+
+
+    /**
+     * Convert a clean path to a full WebDAV path.
+     * 'My Folder/Sub' → '/webdav/My Folder/Sub'
+     */
+    public static function toWebdavPath(string $cleanPath): string
+    {
+        return '/webdav/' . trim($cleanPath, '/');
+    }
+
 
 }

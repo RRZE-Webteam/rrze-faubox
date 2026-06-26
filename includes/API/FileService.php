@@ -50,6 +50,7 @@ final class FileService
      */
     private Client $client;
 
+
     /**
      * Constructor.
      *
@@ -77,7 +78,6 @@ final class FileService
      *
      * @return array Prepared file data ready for rendering.
      */
-
     public function getPreparedFilesFromFolder(string $path, array $allowedExtensions = [], string $sort = 'asc', string $orderby = 'name'): array
     {
         $rawEntries = $this->client->fetchEntriesFromPath($path);
@@ -116,8 +116,7 @@ final class FileService
         // Filter: only subfolders (collections)
         $folders = array_filter(
             $entries,
-            static fn(array $entry): bool =>
-            $entry['is_collection']
+            static fn(array $entry): bool => $entry['is_collection']
         );
 
         return array_map(static fn(array $entry): array => [
@@ -125,6 +124,7 @@ final class FileService
             'path' => Helper::stripWebdavPrefix($entry['path'])
         ], array_values($folders));
     }
+
 
     /**
      * Retrieve subfolders of a given WebDAV folder path.
@@ -148,7 +148,7 @@ final class FileService
         $result = array_map(static fn(array $entry): array => [
             'name' => $entry['displayname'],
             'path' => Helper::stripWebdavPrefix($entry['path'])
-            ], array_values($folders));
+        ], array_values($folders));
 
         usort($result, static fn(array $a, array $b): int => strcasecmp($a['name'], $b['name'])
         );
@@ -167,9 +167,7 @@ final class FileService
     {
         return array_values(array_filter(
             $rawEntries,
-            static fn(array $entry): bool => !$entry['is_collection'] &&
-                $entry['displayname'] !== ''
-        ));
+            static fn(array $entry): bool => !$entry['is_collection'] && $entry['displayname'] !== ''));
     }
 
 
@@ -180,7 +178,6 @@ final class FileService
      *
      * @param array $files File entries.
      * @param array $allowedExtensions Allowed file extensions (case-insensitive).
-     *
      * @return array Filtered file list.
      */
     private function filterFilesByExtension(array $files, array $allowedExtensions): array
@@ -189,15 +186,11 @@ final class FileService
             return $files;
         }
 
-        $allowedExtensions = array_map(
-            'strtolower',
-            array_map('trim', $allowedExtensions)
-        );
+        $allowedExtensions = array_map('strtolower', array_map('trim', $allowedExtensions));
 
         return array_values(array_filter(
             $files,
             static function (array $file) use ($allowedExtensions): bool {
-
                 $extension = strtolower(
                     pathinfo(
                         (string)($file['displayname'] ?? ''),
@@ -209,6 +202,7 @@ final class FileService
             }
         ));
     }
+
 
     /**
      * Derive MIME type from a file extension.
@@ -234,7 +228,6 @@ final class FileService
      * @param array $files Raw WebDAV file entries.
      * @return array Transformed file structure.
      */
-
     private function transformEntriesToRenderableFormat(array $files): array
     {
         return array_map(
@@ -257,7 +250,6 @@ final class FileService
                         ? wp_date('d.m.Y', strtotime((string)$file['lastmodified']))
                         : '—',
 
-
                     // raw values for sorting
                     'name_raw' => strtolower($name),
                     'size_raw' => $size ?? 0,
@@ -275,41 +267,39 @@ final class FileService
      *
      * Invalid sort directions default to ascending order.
      *
-     * @param array  $files   File list.
-     * @param string $sort    Sort direction ('asc' or 'desc').
+     * @param array $files File list.
+     * @param string $sort Sort direction ('asc' or 'desc').
      * @param string $orderby Sort field ('name','size', 'type', 'modified').
      *
      * @return array Sorted file list.
      */
-
     private function sortFiles(array $files, string $sort, string $orderby): array
     {
-        $sort    = strtolower($sort) === 'desc' ? 'desc' : 'asc';
+        $sort = strtolower($sort) === 'desc' ? 'desc' : 'asc';
         $orderby = in_array($orderby, ['name', 'size', 'type', 'modified'], true) ? $orderby : 'name';
 
         usort($files, static function (array $a, array $b) use ($sort, $orderby): int {
 
-                $valueA = $a[$orderby . '_raw']
-                    ?? $a[$orderby]
-                    ?? '';
+            $valueA = $a[$orderby . '_raw']
+                ?? $a[$orderby]
+                ?? '';
 
-                $valueB = $b[$orderby . '_raw']
-                    ?? $b[$orderby]
-                    ?? '';
+            $valueB = $b[$orderby . '_raw']
+                ?? $b[$orderby]
+                ?? '';
 
-                if ($valueA === $valueB) {
-                    return 0;
-                }
-
-                $result = $valueA <=> $valueB;
-
-                return $sort === 'desc'
-                    ? -$result
-                    : $result;
+            if ($valueA === $valueB) {
+                return 0;
             }
+
+            $result = $valueA <=> $valueB;
+
+            return $sort === 'desc'
+                ? -$result
+                : $result;
+        }
         );
 
         return $files;
     }
-
 }

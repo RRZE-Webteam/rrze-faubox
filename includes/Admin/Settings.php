@@ -67,28 +67,26 @@ class Settings
         ]);
         register_setting('rrze_faubox_settings', 'rrze_faubox_username', [
                 'sanitize_callback' => [$this, 'sanitizeApiUsername'],
-      ]);
-      register_setting('rrze_faubox_settings', 'rrze_faubox_token', [
-          'sanitize_callback' => [$this, 'sanitizeApiKey'],
-      ]);
-      register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
-              'sanitize_callback' => [$this, 'sanitizeDate'],
-      ]);
-      register_setting('rrze_faubox_settings', 'rrze_faubox_index_ttl', [
-              'sanitize_callback' => [$this, 'sanitizeIndexTtl'],
-      ]);
-
-
+        ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_token', [
+                'sanitize_callback' => [$this, 'sanitizeApiKey'],
+        ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_token_created_at', [
+                'sanitize_callback' => [$this, 'sanitizeDate'],
+        ]);
+        register_setting('rrze_faubox_settings', 'rrze_faubox_index_ttl', [
+                'sanitize_callback' => [$this, 'sanitizeIndexTtl'],
+        ]);
     }
 
     /**
-     * Sanitize & encrypt the API key/username/password before saving to DB.
+     * Sanitize and encrypt the WebDAV token before saving to DB.
      */
     public function sanitizeApiKey(mixed $input): string
     {
         $clean = sanitize_text_field((string)$input);
 
-        // Placeholder — keep existing value
+        // Placeholder
         if ($clean === str_repeat('*', 16)) {
             return get_option('rrze_faubox_token', '');
         }
@@ -96,19 +94,19 @@ class Settings
         if ($clean === '') return '';
 
         return (new Encryption())->encrypt($clean);
-
     }
 
+    /**
+     * Sanitize Username before saving to DB.
+     */
     public function sanitizeApiUsername(mixed $input): string
     {
         return sanitize_text_field((string)$input);
     }
 
 
-
     /**
      * Sanitize a date input value.
-     *
      * Accepts only dates in YYYY-MM-DD format.
      *
      * @param mixed $value Raw input value.
@@ -131,16 +129,15 @@ class Settings
     {
         $allowed = [1, 6, 12, 24];
         $value = (int)$value;
-        return in_array($value, $allowed, true) ? $value : 12;
+        return in_array($value, $allowed, true) ? $value : 24;
     }
 
 
     /**
      * Displays an admin dashboard notice when the FAUbox WebDAV token is about to expire (within 7 days) or has already expired.
      *
-     * Reads the token creation date from options and calculates the expiry
-     * date by adding one year. Shows an error notice if expired, or a
-     * warning notice if expiry is within 7 days.
+     * Reads the token creation date from options and calculates the expiry date by adding one year.
+     * Shows an error notice if expired, or a warning notice if expiry is within 7 days.
      *
      * @return void
      */
@@ -179,6 +176,27 @@ class Settings
         }
     }
 
+
+    /**
+     * Enqueues the admin stylesheet on the FAUbox settings page.
+     *
+     * @param string $hookSuffix The current admin page hook suffix.
+     * @return void
+     */
+    public function enqueueAdminStyles(string $hookSuffix): void
+    {
+        if ($hookSuffix !== 'settings_page_rrze-faubox') {
+            return;
+        }
+        wp_enqueue_style(
+                'rrze-faubox-admin',
+                RRZE_FAUBOX_URL . 'build/admin/admin.css',
+                [],
+                '1.0.0'
+        );
+    }
+
+
     /**
      * Renders the settings page HTML form.
      *
@@ -189,8 +207,7 @@ class Settings
         ?>
         <div class="wrap">
             <h1> <?php echo esc_html__('FAUbox Settings', 'rrze-faubox'); ?> </h1>
-            <p> <?php echo esc_html__('Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox account under "My Account" →
-   "Devices" → "Add WebDAV connection".', 'rrze-faubox'); ?>
+            <p> <?php echo esc_html__('Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox account under "My Account" → "Devices" → "Add WebDAV connection".', 'rrze-faubox'); ?>
             </p>
 
             <form method="post" action="options.php">
@@ -297,8 +314,7 @@ class Settings
                         </th>
                         <td>
                             <select id="rrze_faubox_index_ttl" name="rrze_faubox_index_ttl">
-                                <?php foreach ([1 => '1h', 6 => '6h', 12 => '12h', 24 =>
-                                        '24h'] as $hours => $label) : ?>
+                                <?php foreach ([1 => '1h', 6 => '6h', 12 => '12h', 24 => '24h'] as $hours => $label) : ?>
                                     <option value="<?php echo esc_attr($hours); ?>" <?php
                                     selected((int)get_option('rrze_faubox_index_ttl', 12), $hours); ?>>
                                         <?php echo esc_html($label); ?>
@@ -316,18 +332,5 @@ class Settings
             </form>
         </div>
         <?php
-    }
-
-    public function enqueueAdminStyles(string $hookSuffix): void
-    {
-        if ($hookSuffix !== 'settings_page_rrze-faubox') {
-            return;
-        }
-        wp_enqueue_style(
-                'rrze-faubox-admin',
-                RRZE_FAUBOX_URL . 'build/admin/admin.css',
-                [],
-                '1.0.0'
-        );
     }
 }

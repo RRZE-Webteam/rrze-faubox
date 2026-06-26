@@ -34,7 +34,7 @@ class Encryption
      */
     public function __construct()
     {
-        $this->key  = $this->get_default_key();
+        $this->key = $this->get_default_key();
         $this->salt = $this->get_default_salt();
     }
 
@@ -43,23 +43,23 @@ class Encryption
      *
      * If a user-based key is set, that key is used. Otherwise the default key is used.
      *
-     * @since 1.0.0
-     *
      * @param string $value Value to encrypt.
      * @return string|bool Encrypted value, or false on failure.
+     * @since 1.0.0
+     *
      */
     public function encrypt($value)
     {
-        if (! extension_loaded('openssl')) {
+        if (!extension_loaded('openssl')) {
             return $value;
         }
 
         $method = 'aes-256-ctr';
-        $ivlen  = openssl_cipher_iv_length($method);
-        $iv     = openssl_random_pseudo_bytes($ivlen);
+        $ivlen = openssl_cipher_iv_length($method);
+        $iv = openssl_random_pseudo_bytes($ivlen);
 
         $raw_value = openssl_encrypt($value . $this->salt, $method, $this->key, 0, $iv);
-        if (! $raw_value) {
+        if (!$raw_value) {
             return false;
         }
 
@@ -71,27 +71,27 @@ class Encryption
      *
      * If a user-based key is set, that key is used. Otherwise the default key is used.
      *
-     * @since 1.0.0
-     *
      * @param string $raw_value Value to decrypt.
      * @return string|bool Decrypted value, or false on failure.
+     * @since 1.0.0
+     *
      */
     public function decrypt($raw_value)
     {
-        if (! extension_loaded('openssl')) {
+        if (!extension_loaded('openssl')) {
             return $raw_value;
         }
 
         $raw_value = base64_decode($raw_value, true); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 
         $method = 'aes-256-ctr';
-        $ivlen  = openssl_cipher_iv_length($method);
-        $iv     = substr($raw_value, 0, $ivlen);
+        $ivlen = openssl_cipher_iv_length($method);
+        $iv = substr($raw_value, 0, $ivlen);
 
         $raw_value = substr($raw_value, $ivlen);
 
         $value = openssl_decrypt($raw_value, $method, $this->key, 0, $iv);
-        if (! $value || substr($value, -strlen($this->salt)) !== $this->salt) {
+        if (!$value || substr($value, -strlen($this->salt)) !== $this->salt) {
             return false;
         }
 
@@ -101,9 +101,9 @@ class Encryption
     /**
      * Gets the default encryption key to use.
      *
+     * @return string Default (not user-based) encryption key.
      * @since 1.0.0
      *
-     * @return string Default (not user-based) encryption key.
      */
     private function get_default_key()
     {
@@ -118,9 +118,9 @@ class Encryption
     /**
      * Gets the default encryption salt to use.
      *
+     * @return string Encryption salt.
      * @since 1.0.0
      *
-     * @return string Encryption salt.
      */
     private function get_default_salt()
     {

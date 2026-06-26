@@ -66,11 +66,11 @@ final class IndexService
         set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
     }
 
+
     /**
      * Return the cached folder index.
      *
-     * @return array Flat array of folder entries, or empty array if
-     * not built yet.
+     * @return array Flat array of folder entries, or empty array if not built yet.
      */
     public function getIndex(): array
     {
@@ -110,7 +110,6 @@ final class IndexService
             return []; // Kein Fehler, aber keine Unterordner
         }
 
-
         $result = [];
         foreach ($subFolders as $folder) {
             $children = $this->collectFolders($folder['path'], $depth + 1, $maxDepth);
@@ -125,15 +124,6 @@ final class IndexService
             $result = array_merge($result, $children);
         }
 
-
         return $result;
     }
-
-    public function getIndexStatus(): string
-    {
-        return (string)(get_transient(self::STATUS_KEY) ?: 'unknown');
-    }
-
-
-
 }

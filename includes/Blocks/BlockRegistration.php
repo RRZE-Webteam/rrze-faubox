@@ -8,7 +8,6 @@ use RRZE\FAUbox\Helper;
 
 defined('ABSPATH') || exit;
 
-
 /**
  * Handles the Registration & Localization of the FAUbox block.
  */
@@ -35,11 +34,11 @@ class BlockRegistration
             wp_set_script_translations(
                 $block->editor_script,
                 'rrze-faubox',
-                dirname(__DIR__, 2) .  '/languages'
+                dirname(__DIR__, 2) . '/languages'
             );
             wp_localize_script($block->editor_script, 'rrze_faubox_data', [
                 'settings_url' => admin_url('options-general.php?page=rrze-faubox'),
-                'folder'       => get_option('rrze_faubox_folder', ''),
+                'folder' => get_option('rrze_faubox_folder', ''),
             ]);
         }
     }
@@ -50,7 +49,6 @@ class BlockRegistration
      */
     public function addRrzeCategory(array $categories, $post): array
     {
-
         foreach ($categories as $category) {
             if ($category['slug'] === 'rrze') {
                 return $categories;

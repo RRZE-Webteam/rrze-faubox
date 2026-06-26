@@ -31,8 +31,7 @@ class Renderer
     }
 
     /**
-     * Renders the folder title using the configured heading
-     * level.
+     * Renders the folder title using the configured heading level.
      *
      * @param string $folderName The folder name to display.
      * @param string $tag The HTML heading tag (h2–h5).
@@ -89,7 +88,7 @@ class Renderer
                 $suffix .= ', ' . esc_html($file['modified']);
             }
 
-            $html .= sprintf('<li><a href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> ' . esc_html__('(opens in new tab)', 'rrze-faubox')   . '</span></a>%s</li>',
+            $html .= sprintf('<li><a href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> ' . esc_html__('(opens in new tab)', 'rrze-faubox') . '</span></a>%s</li>',
                 $url,
                 $name,
                 $suffix
