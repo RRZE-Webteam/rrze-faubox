@@ -1,20 +1,8 @@
-/* Editor styles for FAUbox List */
-.wp-block-faubox-list {
-  list-style: disc;
-  margin-left: 1.5rem;
-  padding-left: 0;
+.wp-block-rrze-faubox {
+  .block-font-size {
+    font-size: 0.8rem;
+  }
 }
-
-.wp-block-faubox-list li {
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-
-.block-font-size {
-  font-size: 0.8rem;
-}
-
-/* Scroll bar */
 
 .rrze-faubox-folder-list {
   &::-webkit-scrollbar {

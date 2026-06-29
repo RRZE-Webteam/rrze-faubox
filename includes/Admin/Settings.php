@@ -309,8 +309,7 @@ class Settings
                             $expiry = $this->getTokenExpiryInfo();
                             if ($expiry) {
                                 if ($expiry['isPast']) {
-                                    $label = esc_html__('Your token has expired - please renew!',
-                                            'rrze-faubox');
+                                    $label = esc_html__('Your token has expired - please renew!', 'rrze-faubox');
                                     $class = 'rrze-faubox-token-expired';
                                 } elseif ($expiry['daysLeft'] <= 30) {
                                     $label = sprintf(esc_html__('Your token expires in %d days — please renew soon.', 'rrze-faubox'), $expiry['daysLeft']);

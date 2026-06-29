@@ -1,24 +1,34 @@
-figure.wp-block-table table.faubox-filetable  {
-  width: 100%;
-  border-collapse: collapse;
+.wp-block-rrze-faubox {
 
-  td, th {
-    padding: 0.4em 0.6em;
-    vertical-align: top;
-  }
-
-  // File Name column: takes up all remaining space
-  td:first-child,
-  th:first-child {
+  figure.wp-block-table table.faubox-filetable {
     width: 100%;
+    border-collapse: collapse;
+
+    td, th {
+      padding: 0.4em 0.6em;
+      vertical-align: top;
+    }
+
+    td:first-child,
+    th:first-child {
+      width: 100%;
+    }
+
+    td:not(:first-child),
+    th:not(:first-child) {
+      white-space: nowrap;
+      width: 1%;
+    }
   }
 
-  // Size, Changed, Type: only as wide as content
-  td:not(:first-child),
-  th:not(:first-child) {
-    white-space: nowrap;
-    width: 1%;
+  ul.wp-block-faubox-list {
+    list-style: disc;
+    margin-left: 1.5rem;
+    padding-left: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
   }
 }
-
-
