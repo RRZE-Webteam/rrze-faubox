@@ -153,17 +153,20 @@ class Renderer
             foreach ($columns as $col) {
                 if ($col === 'name') {
                     $html .= sprintf(
-                        '<td><a href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> ' . __('(opens in new tab)', 'rrze-faubox') . '</span></a></td>',
+                        '<td data-sort-value="%s"><a href="%s" target="_blank" rel="noopener noreferrer">%s<span               class="screen-reader-text"> ' . __('(opens in new tab)', 'rrze-faubox') . '</span></a></td>',
+                        esc_attr(strtolower($file['name'])),
                         $url,
                         $name
                     );
                 } elseif ($col === 'type') {
                     $ext = strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION));
-                    $html .= '<td>' . esc_html($ext) . '</td>';
+                    $html .= '<td data-sort-value="' . esc_attr(strtolower($ext)) . '">' . esc_html($ext) . '</td>';
                 } elseif ($col === 'size') {
-                    $html .= '<td>' . esc_html($file['size'] ?? '—') . '</td>';
+                    $rawBytes = $file['size_raw'] ?? 0;
+                    $html .= '<td data-sort-value="' . esc_attr((string)$rawBytes) . '">' . esc_html($file['size'] ?? '—') . '</td>';
                 } elseif ($col === 'modified') {
-                    $html .= '<td>' . esc_html($file['modified'] ?? '—') . '</td>';
+                    $ts = $file['modified_ts'] ?? 0;
+                    $html .= '<td data-sort-value="' . esc_attr((string)$ts) . '">' . esc_html($file['modified'] ?? '—') . '</td>';
                 }
             }
             $html .= '</tr>';

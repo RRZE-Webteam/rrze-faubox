@@ -14,7 +14,8 @@
   },
   "include": [
     "./src/**/*",
-    "types/server-side-render.d.ts"
+    "types/server-side-render.d.ts",
+    "types/svg.d.ts"
   ]
 
 }

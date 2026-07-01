@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace RRZE\FAUbox\Blocks;
 
-
 defined('ABSPATH') || exit;
 
 /**
@@ -23,6 +22,8 @@ class BlockRegistration
 
         add_filter('block_categories_all', [$this, 'addRrzeCategory'], 10, 2);
         add_action('init', [$this, 'registerBlock']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendAssets']);
+
     }
 
 
@@ -46,6 +47,26 @@ class BlockRegistration
                 'folder' => get_option('rrze_faubox_folder', ''),
             ]);
         }
+    }
+
+
+    /**
+     * Enqueue frontend assets for the FAUbox block.
+     *
+     * Only loads the table sort script when the block is present on the current page.
+     */
+    public function enqueueFrontendAssets(): void
+    {
+        if (!has_block('rrze/faubox')) {
+            return;
+        }
+        wp_enqueue_script(
+            'faubox-table-sort',
+            RRZE_FAUBOX_URL . 'assets/js/faubox-table-sort.js',
+            [],
+            '1.0.0',
+            true
+        );
     }
 
 

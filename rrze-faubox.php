@@ -27,14 +27,12 @@ const FAUBOX_WP_VERSION = '6.8';
 define('RRZE_FAUBOX_URL', plugin_dir_url(__FILE__));
 
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activatePlugin');
-register_deactivation_hook(__FILE__, __NAMESPACE__ .
-    '\deactivatePlugin');
+register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivatePlugin');
 
 function activatePlugin(): void
 {
     if (!wp_next_scheduled('rrze_faubox_rebuild_index')) {
-        wp_schedule_event(time(), 'twicedaily',
-            'rrze_faubox_rebuild_index');
+        wp_schedule_event(time(), 'twicedaily', 'rrze_faubox_rebuild_index');
     }
 }
 

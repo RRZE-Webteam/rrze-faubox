@@ -4,6 +4,8 @@ import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
 import {
     __experimentalHeading as Heading,
     __experimentalDivider as Divider,
+    __experimentalToggleGroupControl as ToggleGroupControl,
+    __experimentalToggleGroupControlOption as ToggleGroupControlOption,
     CheckboxControl,
     Button,
     PanelBody,
@@ -52,7 +54,7 @@ export default function Edit({attributes, setAttributes}: EditProps) {
 
     const blockProps = useBlockProps();
 
-    const filetypeOptions = ['pdf', 'docx', 'xlsx', 'txt', 'zip', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
+    const filetypeOptions = ['docx', 'jpeg', 'jpg', 'pdf', 'png', 'ppt', 'pptx', 'svg', 'txt', 'webp', 'xlsx', 'zip'];
 
     const toggleShow = (key: 'type' | 'size' | 'modified') => {
         const updated = show.includes(key)
@@ -153,21 +155,6 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                     ))}
                     <Divider margin="2"/>
                     <SelectControl
-                        label={__('Sorting', 'rrze-faubox')}
-                        value={sort}
-                        options={[
-                            {
-                                label: __('Ascending', 'rrze-faubox'),
-                                value: 'asc'
-                            },
-                            {
-                                label: __('Descending', 'rrze-faubox'),
-                                value: 'desc'
-                            },
-                        ]}
-                        onChange={(val: 'asc' | 'desc') => setAttributes({sort: val})}
-                    />
-                    <SelectControl
                         label={__('Sort by', 'rrze-faubox')}
                         value={orderby}
                         options={[
@@ -190,6 +177,15 @@ export default function Edit({attributes, setAttributes}: EditProps) {
                         ]}
                         onChange={(val: 'name' | 'size' | 'type' | 'modified') => setAttributes({orderby: val as 'name' | 'size' | 'type' | 'modified'})}
                     />
+                    <ToggleGroupControl
+                        label={__('Sorting', 'rrze-faubox')}
+                        value={sort}
+                        isBlock
+                        onChange={(val: 'asc' | 'desc') => setAttributes({sort: val})}
+                    >
+                        <ToggleGroupControlOption value="asc" label={__('Ascending', 'rrze-faubox')} />
+                        <ToggleGroupControlOption value="desc" label={__('Descending', 'rrze-faubox')} />
+                    </ToggleGroupControl>
                 </PanelBody>
             </InspectorControls>
 
