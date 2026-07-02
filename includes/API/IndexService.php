@@ -174,4 +174,16 @@ final class IndexService
 
         return $result;
     }
+
+    
+    /**
+     * Schedule an asynchronous index rebuild via a one-time cron event.
+     */
+    public function scheduleBuild(): void
+    {
+        if (!wp_next_scheduled('rrze_faubox_rebuild_index')) {
+            wp_schedule_single_event(time(), 'rrze_faubox_rebuild_index');
+        }
+    }
+
 }
