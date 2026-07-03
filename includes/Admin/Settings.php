@@ -36,7 +36,6 @@ class Settings
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
-        add_action('admin_post_rrze_faubox_refresh_index', [$this, 'handleManualRefresh']);
     }
 
 
@@ -222,28 +221,6 @@ class Settings
 
 
     /**
-     * Handle the manual index refresh form submission.
-     *
-     * Verifies nonce and capability, triggers index rebuild, then redirects back to settings.
-     *
-     * @return void
-     */
-    public function handleManualRefresh(): void
-    {
-        check_admin_referer('rrze_faubox_refresh_index');
-
-        if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Insufficient permissions.', 'rrze-faubox'), 403);
-        }
-
-        $this->indexService->buildIndex();
-
-        wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_refreshed=1'));
-        exit;
-    }
-
-
-    /**
      * Renders the settings page HTML form.
      *
      * @return void
@@ -370,17 +347,8 @@ class Settings
                             </p>
                         </td>
                     </tr>
-
                 </table>
                 <?php submit_button(); ?>
-            </form>
-            <h2><?php esc_html_e('Folder Index', 'rrze-faubox'); ?></h2>
-            <p><?php esc_html_e('Manually refresh the folder index if the folder structure in FAUbox has changed.', 'rrze-faubox'); ?></p>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action" value="rrze_faubox_refresh_index">
-                <?php wp_nonce_field('rrze_faubox_refresh_index'); ?>
-                <?php submit_button(esc_html__('Refresh index now', 'rrze-faubox'),
-                        'secondary'); ?>
             </form>
         </div>
         <?php

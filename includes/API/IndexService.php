@@ -143,7 +143,7 @@ final class IndexService
      * @param string $path WebDAV folder path to traverse.
      * @return array Flat list of folder entries.
      */
-    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 6): ?array
+    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 7): ?array
     {
         if ($depth >= $maxDepth) {
             return [];
