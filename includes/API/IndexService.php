@@ -7,10 +7,11 @@ namespace RRZE\FAUbox\API;
 defined('ABSPATH') || exit;
 
 /**
- * Builds and manages a cached folder index for FAUbox.
+ * Manages the cached folder index for FAUbox.
  *
- * The index is a flat array of folders under the configured
- * root folder. It is stored as a WordPress transient and refreshed manually or via cron.
+ * IndexService owns cache state, scheduling and editor lookup helpers. Index
+ * data is built through the PowerFolder REST API first and falls back to the
+ * older WebDAV traversal if the REST API cannot provide an index.
  */
 final class IndexService
 {
@@ -19,16 +20,17 @@ final class IndexService
     private const COOLDOWN_KEY = 'rrze_faubox_index_cooldown';
     private const COOLDOWN_TTL = 60;
     private const LAST_BUILT_KEY = 'rrze_faubox_index_last_built';
-    private const API_PAGE_SIZE = 1000;
 
 
     /** Prevents multiple builds within the same request. */
     private static bool $buildScheduled = false;
     private FileService $fileService;
+    private PowerFolderIndexBuilder $apiIndexBuilder;
 
-    public function __construct(FileService $fileService)
+    public function __construct(FileService $fileService, PowerFolderIndexBuilder $apiIndexBuilder)
     {
         $this->fileService = $fileService;
+        $this->apiIndexBuilder = $apiIndexBuilder;
     }
 
     /**
@@ -57,9 +59,9 @@ final class IndexService
             return;
         }
 
-        $index = $this->collectFoldersFromApi($rootFolder);
+        $index = $this->apiIndexBuilder->build($rootFolder);
         if ($index === null) {
-            $index = $this->collectFolders($rootFolder);
+            $index = $this->collectFoldersFromWebdav($rootFolder);
         }
         $ttl = (int)get_option('rrze_faubox_index_ttl', 12) * HOUR_IN_SECONDS;
 
@@ -174,15 +176,15 @@ final class IndexService
 
 
     /**
-     * Recursively collect all subfolders under a given path.
+     * Recursively collect all subfolders under a WebDAV path.
      *
-     * Returns a flat array. Each entry includes 'name', 'path', and
-     * 'hasChildren'.
+     * Fallback for installations where the PowerFolder REST API cannot provide
+     * a usable recursive directory listing.
      *
      * @param string $path WebDAV folder path to traverse.
      * @return array Flat list of folder entries.
      */
-    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 7): ?array
+    private function collectFoldersFromWebdav(string $path, int $depth = 0, int $maxDepth = 7): ?array
     {
         if ($depth >= $maxDepth) {
             return [];
@@ -199,7 +201,7 @@ final class IndexService
 
         $result = [];
         foreach ($subFolders as $folder) {
-            $children = $this->collectFolders($folder['path'], $depth + 1, $maxDepth);
+            $children = $this->collectFoldersFromWebdav($folder['path'], $depth + 1, $maxDepth);
             if ($children === null) {
                 return null;
             }
@@ -212,286 +214,6 @@ final class IndexService
         }
 
         return $result;
-    }
-
-
-    /**
-     * Build the folder index from the PowerFolder REST API.
-     *
-     * @return array|null Flat list of folder entries, or null if the API path failed.
-     */
-    private function collectFoldersFromApi(string $rootFolder): ?array
-    {
-        $rootFolder = trim($rootFolder, '/');
-        if ($rootFolder === '') {
-            return $this->collectAllRootFoldersFromApi();
-        }
-
-        $rootParts = explode('/', $rootFolder);
-        $topLevelRoot = (string)array_shift($rootParts);
-        $relativeRoot = trim(implode('/', $rootParts), '/');
-        $folderId = $this->findApiFolderId($topLevelRoot);
-
-        if ($folderId === null) {
-            return null;
-        }
-
-        $entries = $this->fetchAllApiFileEntries($folderId);
-        if ($entries === null) {
-            return null;
-        }
-
-        $folderPaths = $this->folderPathsFromApiEntries($entries, $rootFolder, $relativeRoot);
-
-        return $this->buildIndexFromFolderPaths($folderPaths);
-    }
-
-
-    /**
-     * Build an index for all top-level folders when the configured root is "/".
-     *
-     * @return array|null
-     */
-    private function collectAllRootFoldersFromApi(): ?array
-    {
-        $folders = $this->fetchAllApiFolders();
-        if ($folders === null) {
-            return null;
-        }
-
-        $folderPaths = [];
-        foreach ($folders as $folder) {
-            $folderName = $this->getApiFolderName($folder);
-            $folderId = (string)($folder['folderID'] ?? $folder['ID'] ?? '');
-
-            if ($folderName === '' || $folderId === '') {
-                continue;
-            }
-
-            $folderPaths[] = $folderName;
-
-            $entries = $this->fetchAllApiFileEntries($folderId);
-            if ($entries === null) {
-                continue;
-            }
-
-            $folderPaths = array_merge(
-                $folderPaths,
-                $this->folderPathsFromApiEntries($entries, $folderName)
-            );
-        }
-
-        return $this->buildIndexFromFolderPaths($folderPaths);
-    }
-
-
-    /**
-     * Convert API file entries with type dir into clean plugin folder paths.
-     *
-     * @return array<int, string>
-     */
-    private function folderPathsFromApiEntries(array $entries, string $rootFolder, string $relativeRoot = ''): array
-    {
-        $folderPaths = [];
-        foreach ($entries as $entry) {
-            $type = strtolower((string)($entry['type'] ?? ''));
-            if (!in_array($type, ['dir', 'directory', 'folder'], true)) {
-                continue;
-            }
-
-            $relativeName = trim((string)($entry['relativeName'] ?? ''), '/');
-            if ($relativeName === '') {
-                continue;
-            }
-
-            if ($relativeRoot !== '') {
-                if ($relativeName !== $relativeRoot && !str_starts_with($relativeName, $relativeRoot . '/')) {
-                    continue;
-                }
-                if ($relativeName === $relativeRoot) {
-                    continue;
-                }
-                $relativeName = substr($relativeName, strlen($relativeRoot) + 1);
-            }
-
-            $folderPaths[] = trim($rootFolder . '/' . $relativeName, '/');
-        }
-
-        return $folderPaths;
-    }
-
-
-    /**
-     * Build the cached index format from clean folder paths.
-     *
-     * @param array<int, string> $folderPaths
-     * @return array<int, array{name: string, path: string, hasChildren: bool}>
-     */
-    private function buildIndexFromFolderPaths(array $folderPaths): array
-    {
-        $folderPaths = array_values(array_unique($folderPaths));
-        sort($folderPaths, SORT_NATURAL | SORT_FLAG_CASE);
-
-        $parentPaths = [];
-        foreach ($folderPaths as $path) {
-            $parent = dirname($path);
-            while ($parent !== '.' && $parent !== '') {
-                $parentPaths[$parent] = true;
-                $next = dirname($parent);
-                if ($next === $parent) {
-                    break;
-                }
-                $parent = $next;
-            }
-        }
-
-        return array_map(static fn(string $path): array => [
-            'name' => basename($path),
-            'path' => $path,
-            'hasChildren' => isset($parentPaths[$path]),
-        ], $folderPaths);
-    }
-
-
-    /**
-     * Find the PowerFolder folder ID for the configured top-level root name.
-     */
-    private function findApiFolderId(string $rootName): ?string
-    {
-        $folders = $this->fetchAllApiFolders();
-        if ($folders === null) {
-            return null;
-        }
-
-        foreach ($folders as $folder) {
-            if (!$this->apiFolderMatchesRoot($folder, $rootName)) {
-                continue;
-            }
-
-            $folderId = (string)($folder['folderID'] ?? $folder['ID'] ?? '');
-            return $folderId !== '' ? $folderId : null;
-        }
-
-        return null;
-    }
-
-
-    /**
-     * Fetch all PowerFolder folder metadata pages.
-     *
-     * @return array|null
-     */
-    private function fetchAllApiFolders(): ?array
-    {
-        $folders = [];
-        $page = 1;
-
-        do {
-            $response = $this->fileService->getApiFolders($page, self::API_PAGE_SIZE);
-            if ($response === null) {
-                return null;
-            }
-
-            $folders = array_merge($folders, $this->extractResultSet($response));
-            $maxPages = $this->extractMaxPages($response);
-            $page++;
-        } while ($page <= $maxPages);
-
-        return $folders;
-    }
-
-
-    /**
-     * Fetch all recursive file API entries for a PowerFolder folder ID.
-     *
-     * @return array|null
-     */
-    private function fetchAllApiFileEntries(string $folderId): ?array
-    {
-        $entries = [];
-        $page = 1;
-
-        do {
-            $response = $this->fileService->getApiFiles($folderId, true, $page, self::API_PAGE_SIZE);
-            if ($response === null) {
-                return null;
-            }
-
-            $entries = array_merge($entries, $this->extractResultSet($response));
-            $maxPages = $this->extractMaxPages($response);
-            $page++;
-        } while ($page <= $maxPages);
-
-        return $entries;
-    }
-
-
-    /**
-     * Check if an API folder object represents the configured root folder.
-     */
-    private function apiFolderMatchesRoot(array $folder, string $rootName): bool
-    {
-        $rootName = trim($rootName, '/');
-        $candidates = [
-            $folder['name'] ?? '',
-            $folder['localizedName'] ?? '',
-            $folder['internalName'] ?? '',
-        ];
-
-        foreach ($candidates as $candidate) {
-            if (strcasecmp(trim((string)$candidate, '/'), $rootName) === 0) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    /**
-     * Return the API folder name most likely to match WebDAV paths.
-     */
-    private function getApiFolderName(array $folder): string
-    {
-        foreach (['localizedName', 'internalName', 'name'] as $key) {
-            $name = trim((string)($folder[$key] ?? ''), '/');
-            if ($name !== '') {
-                return $name;
-            }
-        }
-
-        return '';
-    }
-
-
-    /**
-     * Extract API ResultSet.Result in a tolerant way.
-     *
-     * @return array<int, array>
-     */
-    private function extractResultSet(array $response): array
-    {
-        $result = $response['ResultSet']['Result']
-            ?? $response['resultSet']['result']
-            ?? $response['Result']
-            ?? [];
-
-        return is_array($result) ? array_values(array_filter($result, 'is_array')) : [];
-    }
-
-
-    /**
-     * Extract pagination max pages from an API response.
-     */
-    private function extractMaxPages(array $response): int
-    {
-        $pageable = $response['ResultSet']['Pageable']
-            ?? $response['resultSet']['pageable']
-            ?? $response['Pageable']
-            ?? [];
-
-        $maxPages = is_array($pageable) ? (int)($pageable['maxPages'] ?? $pageable['maxpages'] ?? 1) : 1;
-        return max(1, $maxPages);
     }
 
 

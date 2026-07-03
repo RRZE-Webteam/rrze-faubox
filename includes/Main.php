@@ -12,6 +12,7 @@ use RRZE\FAUbox\Rest\RestController;
 use RRZE\FAUbox\API\Client;
 use RRZE\FAUbox\API\FileService;
 use RRZE\FAUbox\API\IndexService;
+use RRZE\FAUbox\API\PowerFolderIndexBuilder;
 use RRZE\FAUbox\Admin\Settings;
 use RRZE\FAUbox\Blocks\BlockRender;
 use RRZE\FAUbox\Frontend\Renderer;
@@ -37,7 +38,8 @@ class Main
     {
         $client = new Client();
         $fileService = new FileService($client);
-        $indexService = new IndexService($fileService);
+        $apiIndexBuilder = new PowerFolderIndexBuilder($fileService);
+        $indexService = new IndexService($fileService, $apiIndexBuilder);
         $downloadService = new DownloadService($client);
         $renderer = new Renderer();
         $blockRender = new BlockRender ($fileService, $renderer);
