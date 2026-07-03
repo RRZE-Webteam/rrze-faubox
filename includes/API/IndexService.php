@@ -500,9 +500,23 @@ final class IndexService
      */
     public function scheduleBuild(): void
     {
-        if (!wp_next_scheduled('rrze_faubox_rebuild_index')) {
-            wp_schedule_single_event(time(), 'rrze_faubox_rebuild_index');
+        if (get_transient(self::TRANSIENT_KEY) !== false) {
+            return;
         }
+
+        set_transient(self::STATUS_KEY, 'scheduled', self::COOLDOWN_TTL);
+
+        if (!wp_next_scheduled('rrze_faubox_rebuild_index_once')) {
+            wp_schedule_single_event(time(), 'rrze_faubox_rebuild_index_once');
+        }
+    }
+
+    /**
+     * Check whether an index build has been scheduled but not completed yet.
+     */
+    public function isBuildScheduled(): bool
+    {
+        return get_transient(self::STATUS_KEY) === 'scheduled';
     }
 
     /**

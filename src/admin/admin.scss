@@ -12,3 +12,19 @@
   font-weight: 600;
 }
 
+.rrze-faubox-refresh-progress {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin-top: 0;
+
+  .spinner {
+    float: none;
+    margin: 0;
+    visibility: hidden;
+  }
+
+  &.is-active .spinner {
+    visibility: visible;
+  }
+}

@@ -52,6 +52,7 @@ class Main
 
         // Cron hook.
         add_action('rrze_faubox_rebuild_index', [$indexService, 'buildIndex']);
+        add_action('rrze_faubox_rebuild_index_once', [$indexService, 'buildIndex']);
 
 
         if (is_admin()) {
