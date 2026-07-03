@@ -132,6 +132,10 @@ final class RestController
             return $children;
         }
 
+        if (!empty($this->indexService->getIndex())) {
+            return $this->indexService->getChildrenOfPath($path);
+        }
+
         $subFolders = $this->fileService->getSubFolders($path);
         if ($subFolders === null) {
             return new \WP_Error(
@@ -194,4 +198,3 @@ final class RestController
     }
 
 }
-

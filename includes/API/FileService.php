@@ -13,6 +13,7 @@ use RRZE\FAUbox\Helper;
  *
  * Responsibilities:
  * - Retrieve raw folder entries via Client
+ * - Proxy index-related PowerFolder REST API reads
  * - Extract file entries (ignore folders/collections)
  * - Filter files by extension
  * - Derive MIME type from file extension
@@ -133,6 +134,24 @@ final class FileService
             $b['name']));
 
         return $result;
+    }
+
+
+    /**
+     * Fetch one page of PowerFolder folder metadata.
+     */
+    public function getApiFolders(int $page = 1, int $size = 1000): ?array
+    {
+        return $this->client->fetchApiFolders($page, $size);
+    }
+
+
+    /**
+     * Fetch one page of recursive PowerFolder file and directory entries.
+     */
+    public function getApiFiles(string $folderId, bool $recursive = true, int $page = 1, int $size = 1000): ?array
+    {
+        return $this->client->fetchApiFiles($folderId, $recursive, $page, $size);
     }
 
 

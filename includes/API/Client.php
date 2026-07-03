@@ -10,17 +10,18 @@ use RRZE\FAUbox\Encryption;
 use RRZE\FAUbox\Helper;
 
 /**
- * Handles low-level communication with the FAUbox WebDAV server.
- * WebDAV client for the FAUbox server.
+ * Handles low-level communication with the FAUbox WebDAV and REST API endpoints.
  *
  * Responsibilities:
  * - HTTP Basic Authentication (username + token)
  * - PROPFIND requests to the WebDAV endpoint
  * - XML response parsing
+ * - PowerFolder REST API requests for folder index data
  */
 final class Client
 {
     private const BASE_URL = 'https://faubox.rrze.uni-erlangen.de/webdav/';
+    private const API_BASE_URL = 'https://faubox.rrze.uni-erlangen.de/api/';
 
     /**
      * Get stored WEBDAV username.
@@ -62,6 +63,56 @@ final class Client
         }
 
         return 'Basic ' . base64_encode($username . ':' . $token);
+    }
+
+
+    /**
+     * Send an authenticated request to the PowerFolder REST API.
+     *
+     * @param string $path API path relative to /api/.
+     * @param array<string, scalar> $query Query parameters.
+     * @return array|null Decoded JSON response, or null on failure.
+     */
+    private function sendApiRequest(string $path, array $query = []): ?array
+    {
+        $authHeader = $this->buildAuthHeader();
+
+        if (!$authHeader) {
+            return null;
+        }
+
+        $url = add_query_arg($query, self::API_BASE_URL . ltrim($path, '/'));
+        $response = wp_remote_get($url, [
+            'timeout' => 30,
+            'headers' => [
+                'Authorization' => $authHeader,
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        if (is_wp_error($response)) {
+            return null;
+        }
+
+        $statusCode = wp_remote_retrieve_response_code($response);
+        if ($statusCode === 204) {
+            return [];
+        }
+        if ($statusCode < 200 || $statusCode >= 300) {
+            return null;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        if ($body === '') {
+            return [];
+        }
+
+        $decoded = json_decode($body, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
     }
 
 
@@ -234,6 +285,39 @@ final class Client
 
 
     /**
+     * Fetch one page of PowerFolder folder metadata.
+     *
+     * @return array|null Decoded API response, or null if the request failed.
+     */
+    public function fetchApiFolders(int $page = 1, int $size = 1000): ?array
+    {
+        return $this->sendApiRequest('folders', [
+            'action' => 'getAll',
+            'page' => $page,
+            'size' => $size,
+        ]);
+    }
+
+
+    /**
+     * Fetch one page of file and directory entries below a PowerFolder folder.
+     *
+     * @return array|null Decoded API response, or null if the request failed.
+     */
+    public function fetchApiFiles(string $folderId, bool $recursive = true, int $page = 1, int $size = 1000): ?array
+    {
+        $encodedFolderId = base64_encode($folderId);
+
+        return $this->sendApiRequest('files/' . rawurlencode($encodedFolderId), [
+            'action' => 'getAll',
+            'recursive' => $recursive ? 'true' : 'false',
+            'page' => $page,
+            'size' => $size,
+        ]);
+    }
+
+
+    /**
      * Download a file from FAUbox to a local temp file using WP streaming.
      * Returns the temp file path and content type, or null on failure.
      *
@@ -276,4 +360,3 @@ final class Client
         ];
     }
 }
-
