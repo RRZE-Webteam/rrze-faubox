@@ -66,6 +66,12 @@ final class RestController
             'permission_callback' => fn() => current_user_can('edit_posts'),
         ]);
 
+        register_rest_route('rrze-faubox/v1', '/index/status', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'getIndexStatus'],
+            'permission_callback' => fn() => current_user_can('manage_options'),
+        ]);
+
         register_rest_route('rrze-faubox/v1', '/download', [
             'methods' => 'GET',
             'callback' => [$this, 'downloadFile'],
@@ -169,6 +175,22 @@ final class RestController
     public function downloadFile(WP_REST_Request $request): void
     {
         $this->downloadService->handle($request);
+    }
+
+
+    /**
+     * Return current index build metadata.
+     *
+     * @return \WP_REST_Response
+     */
+    public function getIndexStatus(): \WP_REST_Response
+    {
+        $info = $this->indexService->getLastBuiltInfo();
+        return new \WP_REST_Response([
+            'built' => $info !== null,
+            'time'  => $info['time'] ?? null,
+            'count' => $info['count'] ?? 0,
+        ], 200);
     }
 
 }

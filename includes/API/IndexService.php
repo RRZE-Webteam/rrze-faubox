@@ -18,6 +18,7 @@ final class IndexService
     private const STATUS_KEY = 'rrze_faubox_index_status';
     private const COOLDOWN_KEY = 'rrze_faubox_index_cooldown';
     private const COOLDOWN_TTL = 60;
+    private const LAST_BUILT_KEY = 'rrze_faubox_index_last_built';
 
 
     /** Prevents multiple builds within the same request. */
@@ -42,6 +43,11 @@ final class IndexService
         }
         self::$buildScheduled = true;
 
+        // Skip rebuild if the index transient is still valid.
+        if (get_transient(self::TRANSIENT_KEY) !== false) {
+            return;
+        }
+
         @set_time_limit(120);
 
         $rootFolder = get_option('rrze_faubox_folder', '');
@@ -61,6 +67,7 @@ final class IndexService
         } else {
             set_transient(self::TRANSIENT_KEY, $index, $ttl);
             set_transient(self::STATUS_KEY, 'ok', $ttl);
+            update_option(self::LAST_BUILT_KEY, ['time' => time(), 'count' => count($index)]);
         }
 
         set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
@@ -185,5 +192,27 @@ final class IndexService
             wp_schedule_single_event(time(), 'rrze_faubox_rebuild_index');
         }
     }
+
+    /**
+     * Return metadata about the last successful index build.
+     *
+     * @return array{time: int, count: int}|null
+     */
+    public function getLastBuiltInfo(): ?array
+    {
+        $info = get_option(self::LAST_BUILT_KEY, null);
+        return is_array($info) ? $info : null;
+    }
+
+
+    /**
+     * Force a full index rebuild, bypassing the transient cache check.
+     */
+    public function forceRebuild(): void
+    {
+        delete_transient(self::TRANSIENT_KEY);
+        $this->buildIndex();
+    }
+
 
 }

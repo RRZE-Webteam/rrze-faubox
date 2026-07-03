@@ -35,7 +35,9 @@ class Settings
         add_action('admin_menu', [$this, 'addOptionsPage']);
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_notices', [$this, 'tokenExpiryNotice']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminStyles']);
+        add_action('admin_post_rrze_faubox_refresh_index', [$this, 'handleManualRefresh']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
+
     }
 
 
@@ -201,12 +203,34 @@ class Settings
 
 
     /**
-     * Enqueues the admin stylesheet on the FAUbox settings page.
+     * Handle the manual index refresh form submission.
+     *
+     * Verifies nonce and capability, triggers index rebuild, then redirects back to settings.
+     *
+     * @return void
+     */
+    public function handleManualRefresh(): void
+    {
+        check_admin_referer('rrze_faubox_refresh_index');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Insufficient permissions.', 'rrze-faubox'), 403);
+        }
+
+        $this->indexService->forceRebuild();
+
+        wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_refreshed=1'));
+        exit;
+    }
+
+    /**
+     * Enqueues admin stylesheet and script on the FAUbox settings page.
+     * Localizes polling data for the index status script.
      *
      * @param string $hookSuffix The current admin page hook suffix.
      * @return void
      */
-    public function enqueueAdminStyles(string $hookSuffix): void
+    public function enqueueAdminAssets(string $hookSuffix): void
     {
         if ($hookSuffix !== 'settings_page_rrze-faubox') {
             return;
@@ -217,8 +241,23 @@ class Settings
                 [],
                 '1.0.0'
         );
+        wp_enqueue_script(
+                'rrze-faubox-admin',
+                RRZE_FAUBOX_URL . 'assets/js/faubox-admin.js',
+                [],
+                '1.0.0',
+                true
+        );
+        $info = $this->indexService->getLastBuiltInfo();
+        wp_localize_script('rrze-faubox-admin', 'fauboxAdmin', [
+                'polling' => isset($_GET['settings-updated']),
+                'knownTime' => (int)($info['time'] ?? 0),
+                'restUrl' => rest_url('rrze-faubox/v1/index/status'),
+                'nonce' => wp_create_nonce('wp_rest'),
+                'labelLastBuild' => __('Last index build', 'rrze-faubox'),
+                'labelFolders' => __('folders indexed', 'rrze-faubox'),
+        ]);
     }
-
 
     /**
      * Renders the settings page HTML form.
@@ -343,12 +382,47 @@ class Settings
                                 <?php endforeach; ?>
                             </select>
                             <p class="description">
-                                <?php esc_html_e('Cache duration of the folder index. The index is rebuilt automatically when credentials or folder settings change. ', 'rrze-faubox'); ?>
+                                <?php esc_html_e('Cache duration of the folder index. The index updates automatically after the set time.', 'rrze-faubox'); ?>
                             </p>
                         </td>
                     </tr>
                 </table>
                 <?php submit_button(); ?>
+            </form>
+            <h2><?php esc_html_e('Folder Index', 'rrze-faubox'); ?></h2>
+            <p>
+                <?php esc_html_e('The plugin builds a folder index of your FAUbox in the background.', 'rrze-faubox'); ?>
+                <br>
+                <?php esc_html_e('This index powers the folder tree in the block editor.', 'rrze-faubox'); ?><br>
+            </p>
+            <?php if (isset($_GET['settings-updated'])) : ?>
+                <p id="faubox-building-notice" class="description rrze-faubox-warning">
+                    <?php esc_html_e('Folder index is being built in the background. This may take a few minutes.', 'rrze-faubox'); ?>
+                </p>
+            <?php endif; ?>
+
+            <?php
+            $info = $this->indexService->getLastBuiltInfo();
+            ?>
+            <?php if ($info) : ?>
+                <p id="faubox-index-status" class="description">
+                    <strong><?php printf(
+                            esc_html__('Last index build: %1$s (%2$d folders indexed)', 'rrze-faubox'),
+                            esc_html(wp_date(get_option('date_format') . ' ' .
+                                    get_option('time_format'), $info['time'])),
+                            (int)$info['count']
+                    ); ?></strong>
+                </p>
+            <?php else : ?>
+                <p id="faubox-index-status" class="description">
+                    <?php esc_html_e('No folder index built yet. Save the settings to trigger a build.', 'rrze-faubox'); ?>
+                </p>
+            <?php endif; ?>
+            <form method="post" action="<?php echo
+            esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="rrze_faubox_refresh_index">
+                <?php wp_nonce_field('rrze_faubox_refresh_index'); ?>
+                <?php submit_button(esc_html__('Refresh index now', 'rrze-faubox'), 'secondary'); ?>
             </form>
         </div>
         <?php
