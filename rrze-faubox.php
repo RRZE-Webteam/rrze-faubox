@@ -32,8 +32,26 @@ register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivatePlugin');
 function activatePlugin(): void
 {
     if (!wp_next_scheduled('rrze_faubox_rebuild_index')) {
-        wp_schedule_event(time(), 'twicedaily', 'rrze_faubox_rebuild_index');
+        rescheduleIndexCron();
     }
+}
+
+/**
+ * Register or re-register the index rebuild cron event.
+ *
+ * Uses the configured cache duration (rrze_faubox_index_ttl) to select
+ * the appropriate WordPress cron recurrence: twicedaily (12h)
+ * or daily (24h). Called on plugin activation and whenever the TTL setting changes.
+ */
+function rescheduleIndexCron(): void
+{
+    wp_clear_scheduled_hook('rrze_faubox_rebuild_index');
+    $ttl = (int)get_option('rrze_faubox_index_ttl', 24);
+    $recurrence = match($ttl) {
+        12      => 'twicedaily',
+        default => 'daily',
+    };
+    wp_schedule_event(time(), $recurrence, 'rrze_faubox_rebuild_index');
 }
 
 function deactivatePlugin(): void

@@ -48,14 +48,17 @@ class Main
         new RestController($fileService, $indexService, $downloadService);
 
         // Rebuild index whenever credentials or root folder change.
-        add_action('update_option_rrze_faubox_folder',   [$indexService, 'scheduleBuild']);
-        add_action('update_option_rrze_faubox_token',    [$indexService, 'scheduleBuild']);
-        add_action('update_option_rrze_faubox_username', [$indexService, 'scheduleBuild']);
+        add_action('update_option_rrze_faubox_folder',   [$indexService, 'scheduleForceRebuild']);
+        add_action('update_option_rrze_faubox_token',    [$indexService, 'scheduleForceRebuild']);
+        add_action('update_option_rrze_faubox_username', [$indexService, 'scheduleForceRebuild']);
 
         // Cron hook.
         add_action('rrze_faubox_rebuild_index', [$indexService, 'buildIndex']);
         add_action('rrze_faubox_rebuild_index_once', [$indexService, 'buildIndex']);
 
+        add_action('update_option_rrze_faubox_index_ttl', function (): void {
+            \RRZE\FAUbox\rescheduleIndexCron();
+        });
 
         if (is_admin()) {
             new Settings($indexService);

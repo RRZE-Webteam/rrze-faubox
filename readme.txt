@@ -111,7 +111,7 @@ The index is rebuilt automatically when:
 You can also refresh the index manually on the settings page under
 **Settings → RRZE FAUbox → Folder Index → Refresh index now**.
 
-The cache duration can be configured (1h, 6h, 12h, 24h). Default: 24h.
+ The cache duration can be configured (12h, 24h). Default: 24h.
 
 
 == File Downloads ==

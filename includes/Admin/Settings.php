@@ -130,7 +130,7 @@ class Settings
      */
     public function sanitizeIndexTtl(mixed $value): int
     {
-        $allowed = [1, 6, 12, 24];
+        $allowed = [12, 24];
         $value = (int)$value;
         return in_array($value, $allowed, true) ? $value : 24;
     }
@@ -377,7 +377,7 @@ class Settings
                         </th>
                         <td>
                             <select id="rrze_faubox_index_ttl" name="rrze_faubox_index_ttl">
-                                <?php foreach ([1 => '1h', 6 => '6h', 12 => '12h', 24 => '24h'] as $hours => $label) : ?>
+                                <?php foreach ([12 => '12h', 24 => '24h'] as $hours => $label) : ?>
                                     <option value="<?php echo esc_attr($hours); ?>" <?php
                                     selected((int)get_option('rrze_faubox_index_ttl', 12), $hours); ?>>
                                         <?php echo esc_html($label); ?>

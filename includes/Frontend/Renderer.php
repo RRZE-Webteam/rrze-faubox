@@ -153,7 +153,7 @@ class Renderer
             foreach ($columns as $col) {
                 if ($col === 'name') {
                     $html .= sprintf(
-                        '<td data-sort-value="%s"><a href="%s" target="_blank" rel="noopener noreferrer">%s<span               class="screen-reader-text"> ' . __('(opens in new tab)', 'rrze-faubox') . '</span></a></td>',
+                        '<td data-sort-value="%s"><a href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> ' .  esc_html__('(opens in new tab)', 'rrze-faubox') . '</span></a></td>',
                         esc_attr(strtolower($file['name'])),
                         $url,
                         $name
