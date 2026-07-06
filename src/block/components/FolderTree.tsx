@@ -111,7 +111,7 @@ export default function FolderTree({selectedPath, onSelect, indexVersion, onInde
             })
             .catch((err: { data?: { status?: number } }) => {
                 if (err?.data?.status === 429) {
-                    setRefreshError(__('Please wait 1 minute before refreshing again.', 'rrze-faubox'));
+                    setRefreshError(__('Please wait 5 minutes before refreshing again.', 'rrze-faubox'));
                 } else {
                     setRefreshError(__('Index refresh failed. Please try again.', 'rrze-faubox'));
                 }

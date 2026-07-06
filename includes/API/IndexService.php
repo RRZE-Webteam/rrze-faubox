@@ -18,7 +18,7 @@ final class IndexService
     private const TRANSIENT_KEY = 'rrze_faubox_folder_index';
     private const STATUS_KEY = 'rrze_faubox_index_status';
     private const COOLDOWN_KEY = 'rrze_faubox_index_cooldown';
-    private const COOLDOWN_TTL = 60;
+    private const COOLDOWN_TTL =  5 * MINUTE_IN_SECONDS;
     private const LAST_BUILT_KEY = 'rrze_faubox_index_last_built';
 
 
@@ -75,7 +75,13 @@ final class IndexService
             set_transient(self::STATUS_KEY, 'ok', $ttl);
             update_option(self::LAST_BUILT_KEY, ['time' => time(), 'count' => count($index)]);
         }
+    }
 
+    /**
+     * Activate the refresh cooldown to prevent rapid consecutive rebuilds.
+     */
+    public function setCooldown(): void
+    {
         set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
     }
 
@@ -254,12 +260,12 @@ final class IndexService
 
 
     /**
-     * Force a full index rebuild, bypassing the transient cache check.
+     * Delete the cached index and schedule an async rebuild.
      */
-    public function forceRebuild(): void
+    public function scheduleForceRebuild(): void
     {
         delete_transient(self::TRANSIENT_KEY);
-        $this->buildIndex();
+        $this->scheduleBuild();
     }
 
 

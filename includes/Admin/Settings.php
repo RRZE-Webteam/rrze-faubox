@@ -203,7 +203,7 @@ class Settings
 
 
     /**
-     * Handle the manual index refresh form submission.
+     * Handle the manual index refresh form submission with Cooldown Check.
      *
      * Verifies nonce and capability, triggers index rebuild, then redirects back to settings.
      *
@@ -217,11 +217,18 @@ class Settings
             wp_die(esc_html__('Insufficient permissions.', 'rrze-faubox'), 403);
         }
 
-        $this->indexService->forceRebuild();
+        if ($this->indexService->isOnCooldown()) {
+            wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_cooldown=1'));
+            exit;
+        }
 
-        wp_redirect(admin_url('options-general.php?page=rrze-faubox'));
+        $this->indexService->scheduleForceRebuild();
+        $this->indexService->setCooldown();
+
+        wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_refreshed=1'));
         exit;
     }
+
 
     /**
      * Enqueues admin stylesheet and script on the FAUbox settings page.
@@ -249,7 +256,8 @@ class Settings
                 true
         );
         $info = $this->indexService->getLastBuiltInfo();
-        $indexBuildScheduled = isset($_GET['settings-updated']) && $this->indexService->isBuildScheduled();
+        $indexBuildScheduled = (isset($_GET['settings-updated']) || isset($_GET['index_refreshed']))
+                && $this->indexService->isBuildScheduled();
         wp_localize_script('rrze-faubox-admin', 'fauboxAdmin', [
                 'polling' => $indexBuildScheduled,
                 'knownTime' => (int)($info['time'] ?? 0),
@@ -390,7 +398,7 @@ class Settings
                 <br>
                 <?php esc_html_e('This index powers the folder tree in the block editor.', 'rrze-faubox'); ?><br>
             </p>
-            <?php if (isset($_GET['settings-updated']) && $this->indexService->isBuildScheduled()) : ?>
+            <?php if ((isset($_GET['settings-updated'])|| isset($_GET['index_refreshed'])) && $this->indexService->isBuildScheduled()) : ?>
                 <p id="faubox-building-notice" class="description rrze-faubox-warning rrze-faubox-refresh-progress is-active">
                     <span class="spinner"></span>
                     <span>
@@ -411,6 +419,11 @@ class Settings
                             (int)$info['count']
                     ); ?></strong>
                 </p>
+                <?php if (isset($_GET['index_cooldown'])) : ?>
+                    <p class="description rrze-faubox-warning">
+                        <?php esc_html_e('Please wait 5 minutes before refreshing the index again.', 'rrze-faubox'); ?>
+                    </p>
+                <?php endif; ?>
             <?php else : ?>
                 <p id="faubox-index-status" class="description">
                     <?php esc_html_e('No folder index built yet. Click "Refresh index" to build it.', 'rrze-faubox'); ?>
@@ -421,12 +434,6 @@ class Settings
                 <input type="hidden" name="action" value="rrze_faubox_refresh_index">
                 <?php wp_nonce_field('rrze_faubox_refresh_index'); ?>
                 <?php submit_button(esc_html__('Refresh index now', 'rrze-faubox'), 'secondary'); ?>
-                <p id="faubox-refresh-progress" class="description rrze-faubox-refresh-progress" hidden>
-                    <span class="spinner"></span>
-                    <span class="rrze-faubox-refresh-progress-text">
-                        <?php esc_html_e('Refreshing folder index. Please keep this page open.', 'rrze-faubox'); ?>
-                    </span>
-                </p>
             </form>
         </div>
         <?php

@@ -1,25 +1,17 @@
 (function () {
     if (!window.fauboxAdmin) return;
 
-    var knownTime  = fauboxAdmin.knownTime;
-    var restUrl    = fauboxAdmin.restUrl;
-    var nonce      = fauboxAdmin.nonce;
+    var knownTime = fauboxAdmin.knownTime;
+    var restUrl = fauboxAdmin.restUrl;
+    var nonce = fauboxAdmin.nonce;
     var buildingEl =
         document.getElementById('faubox-building-notice');
-    var statusEl   = document.getElementById('faubox-index-status');
+    var statusEl = document.getElementById('faubox-index-status');
     var refreshForm = document.getElementById('faubox-index-refresh-form');
-    var refreshProgress = document.getElementById('faubox-refresh-progress');
     var refreshButton = refreshForm
         ? refreshForm.querySelector('input[type="submit"], button[type="submit"]')
         : null;
     var isRefreshing = false;
-
-    function showProgress() {
-        if (!refreshProgress) return;
-
-        refreshProgress.hidden = false;
-        refreshProgress.classList.add('is-active');
-    }
 
     function updateStatus(data) {
         if (!statusEl || !data.built) return;
@@ -38,8 +30,10 @@
     }
 
     function fetchStatus() {
-        return fetch(restUrl, { headers: { 'X-WP-Nonce': nonce } })
-            .then(function (r) { return r.json(); });
+        return fetch(restUrl, {headers: {'X-WP-Nonce': nonce}})
+            .then(function (r) {
+                return r.json();
+            });
     }
 
     function pollAfterSettingsSave() {
@@ -57,24 +51,25 @@
             });
         }, 3000);
 
-        setTimeout(function () { clearInterval(poll); }, 300000);
+        setTimeout(function () {
+            clearInterval(poll);
+        }, 300000);
     }
 
     function handleManualRefresh() {
         if (!refreshForm || isRefreshing) return;
-
         isRefreshing = true;
-
         if (refreshButton) {
             refreshButton.disabled = true;
             refreshButton.classList.add('disabled');
         }
-        showProgress();
     }
 
     if (refreshForm) {
-        refreshForm.addEventListener('submit', handleManualRefresh);
+        refreshForm.addEventListener('submit',
+            handleManualRefresh);
     }
 
     pollAfterSettingsSave();
 }());
+

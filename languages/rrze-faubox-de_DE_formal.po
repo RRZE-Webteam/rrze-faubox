@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2026-07-06T07:38:38+00:00\n"
-"PO-Revision-Date: 2026-07-06 09:39+0200\n"
+"POT-Creation-Date: 2026-07-06T12:24:51+00:00\n"
+"PO-Revision-Date: 2026-07-06 14:26+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -40,7 +40,7 @@ msgstr "RRZE Webteam"
 msgid "https://www.wp.rrze.fau.de/"
 msgstr "https://www.wp.rrze.fau.de/"
 
-#: includes/Admin/Settings.php:52 includes/Admin/Settings.php:277
+#: includes/Admin/Settings.php:52 includes/Admin/Settings.php:280
 msgid "FAUbox Settings"
 msgstr "FAUbox Einstellungen"
 
@@ -62,19 +62,15 @@ msgstr ""
 msgid "Insufficient permissions."
 msgstr "Unzureichende Berechtigungen."
 
-#: includes/Admin/Settings.php:257
+#: includes/Admin/Settings.php:266
 msgid "Last index build"
 msgstr "Letzte Indexerstellung"
 
-#: includes/Admin/Settings.php:258
+#: includes/Admin/Settings.php:267
 msgid "folders indexed"
 msgstr "indexierte Ordner"
 
-#: includes/Admin/Settings.php:273
-msgid "Folder index has been refreshed."
-msgstr "Der Ordnerindex wurde aktualisiert."
-
-#: includes/Admin/Settings.php:278
+#: includes/Admin/Settings.php:281
 msgid ""
 "Enter your FAUbox WebDAV credentials. You can generate them in your FAUbox "
 "account under \"My Account\" → \"Devices\" → \"Add WebDAV connection\"."
@@ -82,53 +78,53 @@ msgstr ""
 "Geben Sie Ihre FAUbox-WebDAV-Anmeldedaten ein. Diese generieren Sie in Ihrem "
 "FAUbox-Konto unter „Mein Konto“ → „Geräte“ → „WebDAV-Verbindung hinzufügen“."
 
-#: includes/Admin/Settings.php:291
+#: includes/Admin/Settings.php:294
 msgid "FAUbox Username"
 msgstr "FAUbox Benutzername"
 
-#: includes/Admin/Settings.php:305
+#: includes/Admin/Settings.php:308
 msgid "FAUbox WebDAV Token"
 msgstr "FAUbox WebDAV Token"
 
-#: includes/Admin/Settings.php:318
+#: includes/Admin/Settings.php:321
 msgid "Token created on"
 msgstr "Token erstellt am"
 
-#: includes/Admin/Settings.php:328
+#: includes/Admin/Settings.php:331
 msgid "Your token has expired - please renew!"
 msgstr ""
 "Ihr FAUbox-WebDAV-Token ist abgelaufen. Bitte generieren Sie ein neues Token!"
 
-#: includes/Admin/Settings.php:331
+#: includes/Admin/Settings.php:334
 #, php-format
 msgid "Your token expires in %d days — please renew soon."
 msgstr "Läuft in %d Tagen ab – bitte bald verlängern."
 
-#: includes/Admin/Settings.php:335
+#: includes/Admin/Settings.php:338
 #, php-format
 msgid "Token validity: 1 year. Valid for %d more days (until %s)."
 msgstr "Gültigkeitsdauer des Tokens: 1 Jahr. Noch %d Tage gültig (bis %s)."
 
-#: includes/Admin/Settings.php:350
+#: includes/Admin/Settings.php:353
 msgid "FAUbox Main Folder"
 msgstr "FAUbox Stammordner"
 
-#: includes/Admin/Settings.php:360
+#: includes/Admin/Settings.php:363
 msgid ""
 "The main folder whose subfolders are to be displayed in the block editor."
 msgstr ""
 "Der Stammordner, dessen Unterordner im Block-Editor angezeigt werden sollen."
 
-#: includes/Admin/Settings.php:364
+#: includes/Admin/Settings.php:367
 msgid "No main folder configured — the plugin will not display any files."
 msgstr ""
 "Es wurde kein Stammordner konfiguriert – das Plugin zeigt keine Dateien an."
 
-#: includes/Admin/Settings.php:372
+#: includes/Admin/Settings.php:375
 msgid "Index cache duration"
 msgstr "Dauer des Index-Caches"
 
-#: includes/Admin/Settings.php:385
+#: includes/Admin/Settings.php:388
 msgid ""
 "Cache duration of the folder index. The index updates automatically after "
 "the set time."
@@ -136,11 +132,11 @@ msgstr ""
 "Cache-Dauer des Ordnerindexes. Der Index wird nach Ablauf der festgelegten "
 "Zeit automatisch aktualisiert."
 
-#: includes/Admin/Settings.php:392
+#: includes/Admin/Settings.php:395
 msgid "Folder Index"
 msgstr "Ordnerindex"
 
-#: includes/Admin/Settings.php:394
+#: includes/Admin/Settings.php:397
 msgid ""
 "The plugin builds a folder index of your FAUbox main folder in the "
 "background."
@@ -148,30 +144,34 @@ msgstr ""
 "Das Plugin erstellt im Hintergrund einen Ordnerindex Ihres FAUbox-"
 "Stammordners."
 
-#: includes/Admin/Settings.php:396
+#: includes/Admin/Settings.php:399
 msgid "This index powers the folder tree in the block editor."
 msgstr ""
 "Dieser Index bildet die Grundlage für die Ordnerstruktur im Block-Editor."
 
-#: includes/Admin/Settings.php:400
+#: includes/Admin/Settings.php:405
 msgid ""
 "Folder index is being built in the background. This may take a few minutes."
 msgstr ""
 "Der Ordnerindex wird im Hintergrund erstellt. Dies kann einige Minuten "
 "dauern."
 
-#: includes/Admin/Settings.php:410
+#: includes/Admin/Settings.php:416
 #, php-format
 msgid "Last index build: %1$s (%2$d folders indexed)"
 msgstr "Letzte Indexierung: %1$s (%2$d Ordner indiziert)"
 
-#: includes/Admin/Settings.php:418
+#: includes/Admin/Settings.php:424
+msgid "Please wait 5 minutes before refreshing the index again."
+msgstr "Bitte warten Sie 5 Minuten, bevor Sie den Index erneut aktualisieren."
+
+#: includes/Admin/Settings.php:429
 msgid "No folder index built yet. Click \"Refresh index\" to build it."
 msgstr ""
 "Der Ordnerindex wurde noch nicht erstellt. Bitte klicken Sie auf „Index "
 "aktualisieren“."
 
-#: includes/Admin/Settings.php:425
+#: includes/Admin/Settings.php:436
 msgid "Refresh index now"
 msgstr "Index jetzt aktualisieren"
 
@@ -241,18 +241,18 @@ msgstr ""
 "Der Ordnerindex wurde noch nicht erstellt. Bitte speichern Sie die FAUbox-"
 "Einstellungen oder aktualisieren Sie den Index manuell."
 
-#: includes/Rest/RestController.php:139
+#: includes/Rest/RestController.php:143
 msgid "Could not retrieve folders. Please check your FAUbox credentials."
 msgstr ""
 "Die Ordner konnten nicht geladen werden. Bitte überprüfen Sie Ihre FAUbox "
 "Einstellungen."
 
-#: includes/Rest/RestController.php:160
-msgid "Please wait before refreshing again."
-msgstr "Bitte warten Sie, bevor Sie die Seite erneut aktualisieren."
+#: includes/Rest/RestController.php:166 build/block/index.js:1
+msgid "Please wait 5 minutes before refreshing again."
+msgstr "Bitte warten Sie 5 Minuten, bevor Sie den Index erneut aktualisieren."
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-faubox.php:73
+#: rrze-faubox.php:74
 #, php-format
 msgid ""
 "The server is running PHP version %1$s. The Plugin requires at least PHP "
@@ -262,7 +262,7 @@ msgstr ""
 "Version %2$s."
 
 #. translators: 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-faubox.php:80
+#: rrze-faubox.php:81
 #, php-format
 msgid ""
 "The server is running WordPress version %1$s. The Plugin requires at least "
@@ -270,10 +270,6 @@ msgid ""
 msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin erfordert mindestens "
 "WordPress Version %2$s."
-
-#: build/block/index.js:1
-msgid "Please wait 1 minute before refreshing again."
-msgstr "Bitte warten Sie 1 Minute, bevor Sie den Index erneut aktualisieren."
 
 #: build/block/index.js:1
 msgid "Index refresh failed. Please try again."
@@ -440,6 +436,12 @@ msgstr "FAUbox"
 msgctxt "block description"
 msgid "Integrates files from FAUbox."
 msgstr "Integriert Daten aus der FAUbox."
+
+#~ msgid "Folder index has been refreshed."
+#~ msgstr "Der Ordnerindex wurde aktualisiert."
+
+#~ msgid "Please wait before refreshing again."
+#~ msgstr "Bitte warten Sie, bevor Sie die Seite erneut aktualisieren."
 
 #~ msgid ""
 #~ "Manually refresh the folder index if the folder structure in FAUbox has "
