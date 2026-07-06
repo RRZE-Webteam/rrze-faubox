@@ -7,10 +7,11 @@ namespace RRZE\FAUbox\API;
 defined('ABSPATH') || exit;
 
 /**
- * Builds and manages a cached folder index for FAUbox WebDAV.
+ * Manages the cached folder index for FAUbox.
  *
- * The index is a flat array of all folders (recursive) under the configured
- * root folder. It is stored as a WordPress transient and refreshed manually or via cron.
+ * IndexService owns cache state, scheduling and editor lookup helpers. Index
+ * data is built through the PowerFolder REST API first and falls back to the
+ * older WebDAV traversal if the REST API cannot provide an index.
  */
 final class IndexService
 {
@@ -24,10 +25,12 @@ final class IndexService
     /** Prevents multiple builds within the same request. */
     private static bool $buildScheduled = false;
     private FileService $fileService;
+    private PowerFolderIndexBuilder $apiIndexBuilder;
 
-    public function __construct(FileService $fileService)
+    public function __construct(FileService $fileService, PowerFolderIndexBuilder $apiIndexBuilder)
     {
         $this->fileService = $fileService;
+        $this->apiIndexBuilder = $apiIndexBuilder;
     }
 
     /**
@@ -56,7 +59,10 @@ final class IndexService
             return;
         }
 
-        $index = $this->collectFolders($rootFolder);
+        $index = $this->apiIndexBuilder->build($rootFolder);
+        if ($index === null) {
+            $index = $this->collectFoldersFromWebdav($rootFolder);
+        }
         $ttl = (int)get_option('rrze_faubox_index_ttl', 12) * HOUR_IN_SECONDS;
 
         if ($index === null) {
@@ -122,6 +128,34 @@ final class IndexService
         return $filtered;
     }
 
+
+    /**
+     * Return direct children of a given folder path from the cached index.
+     *
+     * @return array Filtered and sorted folder entries.
+     */
+    public function getChildrenOfPath(string $parentPath): array
+    {
+        $parentPath = trim($parentPath, '/');
+        if ($parentPath === '') {
+            return $this->getDirectChildren();
+        }
+
+        $parentDepth = substr_count($parentPath, '/');
+        $filtered = array_values(array_filter(
+            $this->getIndex(),
+            static function (array $entry) use ($parentPath, $parentDepth): bool {
+                $path = trim((string)($entry['path'] ?? ''), '/');
+                return str_starts_with($path, $parentPath . '/')
+                    && substr_count($path, '/') === $parentDepth + 1;
+            }
+        ));
+
+        usort($filtered, fn(array $a, array $b): int => strcasecmp($a['name'], $b['name']));
+
+        return $filtered;
+    }
+
     /**
      * Enrich a list of live folders with 'hasChildren' data from the cached index.
      *
@@ -142,15 +176,15 @@ final class IndexService
 
 
     /**
-     * Recursively collect all subfolders under a given path.
+     * Recursively collect all subfolders under a WebDAV path.
      *
-     * Returns a flat array. Each entry includes 'name', 'path', and
-     * 'hasChildren'.
+     * Fallback for installations where the PowerFolder REST API cannot provide
+     * a usable recursive directory listing.
      *
      * @param string $path WebDAV folder path to traverse.
      * @return array Flat list of folder entries.
      */
-    private function collectFolders(string $path, int $depth = 0, int $maxDepth = 7): ?array
+    private function collectFoldersFromWebdav(string $path, int $depth = 0, int $maxDepth = 7): ?array
     {
         if ($depth >= $maxDepth) {
             return [];
@@ -167,7 +201,7 @@ final class IndexService
 
         $result = [];
         foreach ($subFolders as $folder) {
-            $children = $this->collectFolders($folder['path'], $depth + 1, $maxDepth);
+            $children = $this->collectFoldersFromWebdav($folder['path'], $depth + 1, $maxDepth);
             if ($children === null) {
                 return null;
             }
@@ -188,9 +222,23 @@ final class IndexService
      */
     public function scheduleBuild(): void
     {
-        if (!wp_next_scheduled('rrze_faubox_rebuild_index')) {
-            wp_schedule_single_event(time(), 'rrze_faubox_rebuild_index');
+        if (get_transient(self::TRANSIENT_KEY) !== false) {
+            return;
         }
+
+        set_transient(self::STATUS_KEY, 'scheduled', self::COOLDOWN_TTL);
+
+        if (!wp_next_scheduled('rrze_faubox_rebuild_index_once')) {
+            wp_schedule_single_event(time(), 'rrze_faubox_rebuild_index_once');
+        }
+    }
+
+    /**
+     * Check whether an index build has been scheduled but not completed yet.
+     */
+    public function isBuildScheduled(): bool
+    {
+        return get_transient(self::STATUS_KEY) === 'scheduled';
     }
 
     /**

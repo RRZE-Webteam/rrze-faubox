@@ -39,6 +39,7 @@ function activatePlugin(): void
 function deactivatePlugin(): void
 {
     wp_clear_scheduled_hook('rrze_faubox_rebuild_index');
+    wp_clear_scheduled_hook('rrze_faubox_rebuild_index_once');
 }
 
 
