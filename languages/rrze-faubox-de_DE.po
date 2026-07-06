@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2026-07-03T10:48:53+00:00\n"
-"PO-Revision-Date: 2026-07-03 12:54+0200\n"
+"POT-Creation-Date: 2026-07-06T07:38:38+00:00\n"
+"PO-Revision-Date: 2026-07-06 09:40+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -141,8 +141,12 @@ msgid "Folder Index"
 msgstr "Ordnerindex"
 
 #: includes/Admin/Settings.php:394
-msgid "The plugin builds a folder index of your FAUbox in the background."
-msgstr "Das Plugin erstellt im Hintergrund einen Ordnerindex Ihrer FAUbox."
+msgid ""
+"The plugin builds a folder index of your FAUbox main folder in the "
+"background."
+msgstr ""
+"Das Plugin erstellt im Hintergrund einen Ordnerindex deines FAUbox-"
+"Stammordners."
 
 #: includes/Admin/Settings.php:396
 msgid "This index powers the folder tree in the block editor."
@@ -162,10 +166,10 @@ msgid "Last index build: %1$s (%2$d folders indexed)"
 msgstr "Letzte Indexierung: %1$s (%2$d Ordner indiziert)"
 
 #: includes/Admin/Settings.php:418
-msgid "No folder index built yet. Save the settings to trigger a build."
+msgid "No folder index built yet. Click \"Refresh index\" to build it."
 msgstr ""
-"Es wurde noch kein Ordnerindex erstellt. Speichern Sie die Einstellungen, um "
-"die Erstellung auszulösen."
+"Der Ordnerindex wurde noch nicht erstellt. Bitte klicke auf „Index "
+"aktualisieren“."
 
 #: includes/Admin/Settings.php:425
 msgid "Refresh index now"
@@ -226,22 +230,22 @@ msgstr "Zuletzt geändert"
 #: includes/Rest/RestController.php:118
 msgid "No main folder configured. Please set it in the FAUbox settings."
 msgstr ""
-"Ordnerauswahl fehlt. Bitte wähle den darzustellenden Ordner in den "
-"Blockeinstellungen der Seitenleiste."
+"Es ist kein Stammordner konfiguriert. Bitte lege diesen in den FAUbox-"
+"Einstellungen fest."
 
 #: includes/Rest/RestController.php:127
 msgid ""
 "The folder index has not been built yet. Please save the FAUbox settings or "
 "refresh the index manually."
 msgstr ""
-"Der Ordnerindex wurde noch nicht erstellt. Bitte speichern Sie die FAUbox-"
-"Einstellungen oder aktualisieren Sie den Index manuell."
+"Der Ordnerindex wurde noch nicht erstellt. Bitte speichere die FAUbox-"
+"Einstellungen oder aktualisiere den Index manuell."
 
 #: includes/Rest/RestController.php:139
 msgid "Could not retrieve folders. Please check your FAUbox credentials."
 msgstr ""
 "Die Ordner konnten nicht geladen werden. Bitte überprüfe deine FAUbox "
-"Einstellungen."
+"Zugangsdaten."
 
 #: includes/Rest/RestController.php:160
 msgid "Please wait before refreshing again."
@@ -300,8 +304,8 @@ msgid ""
 "Folder index not built yet. Please save your FAUbox settings or refresh the "
 "index manually."
 msgstr ""
-"Die Ordner konnten nicht geladen werden. Bitte überprüfe deine FAUbox "
-"Einstellungen."
+"Der Ordnerindex wurde noch nicht erstellt. Bitte speichere die FAUbox-"
+"Einstellungen oder aktualisiere den Index manuell."
 
 #: build/block/index.js:1
 msgid "Refreshing…"

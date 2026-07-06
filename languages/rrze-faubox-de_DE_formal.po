@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE FAUbox 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-faubox\n"
-"POT-Creation-Date: 2026-07-03T10:48:53+00:00\n"
-"PO-Revision-Date: 2026-07-03 12:54+0200\n"
+"POT-Creation-Date: 2026-07-06T07:38:38+00:00\n"
+"PO-Revision-Date: 2026-07-06 09:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -97,7 +97,7 @@ msgstr "Token erstellt am"
 #: includes/Admin/Settings.php:328
 msgid "Your token has expired - please renew!"
 msgstr ""
-"Ihr FAUbox-WebDAV-Token ist abgelaufen. Bitte generieren Sie ein neues Token."
+"Ihr FAUbox-WebDAV-Token ist abgelaufen. Bitte generieren Sie ein neues Token!"
 
 #: includes/Admin/Settings.php:331
 #, php-format
@@ -141,8 +141,12 @@ msgid "Folder Index"
 msgstr "Ordnerindex"
 
 #: includes/Admin/Settings.php:394
-msgid "The plugin builds a folder index of your FAUbox in the background."
-msgstr "Das Plugin erstellt im Hintergrund einen Ordnerindex Ihrer FAUbox."
+msgid ""
+"The plugin builds a folder index of your FAUbox main folder in the "
+"background."
+msgstr ""
+"Das Plugin erstellt im Hintergrund einen Ordnerindex Ihres FAUbox-"
+"Stammordners."
 
 #: includes/Admin/Settings.php:396
 msgid "This index powers the folder tree in the block editor."
@@ -162,10 +166,10 @@ msgid "Last index build: %1$s (%2$d folders indexed)"
 msgstr "Letzte Indexierung: %1$s (%2$d Ordner indiziert)"
 
 #: includes/Admin/Settings.php:418
-msgid "No folder index built yet. Save the settings to trigger a build."
+msgid "No folder index built yet. Click \"Refresh index\" to build it."
 msgstr ""
-"Es wurde noch kein Ordnerindex erstellt. Speichern Sie die Einstellungen, um "
-"die Erstellung auszulösen."
+"Der Ordnerindex wurde noch nicht erstellt. Bitte klicken Sie auf „Index "
+"aktualisieren“."
 
 #: includes/Admin/Settings.php:425
 msgid "Refresh index now"

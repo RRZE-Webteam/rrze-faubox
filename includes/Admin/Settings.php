@@ -391,7 +391,7 @@ class Settings
             </form>
             <h2><?php esc_html_e('Folder Index', 'rrze-faubox'); ?></h2>
             <p>
-                <?php esc_html_e('The plugin builds a folder index of your FAUbox in the background.', 'rrze-faubox'); ?>
+                <?php esc_html_e('The plugin builds a folder index of your FAUbox main folder in the background.', 'rrze-faubox'); ?>
                 <br>
                 <?php esc_html_e('This index powers the folder tree in the block editor.', 'rrze-faubox'); ?><br>
             </p>
@@ -415,7 +415,7 @@ class Settings
                 </p>
             <?php else : ?>
                 <p id="faubox-index-status" class="description">
-                    <?php esc_html_e('No folder index built yet. Save the settings to trigger a build.', 'rrze-faubox'); ?>
+                    <?php esc_html_e('No folder index built yet. Click "Refresh index" to build it.', 'rrze-faubox'); ?>
                 </p>
             <?php endif; ?>
             <form method="post" action="<?php echo

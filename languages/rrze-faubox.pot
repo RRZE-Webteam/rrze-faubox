@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-03T10:48:53+00:00\n"
+"POT-Creation-Date: 2026-07-06T07:38:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rrze-faubox\n"
@@ -125,7 +125,7 @@ msgid "Folder Index"
 msgstr ""
 
 #: includes/Admin/Settings.php:394
-msgid "The plugin builds a folder index of your FAUbox in the background."
+msgid "The plugin builds a folder index of your FAUbox main folder in the background."
 msgstr ""
 
 #: includes/Admin/Settings.php:396
@@ -142,7 +142,7 @@ msgid "Last index build: %1$s (%2$d folders indexed)"
 msgstr ""
 
 #: includes/Admin/Settings.php:418
-msgid "No folder index built yet. Save the settings to trigger a build."
+msgid "No folder index built yet. Click \"Refresh index\" to build it."
 msgstr ""
 
 #: includes/Admin/Settings.php:425
