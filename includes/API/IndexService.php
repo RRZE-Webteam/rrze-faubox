@@ -269,4 +269,19 @@ final class IndexService
     }
 
 
+    /**
+     * Delete the cached index and rebuild it immediately in the current request.
+     *
+     * Use this instead of scheduleForceRebuild() when a synchronous rebuild is
+     * required — for example after credentials or the root folder change.
+     * Resets the static build flag so buildIndex() runs even if it was already
+     * called earlier in the same request.
+     */
+    public function directRebuild(): void
+    {
+        delete_transient(self::TRANSIENT_KEY);
+        self::$buildScheduled = false;
+        $this->buildIndex();
+    }
+
 }

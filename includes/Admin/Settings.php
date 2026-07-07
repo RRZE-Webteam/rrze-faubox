@@ -222,7 +222,7 @@ class Settings
             exit;
         }
 
-        $this->indexService->scheduleForceRebuild();
+        $this->indexService->directRebuild();
         $this->indexService->setCooldown();
 
         wp_redirect(admin_url('options-general.php?page=rrze-faubox&index_refreshed=1'));
@@ -275,6 +275,12 @@ class Settings
      */
     public function renderSettings(): void
     {
+        // If a settings save just happened and the index is still empty
+        // (e.g. cron did not run yet), rebuild synchronously as a fallback.
+        if (isset($_GET['settings-updated']) && $this->indexService->isBuildScheduled()) {
+            $this->indexService->directRebuild();
+        }
+
         ?>
         <div class="wrap">
             <h1> <?php echo esc_html__('FAUbox Settings', 'rrze-faubox'); ?> </h1>
@@ -398,8 +404,9 @@ class Settings
                 <br>
                 <?php esc_html_e('This index powers the folder tree in the block editor.', 'rrze-faubox'); ?><br>
             </p>
-            <?php if ((isset($_GET['settings-updated'])|| isset($_GET['index_refreshed'])) && $this->indexService->isBuildScheduled()) : ?>
-                <p id="faubox-building-notice" class="description rrze-faubox-warning rrze-faubox-refresh-progress is-active">
+            <?php if ((isset($_GET['settings-updated']) || isset($_GET['index_refreshed'])) && $this->indexService->isBuildScheduled()) : ?>
+                <p id="faubox-building-notice"
+                   class="description rrze-faubox-warning rrze-faubox-refresh-progress is-active">
                     <span class="spinner"></span>
                     <span>
                         <?php esc_html_e('Folder index is being built in the background. This may take a few minutes.', 'rrze-faubox'); ?>
@@ -413,11 +420,11 @@ class Settings
             <?php if ($info) : ?>
                 <p id="faubox-index-status" class="description">
                     <strong><?php printf(
-                            esc_html__('Last index build: %1$s (%2$d folders indexed)', 'rrze-faubox'),
-                            esc_html(wp_date(get_option('date_format') . ' ' .
-                                    get_option('time_format'), $info['time'])),
-                            (int)$info['count']
-                    ); ?></strong>
+                                esc_html__('Last index build: %1$s (%2$d folders indexed)', 'rrze-faubox'),
+                                esc_html(wp_date(get_option('date_format') . ' ' .
+                                        get_option('time_format'), $info['time'])),
+                                (int)$info['count']
+                        ); ?></strong>
                 </p>
                 <?php if (isset($_GET['index_cooldown'])) : ?>
                     <p class="description rrze-faubox-warning">
