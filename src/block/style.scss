@@ -1,0 +1,34 @@
+.wp-block-rrze-faubox {
+
+  figure.wp-block-table table.faubox-filetable {
+    width: 100%;
+    border-collapse: collapse;
+
+    td, th {
+      padding: 0.4em 0.6em;
+      vertical-align: top;
+    }
+
+    td:first-child,
+    th:first-child {
+      width: 100%;
+    }
+
+    td:not(:first-child),
+    th:not(:first-child) {
+      white-space: nowrap;
+      width: 1%;
+    }
+  }
+
+  ul.wp-block-faubox-list {
+    list-style: none;
+    margin-left: 1.5rem;
+    padding-left: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+  }
+}

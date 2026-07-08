@@ -1,0 +1,95 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "rrze/faubox",
+  "version": "0.0.1",
+  "title": "FAUbox",
+  "category": "rrze",
+  "icon": "cloud",
+  "description": "Integrates files from FAUbox.",
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "isInitialSetup": {
+      "type": "boolean",
+      "default": true
+    },
+    "path": {
+      "type": "string",
+      "default": ""
+    },
+    "view": {
+      "type": "string",
+      "enum": [
+        "list",
+        "table"
+      ],
+      "default": "list"
+    },
+    "show": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "name",
+          "type",
+          "size",
+          "modified"
+        ]
+      },
+      "default": [
+        "name"
+      ]
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "default": "asc"
+    },
+    "orderby": {
+      "type": "string",
+      "enum": [
+        "name",
+        "size",
+        "type",
+        "modified"
+      ],
+      "default": "name"
+    },
+    "show_title": {
+      "type": "boolean",
+      "default": false
+    },
+    "heading_level": {
+      "type": "string",
+      "enum": [
+        "h2",
+        "h3",
+        "h4",
+        "h5"
+      ],
+      "default": "h3"
+    },
+    "filetype": {
+      "type": "array",
+      "default": []
+    },
+    "changetitle": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "textdomain": "rrze-faubox",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style.css",
+  "example": {
+    "attributes": {
+      "isInitialSetup": false
+    }
+  }
+}
