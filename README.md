@@ -1,16 +1,15 @@
-=== RRZE FAUbox ===
-Contributors: rrze
-Tags: files, cloud, fau, faubox, webdav, directory, list, table
-Requires at least: 6.8
-Tested up to: 7.0
-Requires PHP: 8.2
-Stable tag: 1.0.0
-License: GPLv3
-License URI: https://www.gnu.org/licenses/gpl-3.0.html
+# RRZE FAUbox
+
+[![Aktuelle Version](https://img.shields.io/github/package-json/v/rrze-webteam/rrze-faubox/main?label=Version)](https://github.com/RRZE-Webteam/rrze-faubox)
+[![Release Version](https://img.shields.io/github/v/release/rrze-webteam/rrze-faubox?label=Release+Version)](https://github.com/rrze-webteam/rrze-faubox/releases/)
+[![GitHub License](https://img.shields.io/github/license/rrze-webteam/rrze-faubox)](https://github.com/RRZE-Webteam/rrze-faubox)
+[![GitHub issues](https://img.shields.io/github/issues/RRZE-Webteam/rrze-faubox)](https://github.com/RRZE-Webteam/rrze-faubox/issues)
+
+## WordPress Plugin
 
 Display files from FAUbox folders as lists or tables in WordPress.
 
-== Description ==
+## Description
 
 RRZE FAUbox integrates files from FAUbox into WordPress via WebDAV.
 
@@ -32,7 +31,7 @@ to visitors.
 - Folder index with configurable cache duration
 
 
-== Requirements ==
+## Requirements
 
 - A FAUbox account at https://faubox.rrze.uni-erlangen.de
 - A WebDAV token generated in your FAUbox account
@@ -40,7 +39,7 @@ to visitors.
 - PHP 8.2 or higher
 
 
-== Installation ==
+## Installation
 
 1. Upload the plugin folder `rrze-faubox` to `/wp-content/plugins/`.
 2. Activate the plugin via **Plugins → Installed Plugins**.
@@ -53,52 +52,52 @@ to visitors.
 8. Select a folder and configure the display options.
 
 
-== Block Attributes ==
+## Block Attributes
 
 The FAUbox block is configured entirely through the block editor sidebar.
 The following options are available:
 
-= Folder =
+### Folder
 The FAUbox folder path to display files from.
 Selected via the folder tree in the block editor.
 
-= View =
+### View
 Display mode.
 Possible values: `list`, `table`
 Default: `list`
 
-= Show columns =
+### Show columns
 Controls which file information is displayed.
 Possible values: `name`, `type`, `size`, `modified`
 Default: `name`
 
-= Filter by file type =
+### Filter by file type
 Limits the displayed files to specific file extensions.
 Example: `pdf`, `jpg`, `png`
 
-= Sort by =
+### Sort by
 Field to sort by.
 Possible values: `name`, `size`, `type`, `modified`
 Default: `name`
 
-= Sort order =
+### Sort order
 Possible values: `asc` (ascending), `desc` (descending)
 Default: `asc`
 
-= Show title =
+### Show title
 Displays a heading above the file list.
 Default: off
 
-= Heading level =
+### Heading level
 HTML heading tag for the title.
 Possible values: `h2`, `h3`, `h4`, `h5`
 Default: `h3`
 
-= Custom title =
+### Custom title
 Overrides the displayed folder name when "Show title" is enabled.
 
 
-== Folder Index ==
+## Folder Index
 
 The plugin maintains a cached index of all subfolders under the configured
 root folder. This index is used by the block editor to display the folder tree
@@ -114,7 +113,7 @@ You can also refresh the index manually on the settings page under
 The cache duration can be configured (12h, 24h). Default: 24h.
 
 
-== File Downloads ==
+## File Downloads
 
 Files in FAUbox are not publicly accessible. The plugin acts as a download
 proxy: when a visitor clicks a file link, WordPress fetches the file from
@@ -123,4 +122,3 @@ The token and the FAUbox URL are never visible in the browser.
 
 Each download link is protected with an HMAC signature and restricted to the
 configured root folder.
-
