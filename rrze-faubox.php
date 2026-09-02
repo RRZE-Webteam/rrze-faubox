@@ -3,7 +3,7 @@
 /**
  * Plugin Name:        RRZE FAUbox
  * Plugin URI:         https://github.com/RRZE-Webteam/rrze-faubox
- * Version:            1.0.1
+ * Version:            1.0.2
  * Description:        A Plugin for FAUbox data integration
  * Author:             RRZE Webteam
  * Author URI:         https://www.wp.rrze.fau.de/

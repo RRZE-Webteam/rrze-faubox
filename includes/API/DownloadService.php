@@ -45,11 +45,12 @@ class DownloadService
             wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
         }
 
-        $rootFolder = get_option('rrze_faubox_folder', '');
-        if (empty($rootFolder)) {
+        $rootFolder = (string)get_option('rrze_faubox_folder', '');
+        if ($rootFolder === '') {
             wp_die(esc_html__('No folder configured.', 'rrze-faubox'), 403);
         }
-        $normalizedRoot = '/webdav/' . trim($rootFolder, '/') . '/';
+        $rootFolder = trim($rootFolder, '/');
+        $normalizedRoot = '/webdav/' . ($rootFolder !== '' ? $rootFolder . '/' : '');
         if (!str_starts_with($filePath, $normalizedRoot)) {
             wp_die(esc_html__('Access denied.', 'rrze-faubox'), 403);
         }
