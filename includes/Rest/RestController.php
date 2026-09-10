@@ -31,6 +31,36 @@ final class RestController
         $this->downloadService = $downloadService;
 
         add_action('rest_api_init', [$this, 'registerRoutes']);
+        add_filter(
+            'rrze_rest_api_public_endpoints',
+            [$this, 'registerPublicEndpoint']
+        );
+    }
+
+
+    /**
+     * Declare the signed download endpoint for access-control settings.
+     *
+     * Registration does not grant access. Network and private-site administrators
+     * decide independently whether the endpoint is available to visitors.
+     *
+     * @param mixed $endpoints Registered endpoint definitions.
+     * @return array Registered endpoint definitions including FAUbox downloads.
+     */
+    public function registerPublicEndpoint($endpoints): array
+    {
+        if (!is_array($endpoints)) {
+            $endpoints = [];
+        }
+
+        $endpoints['rrze-faubox-download'] = [
+            'label' => __('FAUbox signed downloads', 'rrze-faubox'),
+            'route' => '/rrze-faubox/v1/download',
+            'methods' => ['GET', 'HEAD'],
+            'description' => __('Allows visitors with a valid signed URL to download files.', 'rrze-faubox'),
+        ];
+
+        return $endpoints;
     }
 
 

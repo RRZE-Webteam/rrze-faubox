@@ -77,7 +77,9 @@ class DownloadService
         header('X-Content-Type-Options: nosniff');
 
         try {
-            readfile($result['tmpfile']);
+            if ($request->get_method() !== 'HEAD') {
+                readfile($result['tmpfile']);
+            }
         } finally {
             @unlink($result['tmpfile']);
         }
