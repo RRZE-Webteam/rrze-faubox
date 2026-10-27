@@ -198,7 +198,7 @@ final class RestController
             );
         }
 
-        $this->indexService->buildIndex();
+        $this->indexService->directRebuild();
         $this->indexService->setCooldown();
 
         return new \WP_REST_Response(['success' => true], 200);
