@@ -107,7 +107,12 @@ final class RestController
             'callback' => [$this, 'downloadFile'],
             'permission_callback' => '__return_true',
             'args' => [
-                'file' => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
+                'file' => [
+                    'required' => true,
+                    'sanitize_callback' => function ($val) {
+                        return is_string($val) ? wp_unslash($val) : '';
+                    },
+                ],
                 'sig' => ['required' => true, 'sanitize_callback' => 'sanitize_text_field'],
             ],
         ]);
