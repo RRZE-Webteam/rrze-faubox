@@ -31,12 +31,15 @@ class DownloadService
      * Validates path, root folder scope and HMAC signature before streaming.
      * Terminates execution after delivery.
      *
-     * @param WP_REST_Request $request Requires: file (WebDAV path), sig (HMAC
-    signature).
+     * @param WP_REST_Request $request Requires: file (WebDAV path), sig (HMAC signature).
      */
     public function handle(WP_REST_Request $request): void
     {
         $filePath = rawurldecode((string)$request->get_param('file'));
+
+        if (class_exists('Normalizer')) {
+            $filePath = \Normalizer::normalize($filePath, \Normalizer::FORM_C) ?: $filePath;
+        }
 
         if (!str_starts_with($filePath, '/webdav/')) {
             wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);

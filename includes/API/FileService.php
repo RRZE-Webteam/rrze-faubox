@@ -253,6 +253,9 @@ final class FileService
             function (array $file): array {
                 $name = (string)($file['displayname'] ?? '');
                 $path = rawurldecode((string)($file['path'] ?? ''));
+                if (class_exists('Normalizer')) {
+                    $path = \Normalizer::normalize($path, \Normalizer::FORM_C) ?: $path;
+                }
                 $size = $file['contentlength'] ?? null;
                 $sig = hash_hmac('sha256', $path, wp_salt('auth'));
                 $downloadUrl = add_query_arg(
