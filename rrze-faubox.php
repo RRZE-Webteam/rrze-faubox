@@ -25,6 +25,7 @@ const FAUBOX_PHP_VERSION = '8.2';
 const FAUBOX_WP_VERSION = '6.8';
 
 define('RRZE_FAUBOX_URL', plugin_dir_url(__FILE__));
+define('RRZE_FAUBOX_VERSION', '1.0.4');
 
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activatePlugin');
 register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivatePlugin');
@@ -46,7 +47,7 @@ function activatePlugin(): void
 function rescheduleIndexCron(): void
 {
     wp_clear_scheduled_hook('rrze_faubox_rebuild_index');
-    $ttl = (int)get_option('rrze_faubox_index_ttl', 24);
+    $ttl = (int)get_option('rrze_faubox_index_ttl', 12);
     $recurrence = match($ttl) {
         12      => 'twicedaily',
         default => 'daily',

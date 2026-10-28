@@ -64,7 +64,7 @@ class BlockRegistration
             'faubox-table-sort',
             RRZE_FAUBOX_URL . 'assets/js/faubox-table-sort.js',
             [],
-            '1.0.0',
+            RRZE_FAUBOX_VERSION,
             true
         );
     }

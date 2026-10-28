@@ -2,7 +2,7 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "rrze/faubox",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "title": "FAUbox",
   "category": "rrze",
   "icon": "cloud",
@@ -52,7 +52,12 @@
     },
     "orderby": {
       "type": "string",
-      "enum": ["name", "size", "type", "modified"],
+      "enum": [
+        "name",
+        "size",
+        "type",
+        "modified"
+      ],
       "default": "name"
     },
     "show_title": {
@@ -61,7 +66,12 @@
     },
     "heading_level": {
       "type": "string",
-      "enum": ["h2", "h3", "h4", "h5"],
+      "enum": [
+        "h2",
+        "h3",
+        "h4",
+        "h5"
+      ],
       "default": "h3"
     },
     "filetype": {

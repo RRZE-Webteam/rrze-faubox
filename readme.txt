@@ -1,10 +1,10 @@
 === RRZE FAUbox ===
 Contributors: rrze
 Tags: files, cloud, fau, faubox, webdav, directory, list, table
-Requires at least: 6.8
-Tested up to: 7.1
-Requires PHP: 8.2
-Stable tag: 1.0.4
+Requires at least:  6.8
+Tested up to:       7.1
+Requires PHP:       8.2
+Stable tag:         1.0.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,7 +111,7 @@ The index is rebuilt automatically when:
 You can also refresh the index manually on the settings page under
 **Settings → RRZE FAUbox → Folder Index → Refresh index now**.
 
-The cache duration can be configured (12h, 24h). Default: 24h.
+The cache duration can be configured (12h, 24h). Default: 12h.
 
 
 == File Downloads ==

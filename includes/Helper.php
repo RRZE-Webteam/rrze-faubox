@@ -33,7 +33,10 @@ class Helper
      */
     public static function debug($input, string $level = 'i'): void
     {
-        if (!WP_DEBUG) {
+        if (!defined('WP_DEBUG') || !WP_DEBUG) {
+            return;
+        }
+        if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
             return;
         }
         if (in_array(strtolower((string)WP_DEBUG_LOG), ['true', '1'], true)) {

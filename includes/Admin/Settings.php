@@ -246,13 +246,13 @@ class Settings
                 'rrze-faubox-admin',
                 RRZE_FAUBOX_URL . 'build/admin/admin.css',
                 [],
-                '1.0.0'
+                RRZE_FAUBOX_VERSION
         );
         wp_enqueue_script(
                 'rrze-faubox-admin',
                 RRZE_FAUBOX_URL . 'assets/js/faubox-admin.js',
                 [],
-                '1.0.0',
+                RRZE_FAUBOX_VERSION,
                 true
         );
         $info = $this->indexService->getLastBuiltInfo();

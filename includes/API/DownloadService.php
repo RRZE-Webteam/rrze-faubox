@@ -71,11 +71,11 @@ class DownloadService
 
         $fileName = basename($filePath);
         $fileName = str_replace(['"', "'", "\r", "\n", '\\', ';'], '', $fileName);
-        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '',
-            $result['content_type'] ?: 'application/octet-stream');
-
+        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '', $result['content_type'] ?: 'application/octet-stream');
         header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        $fileNameAscii = preg_replace('/[^\x20-\x7E]/', '_', $fileName);
+        $fileNameEncoded = rawurlencode($fileName);
+        header("Content-Disposition: attachment; filename=\"{$fileNameAscii}\"; filename*=UTF-8''{$fileNameEncoded}");
         header('Content-Length: ' . filesize($result['tmpfile']));
         header('X-Content-Type-Options: nosniff');
 
