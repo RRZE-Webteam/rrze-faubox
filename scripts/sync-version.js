@@ -35,7 +35,7 @@ function main() {
 
     const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
     const fullVersion = pkg.version;
-    const version = fullVersion.split('_')[0];
+    const version = fullVersion.split('-')[0];
     const compat = pkg.compatibility || {};
 
     // --- Plugin header (rrze-faubox.php) ---
