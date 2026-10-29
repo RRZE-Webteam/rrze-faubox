@@ -82,7 +82,7 @@ final class IndexService
      */
     public function setCooldown(): void
     {
-        set_transient(self::COOLDOWN_KEY, true, self::COOLDOWN_TTL);
+        set_transient(self::COOLDOWN_KEY, time(), self::COOLDOWN_TTL);
     }
 
 
@@ -103,7 +103,17 @@ final class IndexService
      */
     public function isOnCooldown(): bool
     {
-        return (bool)get_transient(self::COOLDOWN_KEY);
+        $setAt = get_transient(self::COOLDOWN_KEY);
+        if ($setAt === false) {
+            return false;
+        }
+
+        if (is_numeric($setAt) && (time() - (int)$setAt) > self::COOLDOWN_TTL) {
+            delete_transient(self::COOLDOWN_KEY);
+            return false;
+        }
+
+        return true;
     }
 
 

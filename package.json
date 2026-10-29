@@ -1,8 +1,52 @@
 {
   "name": "rrze-faubox",
-  "version": "1.0.3",
-  "description": "",
-  "main": "index.js",
+  "title": "RRZE FAUbox",
+  "version": "1.0.4",
+  "description": "Display files from FAUbox folders as lists or tables in WordPress.",
+  "main": "rrze-faubox.php",
+  "textdomain": "rrze-faubox",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RRZE-Webteam/rrze-faubox",
+    "issues": "https://github.com/RRZE-Webteam/rrze-faubox/issues",
+    "clone": "git+https://github.com/RRZE-Webteam/rrze-faubox.git"
+  },
+  "author": {
+    "name": "RRZE-Webteam <webmaster@fau.de>",
+    "url": "https://www.wordpress.rrze.fau.de"
+  },
+  "supports": {
+    "email": "webmaster@fau.de"
+  },
+  "compatibility": {
+    "wprequires": "6.8",
+    "wptestedup": "7.1",
+    "phprequires": "8.2"
+  },
+  "scripts": {
+    "readme": "node scripts/build-readme.js",
+    "version:dev": "node scripts/build-version.js dev",
+    "version:prod": "node scripts/build-version.js prod",
+    "version:release": "node scripts/build-version.js release",
+    "version:major": "node scripts/build-version.js major",
+    "build": "wp-scripts build && npm run build-style",
+    "dev": "wp-scripts build && npm run build-style && npm run version:dev && npm run readme",
+    "prod": "wp-scripts build && npm run build-style && npm run version:prod && npm run readme",
+    "release": "wp-scripts build && npm run build-style && npm run version:release && npm run readme",
+    "start": "wp-scripts start",
+    "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed && sass src/admin/admin.scss build/admin/admin.css --no-source-map --style=compressed",
+    "i18n:php": "wp i18n make-pot . languages/rrze-faubox-php.pot --exclude=node_modules --exclude=build --exclude=vendor --domain=rrze-faubox",
+    "i18n:block": "wp-scripts i18n src --output-file=languages/rrze-faubox-block.pot",
+    "i18n:merge": "wp i18n make-pot . languages/rrze-faubox.pot --exclude=node_modules,build,vendor --domain=rrze-faubox --merge=languages/rrze-faubox-block.pot",
+    "i18n:json": "wp i18n make-json languages --no-purge",
+    "i18n:all": "npm run i18n:php && npm run i18n:block && npm run i18n:merge && npm run i18n:json"
+  },
   "devDependencies": {
     "@types/wordpress__block-editor": "^11.5.16",
     "@types/wordpress__blocks": "^12.5.18",
@@ -13,27 +57,5 @@
     "sass": "^1.94.0",
     "typescript": "^5.8.2"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "wp-scripts build && npm run build-style",
-    "start": "wp-scripts start",
-    "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed && sass src/admin/admin.scss build/admin/admin.css --no-source-map --style=compressed",
-    "i18n:php": "wp i18n make-pot . languages/rrze-faubox-php.pot --exclude=node_modules --exclude=build --exclude=vendor --domain=rrze-faubox",
-    "i18n:block": "wp-scripts i18n src --output-file=languages/rrze-faubox-block.pot",
-    "i18n:merge": "wp i18n make-pot . languages/rrze-faubox.pot --exclude=node_modules,build,vendor --domain=rrze-faubox --merge=languages/rrze-faubox-block.pot",
-    "i18n:json": "wp i18n make-json languages --no-purge",
-    "i18n:all": "npm run i18n:php && npm run i18n:block && npm run i18n:merge && npm run i18n:json"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/RRZE-Webteam/rrze-faubox.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/RRZE-Webteam/rrze-faubox/issues"
-  },
-  "homepage": "https://github.com/RRZE-Webteam/rrze-faubox#readme"
+  "type": "commonjs"
 }

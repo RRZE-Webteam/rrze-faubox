@@ -31,12 +31,15 @@ class DownloadService
      * Validates path, root folder scope and HMAC signature before streaming.
      * Terminates execution after delivery.
      *
-     * @param WP_REST_Request $request Requires: file (WebDAV path), sig (HMAC
-    signature).
+     * @param WP_REST_Request $request Requires: file (WebDAV path), sig (HMAC signature).
      */
     public function handle(WP_REST_Request $request): void
     {
         $filePath = rawurldecode((string)$request->get_param('file'));
+
+        if (class_exists('Normalizer')) {
+            $filePath = \Normalizer::normalize($filePath, \Normalizer::FORM_C) ?: $filePath;
+        }
 
         if (!str_starts_with($filePath, '/webdav/')) {
             wp_die(esc_html__('Invalid file path.', 'rrze-faubox'), 400);
@@ -68,11 +71,11 @@ class DownloadService
 
         $fileName = basename($filePath);
         $fileName = str_replace(['"', "'", "\r", "\n", '\\', ';'], '', $fileName);
-        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '',
-            $result['content_type'] ?: 'application/octet-stream');
-
+        $contentType = preg_replace('/[^a-zA-Z0-9\/\-\+\.]/', '', $result['content_type'] ?: 'application/octet-stream');
         header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        $fileNameAscii = preg_replace('/[^\x20-\x7E]/', '_', $fileName);
+        $fileNameEncoded = rawurlencode($fileName);
+        header("Content-Disposition: attachment; filename=\"{$fileNameAscii}\"; filename*=UTF-8''{$fileNameEncoded}");
         header('Content-Length: ' . filesize($result['tmpfile']));
         header('X-Content-Type-Options: nosniff');
 

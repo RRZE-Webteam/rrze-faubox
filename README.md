@@ -110,7 +110,7 @@ The index is rebuilt automatically when:
 You can also refresh the index manually on the settings page under
 **Settings → RRZE FAUbox → Folder Index → Refresh index now**.
 
-The cache duration can be configured (12h, 24h). Default: 24h.
+The cache duration can be configured (12h, 24h). Default: 12h.
 
 
 ## File Downloads
@@ -122,3 +122,22 @@ The token and the FAUbox URL are never visible in the browser.
 
 Each download link is protected with an HMAC signature and restricted to the
 configured root folder.
+
+
+## External Services
+
+This plugin connects to the FAUbox service operated by RRZE:
+
+- **Provider:** RRZE, Friedrich-Alexander-Universität Erlangen-Nürnberg
+- **Service URL:** https://faubox.rrze.uni-erlangen.de
+- **Protocols:** WebDAV (PROPFIND, GET) and PowerFolder REST API
+- **Transmitted data:** HTTP Basic Auth credentials (username + token), folder paths, file metadata
+- **Authentication:** HTTP Basic Auth with a user-generated WebDAV token
+- **Timeouts:** WebDAV 15s, REST API 30s, file downloads 60s
+- **Failure behavior:** Returns empty results or error notices; does not retry automatically
+- **Privacy:** All data stays within FAU infrastructure. No data is transmitted to third parties.
+- **No cookies, localStorage or external resources** are used by this plugin.
+
+## Documentation
+
+https://www.wp.rrze.fau.de/plugins/inhaltsseiten-mit-funktionen-erweitern/rrze-faubox/
