@@ -1,6 +1,6 @@
 {
   "name": "rrze-faubox",
-  "version": "1.0.4",
+  "version": "1.0.4_1",
   "description": "Display files from FAUbox folders as lists or tables in WordPress.",
   "license": "GPL-3.0-or-later",
   "private": true,
@@ -26,7 +26,8 @@
   },
   "scripts": {
     "sync": "node scripts/sync-version.js",
-    "build": "wp-scripts build && npm run build-style && npm run sync",
+    "bump": "node scripts/bump-dev.js",
+    "build": "wp-scripts build && npm run build-style && npm run bump && npm run sync",
     "start": "wp-scripts start",
     "build-style": "sass src/block/style.scss build/block/style.css --no-source-map --style=compressed && sass src/admin/admin.scss build/admin/admin.css --no-source-map --style=compressed",
     "i18n:php": "wp i18n make-pot . languages/rrze-faubox-php.pot --exclude=node_modules --exclude=build --exclude=vendor --domain=rrze-faubox",

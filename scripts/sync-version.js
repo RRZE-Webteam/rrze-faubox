@@ -34,7 +34,8 @@ function main() {
     }
 
     const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
-    const version = pkg.version;
+    const fullVersion = pkg.version;
+    const version = fullVersion.split('_')[0];
     const compat = pkg.compatibility || {};
 
     // --- Plugin header (rrze-faubox.php) ---
@@ -117,7 +118,7 @@ function main() {
         fs.writeFileSync(README_TXT, readme);
     }
 
-    console.log('[sync-version] Synchronized version ' + version + ' to plugin header and readme.txt.');
+    console.log('[sync-version] Synchronized version ' + version + ' (internal: ' + fullVersion + ') to plugin header and readme.txt.');
 }
 
 main();
