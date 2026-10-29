@@ -1,7 +1,7 @@
 {
   "name": "rrze-faubox",
   "title": "RRZE FAUbox",
-  "version": "1.0.4",
+  "version": "1.0.4-1",
   "description": "Display files from FAUbox folders as lists or tables in WordPress.",
   "main": "rrze-faubox.php",
   "textdomain": "rrze-faubox",
